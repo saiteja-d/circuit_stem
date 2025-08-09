@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Circuit Kids Level Schema",
+  "type": "object",
+  "required": ["id","title","rows","cols","initial_components","goals"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "rows": { "type": "integer", "minimum": 3, "maximum": 12 },
+    "cols": { "type": "integer", "minimum": 3, "maximum": 12 },
+    "initial_components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type","r","c","id"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["battery","bulb","wire_straight","wire_corner","wire_t","switch"] },
+          "r": { "type": "integer" },
+          "c": { "type": "integer" },
+          "rotation": { "type": "integer", "enum": [0,90,180,270] },
+          "state": { "type": "object" }
+        }
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "type": "string", "enum": ["power_bulb"] },
+          "r": { "type": "integer" },
+          "c": { "type": "integer" }
+        }
+      }
+    },
+    "hints": { "type": "array", "items": { "type": "string" } }
+  }
+}

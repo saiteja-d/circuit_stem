@@ -1,0 +1,13 @@
+{
+  "id": "lvl_01",
+  "title": "Circuit 1 - Series",
+  "rows": 3,
+  "cols": 5,
+  "initial_components": [
+    {"id":"batt_1","type":"battery","r":1,"c":0,"rotation":0},
+    {"id":"wire_1","type":"wire_straight","r":1,"c":1,"rotation":90},
+    {"id":"bulb_1","type":"bulb","r":1,"c":2,"rotation":0}
+  ],
+  "goals":[ {"type":"power_bulb","r":1,"c":2} ],
+  "hints":["Connect the battery to the bulb by adding wire pieces."]
+}
