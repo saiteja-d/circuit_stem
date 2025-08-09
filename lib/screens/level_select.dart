@@ -1,6 +1,6 @@
+--- lib/screens/level_select.dart ---
 import 'package:flutter/material.dart';
 import '../routes.dart';
-import '../widgets/level_card.dart';
 
 class LevelSelectScreen extends StatelessWidget {
   const LevelSelectScreen({Key? key}) : super(key: key);
@@ -21,12 +21,28 @@ class LevelSelectScreen extends StatelessWidget {
           ),
           itemCount: 10,
           itemBuilder: (context, index) {
-            return LevelCard(
-              levelNumber: index + 1,
-              isLocked: index > 0,
-              onTap: () {
-                Navigator.of(context).pushNamed(AppRoutes.gameScreen, arguments: 'level_${index + 1}');
-              },
+            return Card(
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.gameScreen, 
+                    arguments: 'level_${index + 1}'
+                  );
+                },
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${index + 1}',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      if (index > 0) 
+                        const Icon(Icons.lock, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
             );
           },
         ),

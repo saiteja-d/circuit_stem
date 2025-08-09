@@ -1,34 +1,52 @@
 import 'package:flame/components.dart';
-import 'game_component.dart'; // Import the new base class
-import '../../models/component.dart' as model; // Alias for data model Component
-import '../../services/sound_service.dart';
+import 'package:flutter/material.dart';
+import '../../models/component.dart' as model;
+import 'game_component.dart';
 
 class SwitchComponent extends GameComponent {
-  bool isOn = false; // Visual state
-  final SoundService soundService = SoundService();
+  bool isOn = false;
+  late RectangleComponent switchBody;
+  late TextComponent switchLabel;
 
   SwitchComponent({required model.Component componentModel})
-      : super(componentModel: componentModel, size: Vector2.all(64)); // Pass componentModel to super
+      : super(
+          componentModel: componentModel,
+          size: Vector2(64, 64),
+        );
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad(); // Call super.onLoad()
-    // Initial sprite based on isOn, or based on componentModel's state if applicable
-    sprite = await Sprite.load(isOn ? 'switch_closed.png' : 'switch_open.png');
+    await super.onLoad();
+    
+    switchBody = RectangleComponent(
+      size: size,
+      paint: Paint()..color = Colors.blue,
+    );
+    add(switchBody);
+    
+    switchLabel = TextComponent(
+      text: 'OFF',
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      position: Vector2(size.x / 2, size.y / 2),
+      anchor: Anchor.center,
+    );
+    add(switchLabel);
   }
 
-  void toggle() async { // Make toggle async
+  void toggle() {
     isOn = !isOn;
-    // Update sprite immediately
-    sprite = await Sprite.load(isOn ? 'switch_closed.png' : 'switch_open.png'); // Await Sprite.load
-    soundService.playSound('toggle.wav'); // Using 'toggle.wav' as per existing assets
+    updateVisuals();
   }
 
   @override
   void updateVisuals() {
-    // This method will be called to update the switch's visual state
-    // based on the componentModel's state.
-    // For example, if componentModel.state['switchOpen'] is true, set isOn to false.
-    // This will be properly integrated when CircuitGame is refactored.
+    switchBody.paint = Paint()..color = isOn ? Colors.green : Colors.blue;
+    switchLabel.text = isOn ? 'ON' : 'OFF';
   }
 }

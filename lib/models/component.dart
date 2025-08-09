@@ -2,7 +2,7 @@
 enum ComponentType { 
   battery, 
   bulb, 
-  wireStraight, // Fixed naming convention
+  wireStraight,
   wireCorner, 
   wireT, 
   circuitSwitch 

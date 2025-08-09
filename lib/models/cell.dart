@@ -5,7 +5,7 @@ class Cell {
   final int r, c; // Row and column position
   Component? component; // The component placed in this cell
 
-  Cell({required int row, required int col}) : r = row, c = col; // Fixed constructor
+  Cell({required int row, required int col}) : r = row, c = col;
 
   /// Creates a [Cell] from a JSON map.
   factory Cell.fromJson(Map<String, dynamic> json) {

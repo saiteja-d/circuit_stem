@@ -1,31 +1,60 @@
 import 'package:flame/components.dart';
-import 'game_component.dart'; // Import the new base class
-import '../../models/component.dart' as model; // Alias for data model Component
+import 'package:flutter/material.dart';
+import '../../models/component.dart' as model;
+import 'game_component.dart';
 
 class WireComponent extends GameComponent {
-  bool hasCurrent = false; // Visual state
+  bool hasCurrent = false;
+  late RectangleComponent wireBody;
 
   WireComponent({required model.Component componentModel})
-      : super(componentModel: componentModel, size: Vector2.all(64)); // Pass componentModel to super
+      : super(
+          componentModel: componentModel,
+          size: Vector2(64, 64),
+        );
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad(); // Call super.onLoad()
-    // Initial sprite based on hasCurrent, or based on componentModel's state if applicable
-    sprite = await Sprite.load(hasCurrent ? 'wire_active.png' : 'wire_inactive.png');
-  }
-
-  void setCurrent(bool current) async { // Make setCurrent async
-    hasCurrent = current;
-    // Update sprite immediately
-    sprite = await Sprite.load(hasCurrent ? 'wire_active.png' : 'wire_inactive.png'); // Await Sprite.load
+    await super.onLoad();
+    
+    wireBody = RectangleComponent(
+      size: size,
+      paint: Paint()..color = Colors.brown,
+    );
+    add(wireBody);
+    
+    // Add wire visual based on type
+    String wireSymbol = '─';
+    switch (componentModel.type) {
+      case model.ComponentType.wireStraight:
+        wireSymbol = componentModel.rotation == 0 || componentModel.rotation == 180 ? '│' : '─';
+        break;
+      case model.ComponentType.wireCorner:
+        wireSymbol = '└';
+        break;
+      case model.ComponentType.wireT:
+        wireSymbol = '┬';
+        break;
+      default:
+        wireSymbol = '─';
+    }
+    
+    add(TextComponent(
+      text: wireSymbol,
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      position: Vector2(size.x / 2, size.y / 2),
+      anchor: Anchor.center,
+    ));
   }
 
   @override
   void updateVisuals() {
-    // This method will be called to update the wire's visual state
-    // based on the circuit's evaluation result.
-    // For example, if componentModel.state['isPowered'] is true, set hasCurrent to true.
-    // This will be properly integrated when CircuitGame is refactored.
+    wireBody.paint = Paint()..color = hasCurrent ? Colors.orange : Colors.brown;
   }
 }

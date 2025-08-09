@@ -1,3 +1,4 @@
+--- lib/screens/game_screen.dart ---
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../game/circuit_game.dart';
@@ -45,7 +46,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          GameWidget<CircuitGame>( // Explicitly type GameWidget
+          GameWidget<CircuitGame>(
             game: _game,
             overlayBuilderMap: {
               'UiOverlay': (context, gameRef) => UiOverlay(game: gameRef),

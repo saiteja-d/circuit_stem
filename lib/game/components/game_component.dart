@@ -1,5 +1,4 @@
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart';
 import '../../models/component.dart' as model;
 
 abstract class GameComponent extends SpriteComponent {

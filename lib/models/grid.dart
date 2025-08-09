@@ -7,7 +7,7 @@ class Grid {
   late final List<List<Cell>> cells;
 
   Grid({required this.rows, required this.cols}) {
-    cells = List.generate(rows, (r) => List.generate(cols, (c) => Cell(row: r, col: c))); // Fixed constructor call
+    cells = List.generate(rows, (r) => List.generate(cols, (c) => Cell(row: r, col: c)));
   }
 
   /// Creates a [Grid] from a JSON map.

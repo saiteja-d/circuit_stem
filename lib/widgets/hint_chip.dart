@@ -9,13 +9,19 @@ class HintChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300), // Fixed const
-      padding: const EdgeInsets.all(8.0), // Fixed const
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: color ?? Colors.amber,
         borderRadius: BorderRadius.circular(20.0),
       ),
-      child: Text(hintText),
+      child: Text(
+        hintText,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
