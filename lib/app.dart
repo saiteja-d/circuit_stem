@@ -11,7 +11,7 @@ class App extends StatelessWidget {
       title: 'Circuit Kids',
       theme: AppTheme.light,
       initialRoute: AppRoutes.mainMenu,
-      onGenerateRoute: AppRoutes.onGenerateRoute, // Fixed method name
+      onGenerateRoute: AppRoutes.onGenerateRoute,
       debugShowCheckedModeBanner: false,
     );
   }

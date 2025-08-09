@@ -1,4 +1,3 @@
---- lib/screens/game_screen.dart ---
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../game/circuit_game.dart';
@@ -12,7 +11,7 @@ class GameScreen extends StatefulWidget {
   const GameScreen({Key? key, required this.levelId}) : super(key: key);
 
   @override
-  State<GameScreen> createState() => _GameScreenState(); // Fixed method name
+  State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
@@ -24,7 +23,7 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _game = CircuitGame(
       levelId: widget.levelId,
-      onWin: () { // Fixed callback signature
+      onWin: () {
         _game.overlays.add('WinScreen');
       },
     );

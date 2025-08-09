@@ -45,7 +45,6 @@ class MainMenuScreen extends StatelessWidget {
             const SizedBox(height: 20),
             OutlinedButton(
               onPressed: () {
-                // TODO: Add settings screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Settings coming soon!')),
                 );
