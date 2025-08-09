@@ -4,34 +4,46 @@ class WinScreen extends StatelessWidget {
   final String levelId;
   final VoidCallback onNextLevel;
   final VoidCallback onLevelSelect;
-
-  const WinScreen({Key? key, required this.levelId, required this.onNextLevel, required this.onLevelSelect}) : super(key: key);
-
+  
+  const WinScreen({
+    Key? key, 
+    required this.levelId,
+    required this.onNextLevel,
+    required this.onLevelSelect
+  }) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black54, // Semi-transparent background
-      body: Center(
+    return Container(
+      color: Colors.black54,
+      child: Center(
         child: Card(
-          margin: const EdgeInsets.all(32.0),
+          margin: const EdgeInsets.all(20),
           child: Padding(
-            padding: const EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Level $levelId Completed!',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                const Text(
+                  'Level Complete!',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: onNextLevel,
-                  child: const Text('Next Level'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: onLevelSelect,
-                  child: const Text('Level Select'),
+                Text('Level: $levelId'),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: onLevelSelect,
+                      child: const Text('Level Select'),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: onNextLevel,
+                      child: const Text('Next Level'),
+                    ),
+                  ],
                 ),
               ],
             ),

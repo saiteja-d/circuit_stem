@@ -14,7 +14,8 @@ import 'components/comp_wire.dart';
 import 'components/comp_switch.dart';
 import 'components/game_component.dart';
 
-class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
+class CircuitGame extends FlameGame
+    with HasCollisionDetection, TapCallbacks, DragCallbacks {
   final String? levelId;
   late final LevelDefinition levelDefinition;
   late final Grid grid;
@@ -32,8 +33,8 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
     if (levelId != null) {
       levelDefinition = await LevelLoader.loadLevel(levelId!);
       grid = Grid(
-        rows: levelDefinition.gridSize['rows'],
-        cols: levelDefinition.gridSize['cols'],
+        rows: levelDefinition.rows,
+        cols: levelDefinition.cols,
       );
 
       shortCircuitOverlay = RectangleComponent(
@@ -47,7 +48,8 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
       // Load initial components
       for (final componentData in levelDefinition.components) {
         final componentModel = model.Component.fromJson(componentData);
-        grid.cells[componentModel.r][componentModel.c].component = componentModel;
+        grid.cells[componentModel.r][componentModel.c].component =
+            componentModel;
 
         final gameComponent = _createGameComponent(componentModel);
         add(gameComponent);
@@ -64,12 +66,12 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
     }
   }
 
-  @override // Fixed missing override annotation
+  @override
   void pauseEngine() {
     isPaused = true;
   }
 
-  @override // Fixed missing override annotation
+  @override
   void resumeEngine() {
     isPaused = false;
   }
@@ -94,7 +96,8 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
       default:
         throw Exception('Unknown component type: ${componentModel.type}');
     }
-    gameComponent.position = Vector2(componentModel.c * 64.0, componentModel.r * 64.0);
+    gameComponent.position =
+        Vector2(componentModel.c * 64.0, componentModel.r * 64.0);
     return gameComponent;
   }
 
@@ -116,7 +119,8 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
         }
       }
       if (gameComponent is SwitchComponent) {
-        gameComponent.isOn = gameComponent.componentModel.state['switchOpen'] == false;
+        gameComponent.isOn =
+            gameComponent.componentModel.state['switchOpen'] == false;
       }
       gameComponent.updateVisuals();
     }
@@ -138,7 +142,8 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
         final c = goal['c'];
         final targetCell = grid.cells[r][c];
         final targetBulbModel = targetCell.component;
-        if (targetBulbModel == null || !eval.poweredComponentIds.contains(targetBulbModel.id)) {
+        if (targetBulbModel == null ||
+            !eval.poweredComponentIds.contains(targetBulbModel.id)) {
           allGoalsMet = false;
           break;
         }
@@ -164,9 +169,11 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
 
   @override
   bool onDragUpdate(DragUpdateEvent event) {
+    super.onDragUpdate(event);
     for (final gameComponent in children.whereType<GameComponent>()) {
-      if (gameComponent.componentModel.isDraggable && gameComponent.containsLocalPoint(event.localPosition)) {
-        gameComponent.position.add(event.localDelta);
+      if (gameComponent.componentModel.isDraggable &&
+          gameComponent.containsLocalPoint(event.localPosition)) {
+        gameComponent.position.add(event.delta);
         break;
       }
     }
@@ -175,6 +182,7 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
 
   @override
   bool onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
     for (final gameComponent in children.whereType<GameComponent>()) {
       if (gameComponent.componentModel.isDraggable) {
         _snapComponentToGrid(gameComponent);
@@ -185,10 +193,13 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
 
   @override
   bool onTapDown(TapDownEvent event) {
+    super.onTapDown(event);
     for (final gameComponent in children.whereType<GameComponent>()) {
-      if (gameComponent is SwitchComponent && gameComponent.containsLocalPoint(event.localPosition)) {
+      if (gameComponent is SwitchComponent &&
+          gameComponent.containsLocalPoint(event.localPosition)) {
         gameComponent.toggle();
-        gameComponent.componentModel.state['switchOpen'] = !gameComponent.componentModel.state['switchOpen'];
+        gameComponent.componentModel.state['switchOpen'] =
+            !gameComponent.componentModel.state['switchOpen'];
         applyEvaluationResult(evaluate());
         checkWinCondition(evaluate());
         break;
@@ -201,26 +212,36 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
     final newCol = (gameComponent.position.x / 64).round();
     final newRow = (gameComponent.position.y / 64).round();
 
-    if (newRow >= 0 && newRow < grid.rows && newCol >= 0 && newCol < grid.cols) {
+    if (newRow >= 0 &&
+        newRow < grid.rows &&
+        newCol >= 0 &&
+        newCol < grid.cols) {
       final targetCell = grid.cells[newRow][newCol];
-      if (targetCell.component == null || (targetCell.component!.id == gameComponent.componentModel.id)) {
-        grid.cells[gameComponent.componentModel.r][gameComponent.componentModel.c].component = null;
+      if (targetCell.component == null ||
+          (targetCell.component!.id == gameComponent.componentModel.id)) {
+        grid.cells[gameComponent.componentModel.r]
+            [gameComponent.componentModel.c]
+            .component = null;
 
         gameComponent.componentModel.r = newRow;
         gameComponent.componentModel.c = newCol;
 
         targetCell.component = gameComponent.componentModel;
 
-        gameComponent.position = Vector2(newCol * 64.0, newRow * 64.0);
+        gameComponent.position =
+            Vector2(newCol * 64.0, newRow * 64.0);
 
         applyEvaluationResult(evaluate());
         checkWinCondition(evaluate());
       } else {
-        gameComponent.position = Vector2(gameComponent.componentModel.c * 64.0, gameComponent.componentModel.r * 64.0);
+        gameComponent.position = Vector2(
+            gameComponent.componentModel.c * 64.0,
+            gameComponent.componentModel.r * 64.0);
       }
-    }
-    else {
-      gameComponent.position = Vector2(gameComponent.componentModel.c * 64.0, gameComponent.componentModel.r * 64.0);
+    } else {
+      gameComponent.position = Vector2(
+          gameComponent.componentModel.c * 64.0,
+          gameComponent.componentModel.r * 64.0);
     }
   }
 
@@ -228,13 +249,14 @@ class CircuitGame extends FlameGame with HasDragRecognizer, HasTapRecognizer {
     removeAll(children.whereType<GameComponent>());
 
     grid = Grid(
-      rows: levelDefinition.gridSize['rows'],
-      cols: levelDefinition.gridSize['cols'],
+      rows: levelDefinition.rows,
+      cols: levelDefinition.cols,
     );
 
     for (final componentData in levelDefinition.components) {
       final componentModel = model.Component.fromJson(componentData);
-      grid.cells[componentModel.r][componentModel.c].component = componentModel;
+      grid.cells[componentModel.r][componentModel.c].component =
+          componentModel;
 
       final gameComponent = _createGameComponent(componentModel);
       add(gameComponent);

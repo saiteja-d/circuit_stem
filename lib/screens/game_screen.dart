@@ -50,6 +50,7 @@ class _GameScreenState extends State<GameScreen> {
             overlayBuilderMap: {
               'UiOverlay': (context, gameRef) => UiOverlay(game: gameRef),
               'WinScreen': (context, gameRef) => WinScreen(
+                levelId: widget.levelId,
                 onNextLevel: () {
                   gameRef.overlays.remove('WinScreen');
                   // TODO: Navigate to next level

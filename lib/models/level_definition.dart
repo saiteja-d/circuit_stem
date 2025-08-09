@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 /// Represents the definition of a game level.
 class LevelDefinition {
