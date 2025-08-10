@@ -1,4 +1,3 @@
-// lib/ui/canvas_painter.dart
 import 'package:flutter/material.dart';
 import '../common/asset_manager.dart';
 import '../common/constants.dart';
@@ -11,7 +10,11 @@ class CanvasPainter extends CustomPainter {
   final AssetManager assetManager;
   final bool showDebugOverlay;
 
-  CanvasPainter({this.renderState, required this.assetManager, required this.showDebugOverlay});
+  CanvasPainter({
+    this.renderState,
+    required this.assetManager,
+    required this.showDebugOverlay,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -20,28 +23,31 @@ class CanvasPainter extends CustomPainter {
     final grid = renderState!.grid;
     _drawGrid(canvas, size, grid.rows, grid.cols);
 
-    // draw all components except dragged preview
+    // Draw all components except dragged preview
     for (final comp in renderState!.grid.componentsById.values) {
       if (comp.id != renderState!.draggedComponentId) {
         _drawComponent(canvas, comp);
       }
     }
 
-    // dragged preview
+    // Draw dragged preview
     if (renderState!.draggedComponentId != null && renderState!.dragPosition != null) {
       final comp = renderState!.grid.componentsById[renderState!.draggedComponentId!];
       if (comp != null) _drawDraggedComponent(canvas, comp, renderState!.dragPosition!);
     }
 
-    // debug overlay (terminals, adjacency, BFS)
+    // Draw debug overlay if enabled
     if (showDebugOverlay) {
       _drawDebugOverlay(canvas, size, renderState!.evaluationResult.debugInfo);
     }
   }
 
   void _drawGrid(Canvas canvas, Size size, int rows, int cols) {
-    final paint = Paint()..color = Colors.grey.shade300..style = PaintingStyle.stroke;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..style = PaintingStyle.stroke;
     const double cw = cellSize, ch = cellSize;
+
     for (int i = 0; i <= rows; i++) {
       canvas.drawLine(Offset(0, i * ch), Offset(cols * cw, i * ch), paint);
     }
@@ -53,22 +59,26 @@ class CanvasPainter extends CustomPainter {
   void _drawComponent(Canvas canvas, ComponentModel comp) {
     final isPowered = renderState!.evaluationResult.poweredComponentIds.contains(comp.id);
     final paint = Paint();
+
     for (final off in comp.shapeOffsets) {
       final x = (comp.c + off.dc) * cellSize;
       final y = (comp.r + off.dr) * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
       final image = assetManager.getImageFromCache(imagePath);
       if (image != null) {
-        // source rect
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
         final dst = Rect.fromLTWH(x, y, cellSize, cellSize);
 
-        // apply simple powered tint
-        if (isPowered && (comp.type == ComponentType.wireLong || comp.type.toString().contains('wire'))) {
-          paint.colorFilter = ColorFilter.mode(Colors.orange.withOpacity(0.45), BlendMode.srcATop);
+        // Apply simple powered tint
+        if (isPowered &&
+            (comp.type == ComponentType.wireLong || comp.type.toString().contains('wire'))) {
+          paint.colorFilter =
+              ColorFilter.mode(Colors.orange.withAlpha((0.45 * 255).round()), BlendMode.srcATop);
         } else if (isPowered && comp.type == ComponentType.bulb) {
           final intensity = renderState!.bulbIntensity.clamp(0.0, 1.5);
-          paint.colorFilter = ColorFilter.mode(Colors.yellow.withOpacity((intensity - 0.6).clamp(0.0, 1.0)), BlendMode.srcATop);
+          paint.colorFilter = ColorFilter.mode(
+              Colors.yellow.withAlpha(((intensity - 0.6).clamp(0.0, 1.0) * 255).round()),
+              BlendMode.srcATop);
         } else {
           paint.colorFilter = null;
         }
@@ -77,16 +87,20 @@ class CanvasPainter extends CustomPainter {
       } else {
         // fallback simple vector drawing
         final rect = Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8);
-        canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(6)), Paint()..color = Colors.blueGrey.shade200);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+            Paint()..color = Colors.blueGrey.shade200);
         if (isPowered) {
-          canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(6)), Paint()..color = Colors.orange.withOpacity(0.25));
+          canvas.drawRRect(
+              RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+              Paint()..color = Colors.orange.withAlpha((0.25 * 255).round()));
         }
       }
     }
   }
 
   void _drawDraggedComponent(Canvas canvas, ComponentModel comp, Offset position) {
-    // center preview at pointer; draw all offsets relative to pointer
+    // Center preview at pointer; draw all offsets relative to pointer
     final centerCellX = position.dx;
     final centerCellY = position.dy;
     final anchorX = centerCellX - (cellSize / 2);
@@ -100,9 +114,13 @@ class CanvasPainter extends CustomPainter {
       if (image != null) {
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
         final dst = Rect.fromLTWH(x, y, cellSize, cellSize);
-        canvas.drawImageRect(image, src, dst, Paint()..color = Colors.white.withOpacity(0.75));
+        canvas.drawImageRect(
+            image, src, dst, Paint()..color = Colors.white.withAlpha((0.75 * 255).round()));
       } else {
-        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8), const Radius.circular(6)), Paint()..color = Colors.white.withOpacity(0.7));
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8),
+                const Radius.circular(6)),
+            Paint()..color = Colors.white.withAlpha((0.7 * 255).round()));
       }
     }
   }
@@ -133,10 +151,13 @@ class CanvasPainter extends CustomPainter {
 
   void _drawDebugOverlay(Canvas canvas, Size size, DebugInfo debugInfo) {
     final termPaint = Paint()..color = Colors.black;
-    final adjPaint = Paint()..color = Colors.blue.withOpacity(0.5)..strokeWidth = 2;
-    final bfsPaint = Paint()..color = Colors.green.withOpacity(0.9);
+    final adjPaint = Paint()
+      ..color = Colors.blue.withAlpha((0.5 * 255).round())
+      ..strokeWidth = 2;
+    final bfsPaint = Paint()
+      ..color = Colors.green.withAlpha((0.9 * 255).round());
 
-    // draw adjacency edges
+    // Draw adjacency edges
     for (final entry in debugInfo.adjacency.entries) {
       final from = debugInfo.terminals[entry.key];
       if (from == null) continue;
@@ -151,19 +172,22 @@ class CanvasPainter extends CustomPainter {
       }
     }
 
-    // draw terminals and labels
+    // Draw terminals and labels
     debugInfo.terminals.forEach((id, t) {
       final cx = (t.c + 0.5) * cellSize;
       final cy = (t.r + 0.5) * cellSize;
       canvas.drawCircle(Offset(cx, cy), 6, termPaint);
       if (t.label != null) {
-        final tp = TextPainter(text: TextSpan(text: t.label, style: const TextStyle(color: Colors.black, fontSize: 10)), textDirection: TextDirection.ltr);
+        final tp = TextPainter(
+          text: TextSpan(text: t.label, style: const TextStyle(color: Colors.black, fontSize: 10)),
+          textDirection: TextDirection.ltr,
+        );
         tp.layout();
         tp.paint(canvas, Offset(cx + 6, cy - tp.height / 2));
       }
     });
 
-    // highlight discovered pos->neg paths (if any)
+    // Highlight discovered pos->neg paths (if any)
     for (final path in debugInfo.posToNegPaths) {
       for (var i = 0; i + 1 < path.length; i++) {
         final a = debugInfo.terminals[path[i]];
@@ -171,11 +195,18 @@ class CanvasPainter extends CustomPainter {
         if (a == null || b == null) continue;
         final ax = (a.c + 0.5) * cellSize, ay = (a.r + 0.5) * cellSize;
         final bx = (b.c + 0.5) * cellSize, by = (b.r + 0.5) * cellSize;
-        canvas.drawLine(Offset(ax, ay), Offset(bx, by), Paint()..color = Colors.red..strokeWidth = 3);
+        canvas.drawLine(
+          Offset(ax, ay),
+          Offset(bx, by),
+          Paint()
+            ..color = Colors.red
+            ..strokeWidth = 3,
+        );
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CanvasPainter oldDelegate) => oldDelegate.renderState != renderState;
+  bool shouldRepaint(covariant CanvasPainter oldDelegate) =>
+      oldDelegate.renderState != renderState;
 }

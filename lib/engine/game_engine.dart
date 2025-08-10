@@ -1,9 +1,7 @@
-// lib/engine/game_engine.dart
 import 'package:flutter/material.dart';
 import '../models/level_definition.dart';
 import '../models/grid.dart';
 import '../models/component.dart';
-import '../models/component_factory.dart'; // New import
 import '../services/logic_engine.dart';
 import 'render_state.dart';
 import '../flame_integration/flame_adapter.dart';
@@ -41,21 +39,20 @@ class GameEngine extends ChangeNotifier {
   }
 
   /// Sets up the level based on the provided LevelDefinition.
-Future<void> _setupLevel() async {
-  isWin = false;
-  _animationScheduler.reset();
-  grid = Grid(rows: levelDefinition.rows, cols: levelDefinition.cols);
+  Future<void> _setupLevel() async {
+    isWin = false;
+    _animationScheduler.reset();
+    grid = Grid(rows: levelDefinition.rows, cols: levelDefinition.cols);
 
-  for (final comp in levelDefinition.components) {
-    final placed = grid.addComponent(comp);
-    if (!placed) {
-      debugPrint('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
+    for (final comp in levelDefinition.components) {
+      final placed = grid.addComponent(comp);
+      if (!placed) {
+        debugPrint('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
+      }
     }
+
+    _evaluateAndUpdateRenderState();
   }
-
-  _evaluateAndUpdateRenderState();
-}
-
 
   /// Called each frame / tick from the UI loop.
   void update({double dt = 0.0}) {
@@ -82,37 +79,36 @@ Future<void> _setupLevel() async {
     notifyListeners();
   }
 
-void _checkWinCondition(EvaluationResult eval) {
-  if (isWin || eval.isShortCircuit) return;
+  void _checkWinCondition(EvaluationResult eval) {
+    if (isWin || eval.isShortCircuit) return;
 
-  bool allGoalsMet = true;
-  for (final goal in levelDefinition.goals) {
-    final type = goal.type;
-    if (type == 'power_bulb') {
-      final r = goal.r;
-      final c = goal.c;
-      if (r == null || c == null) {
-        allGoalsMet = false;
-        break;
+    bool allGoalsMet = true;
+    for (final goal in levelDefinition.goals) {
+      final type = goal.type;
+      if (type == 'power_bulb') {
+        final r = goal.r;
+        final c = goal.c;
+        if (r == null || c == null) {
+          allGoalsMet = false;
+          break;
+        }
+        final comps = grid.componentsAt(r, c);
+        final target = comps.isNotEmpty ? comps.first : null;
+        if (target == null || !eval.poweredComponentIds.contains(target.id)) {
+          allGoalsMet = false;
+          break;
+        }
+      } else {
+        // TODO: handle other goal types or log unsupported goals here.
       }
-      final comps = grid.componentsAt(r, c);
-      final target = comps.isNotEmpty ? comps.first : null;
-      if (target == null || !eval.poweredComponentIds.contains(target.id)) {
-        allGoalsMet = false;
-        break;
-      }
-    } else {
-      // TODO: handle other goal types
+    }
+
+    if (allGoalsMet) {
+      isWin = true;
+      _flameAdapter.playAudio('success.wav');
+      onWin?.call();
     }
   }
-
-  if (allGoalsMet) {
-    isWin = true;
-    _flameAdapter.playAudio('success.wav');
-    onWin?.call();
-  }
-}
-
 
   /// Toggles a switch component.
   void toggleSwitch(String componentId) {
@@ -127,6 +123,7 @@ void _checkWinCondition(EvaluationResult eval) {
 
   void startDrag(String componentId) {
     _draggedComponentId = componentId;
+    _dragPosition = null; // Clear previous drag position
   }
 
   void updateDrag(String componentId, Offset position) {

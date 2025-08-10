@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../common/constants.dart'; // For cellSize
 import '../common/asset_manager.dart';
 import '../engine/game_engine.dart';
-import '../ui/canvas_painter.dart'; // Fixed relative import path
-import '../ui/controllers/debug_overlay_controller.dart'; // Fixed relative import path
+import '../ui/canvas_painter.dart';
+import '../ui/controllers/debug_overlay_controller.dart';
 
 class GameCanvas extends StatefulWidget {
   const GameCanvas({Key? key}) : super(key: key);
@@ -23,16 +23,18 @@ class _GameCanvasState extends State<GameCanvas> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // Pass the _onTick function directly, no need to wrap in TickerCallback
-    _ticker = createTicker(_onTick)..start();
+    // Alternative: create Ticker via constructor and pass this as vsync
+    _ticker = Ticker(_onTick)..start();
   }
 
-  void _onTick(Duration elapsed) {
-    final gameEngine = Provider.of<GameEngine>(context, listen: false);
-    final dt = (elapsed - _lastElapsed).inMicroseconds / Duration.microsecondsPerSecond;
-    _lastElapsed = elapsed;
-    gameEngine.update(dt);
-  }
+void _onTick(Duration elapsed) {
+  final gameEngine = Provider.of<GameEngine>(context, listen: false);
+  final dt = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
+  _lastElapsed = elapsed;
+  gameEngine.update(dt: dt);
+}
+
+
 
   @override
   void dispose() {
