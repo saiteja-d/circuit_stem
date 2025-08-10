@@ -1,65 +1,133 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:circuit_stem/models/grid.dart';
-import 'package:circuit_stem/models/component.dart';
-import 'package:circuit_stem/services/logic_engine.dart';
+// test/logic_engine_test.dart
+import 'package:test/test.dart';
+import 'package:your_package_name/lib/services/logic_engine.dart';
+import 'package:your_package_name/lib/models/grid.dart';
+import 'package:your_package_name/lib/models/component.dart';
 
 void main() {
-  test('simple series powers bulb', () {
-    final grid = Grid(rows: 3, cols: 3);
-    final battery = Component(id: 'batt', type: ComponentType.battery, rotation: 0);
-    final bulb = Component(id: 'bulb', type: ComponentType.bulb, rotation: 0);
-    final wire1 = Component(id: 'w1', type: ComponentType.wireStraight, rotation: 90);
-    
-    grid.placeComponent(1, 0, battery);
-    grid.placeComponent(1, 1, wire1);
-    grid.placeComponent(1, 2, bulb);
-    
-    final logicEngine = LogicEngine();
-    final res = logicEngine.evaluateGrid(grid);
-    
-    expect(res.poweredComponentIds.contains('bulb'), true);
-    expect(res.shortDetected, false);
-  });
+  group('LogicEngine', () {
+    late LogicEngine engine;
 
-  test('short detection when positive connects to negative without bulb', () {
-    final grid = Grid(rows: 1, cols: 3);
-    final batt = Component(id: 'b', type: ComponentType.battery, rotation: 0);
-    final wire1 = Component(id: 'w1', type: ComponentType.wireStraight, rotation: 90);
-    
-    grid.placeComponent(0, 0, batt);
-    grid.placeComponent(0, 1, wire1);
-    
-    final wire2 = Component(id: 'w2', type: ComponentType.wireStraight, rotation: 90);
-    grid.placeComponent(0, 2, wire2);
-    
-    final logicEngine = LogicEngine();
-    final res = logicEngine.evaluateGrid(grid);
-    
-    // Note: Current implementation doesn't detect shorts yet
-    // This test documents expected behavior for future implementation
-    expect(res.shortDetected, false); // Will be true when short detection is implemented
-  });
+    setUp(() {
+      engine = LogicEngine();
+    });
 
-  test('switch controls circuit flow', () {
-    final grid = Grid(rows: 3, cols: 3);
-    final battery = Component(id: 'batt', type: ComponentType.battery, rotation: 0);
-    final bulb = Component(id: 'bulb', type: ComponentType.bulb, rotation: 0);
-    final switchComp = Component(
-      id: 'switch', 
-      type: ComponentType.circuitSwitch, 
-      rotation: 0,
-      state: {'switchOpen': true}, // Switch is open (off)
-    );
-    
-    grid.placeComponent(1, 0, battery);
-    grid.placeComponent(1, 1, switchComp);
-    grid.placeComponent(1, 2, bulb);
-    
-    final logicEngine = LogicEngine();
-    final res = logicEngine.evaluateGrid(grid);
-    
-    // When switch is open, bulb should not be powered
-    // (This will work correctly when full circuit tracing is implemented)
-    expect(res.poweredComponentIds.contains('switch'), false);
+    test('Empty grid returns no powered components and no shorts', () {
+      final grid = Grid(componentsById: {});
+      final result = engine.evaluate(grid);
+
+      expect(result.poweredComponentIds, isEmpty);
+      expect(result.isShortCircuit, isFalse);
+      expect(result.openEndpoints, isEmpty);
+      expect(result.debugTrace, isNotEmpty);
+    });
+
+    test('Battery with no terminals warns and no power', () {
+      final battery = Component(
+        id: 'b1',
+        type: ComponentType.battery,
+        r: 0,
+        c: 0,
+        rotation: 0,
+        terminals: [],
+        shapeOffsets: [],
+        internalConnections: [],
+        state: {},
+      );
+      final grid = Grid(componentsById: {'b1': battery});
+
+      final result = engine.evaluate(grid);
+
+      expect(result.poweredComponentIds, isEmpty);
+      expect(result.debugInfo.notes, contains('Battery b1 has fewer than 2 terminals.'));
+    });
+
+    test('Simple battery powering a bulb with connection', () {
+      // Define terminals with roles 'pos', 'neg' for battery
+      final battery = Component(
+        id: 'bat1',
+        type: ComponentType.battery,
+        r: 0,
+        c: 0,
+        rotation: 0,
+        terminals: [
+          TerminalSpec(cellIndex: 0, dir: Dir.east, label: 'positive', role: 'pos'),
+          TerminalSpec(cellIndex: 1, dir: Dir.west, label: 'negative', role: 'neg'),
+        ],
+        shapeOffsets: [CellOffset(0, 0), CellOffset(0, 1)],
+        internalConnections: [],
+        state: {},
+      );
+
+      final bulb = Component(
+        id: 'bulb1',
+        type: ComponentType.bulb,
+        r: 0,
+        c: 1,
+        rotation: 0,
+        terminals: [
+          TerminalSpec(cellIndex: 0, dir: Dir.west, label: 'load', role: 'load'),
+          TerminalSpec(cellIndex: 1, dir: Dir.east, label: 'load', role: 'load'),
+        ],
+        shapeOffsets: [CellOffset(0, 0), CellOffset(0, 1)],
+        internalConnections: [[0, 1]],
+        state: {},
+      );
+
+      final grid = Grid(componentsById: {
+        'bat1': battery,
+        'bulb1': bulb,
+      });
+
+      final result = engine.evaluate(grid);
+
+      expect(result.poweredComponentIds, containsAll(['bat1', 'bulb1']));
+      expect(result.isShortCircuit, isFalse);
+      expect(result.openEndpoints, isEmpty);
+      expect(result.debugTrace, contains('short=false'));
+    });
+
+    test('Detects short circuit when no load between battery terminals', () {
+      final battery = Component(
+        id: 'bat1',
+        type: ComponentType.battery,
+        r: 0,
+        c: 0,
+        rotation: 0,
+        terminals: [
+          TerminalSpec(cellIndex: 0, dir: Dir.east, label: 'positive', role: 'pos'),
+          TerminalSpec(cellIndex: 1, dir: Dir.west, label: 'negative', role: 'neg'),
+        ],
+        shapeOffsets: [CellOffset(0, 0), CellOffset(0, 1)],
+        internalConnections: [],
+        state: {},
+      );
+
+      final wire = Component(
+        id: 'wire1',
+        type: ComponentType.wire,
+        r: 0,
+        c: 1,
+        rotation: 0,
+        terminals: [
+          TerminalSpec(cellIndex: 0, dir: Dir.west),
+          TerminalSpec(cellIndex: 1, dir: Dir.east),
+        ],
+        shapeOffsets: [CellOffset(0, 0), CellOffset(0, 1)],
+        internalConnections: [[0, 1]],
+        state: {},
+      );
+
+      final grid = Grid(componentsById: {
+        'bat1': battery,
+        'wire1': wire,
+      });
+
+      final result = engine.evaluate(grid);
+
+      expect(result.isShortCircuit, isTrue);
+      expect(result.debugTrace, contains('Short circuit detected'));
+      expect(result.openEndpoints, isEmpty);
+    });
   });
 }

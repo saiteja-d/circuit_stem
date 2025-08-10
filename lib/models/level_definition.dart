@@ -1,4 +1,6 @@
 
+import 'component.dart';
+
 /// Represents the definition of a game level.
 class LevelDefinition {
   final String id;
@@ -9,7 +11,7 @@ class LevelDefinition {
   final int cols;
   final List<Map<String, dynamic>> goals;
   final List<String> hints;
-  final List<Map<String, dynamic>> initialComponents;
+  final List<ComponentModel> initialComponents;
 
   const LevelDefinition({
     required this.id,
@@ -35,7 +37,9 @@ class LevelDefinition {
       cols: gridSize['cols'] as int,
       goals: List<Map<String, dynamic>>.from(json['goals'] as List),
       hints: List<String>.from(json['hints'] as List),
-      initialComponents: List<Map<String, dynamic>>.from(json['components'] as List),
+      initialComponents: (json['components'] as List<dynamic>)
+          .map((e) => ComponentModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -52,11 +56,11 @@ class LevelDefinition {
       },
       'goals': goals,
       'hints': hints,
-      'components': initialComponents,
+      'components': initialComponents.map((e) => e.toJson()).toList(),
     };
   }
 
   // Convenience getters
   Map<String, int> get gridSize => {'rows': rows, 'cols': cols};
-  List<Map<String, dynamic>> get components => initialComponents;
+  List<ComponentModel> get components => initialComponents;
 }

@@ -79,6 +79,7 @@ class _GameCanvasState extends State<GameCanvas> with TickerProviderStateMixin {
             painter: CanvasPainter(
               renderState: engine.renderState,
               assetManager: _assetManager,
+              showDebugOverlay: engine.showDebugOverlay,
             ),
             size: Size.infinite,
           );

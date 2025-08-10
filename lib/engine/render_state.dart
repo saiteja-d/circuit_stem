@@ -1,29 +1,23 @@
-
+// lib/engine/render_state.dart
 import 'package:flutter/material.dart';
 import '../models/grid.dart';
-import '../models/component.dart' as model;
+import '../models/component.dart';
+import '../services/logic_engine.dart';
 
-/// Result of circuit evaluation.
-class EvaluationResult {
-  final Set<String> poweredComponentIds;
-  final bool shortDetected;
-  final List<String> openEndpoints;
-
-  const EvaluationResult({
-    required this.poweredComponentIds,
-    required this.shortDetected,
-    required this.openEndpoints,
-  });
+class DebugOverlayData {
+  final DebugInfo? debugInfo;
+  DebugOverlayData({this.debugInfo});
 }
 
 class RenderState {
   final Grid grid;
-  final List<model.Component> components;
+  final List<ComponentModel> components;
   final EvaluationResult evaluationResult;
   final String? draggedComponentId;
   final Offset? dragPosition;
   final double bulbIntensity;
   final double wireOffset;
+  final DebugOverlayData? debugOverlay;
 
   RenderState({
     required this.grid,
@@ -33,5 +27,26 @@ class RenderState {
     this.dragPosition,
     required this.bulbIntensity,
     required this.wireOffset,
+    this.debugOverlay,
   });
+
+  factory RenderState.fromEvaluation({
+    required Grid grid,
+    required EvaluationResult eval,
+    required double bulbIntensity,
+    required double wireOffset,
+    String? draggedComponentId,
+    Offset? dragPosition,
+  }) {
+    return RenderState(
+      grid: grid,
+      components: grid.componentsById.values.toList(),
+      evaluationResult: eval,
+      draggedComponentId: draggedComponentId,
+      dragPosition: dragPosition,
+      bulbIntensity: bulbIntensity,
+      wireOffset: wireOffset,
+      debugOverlay: DebugOverlayData(debugInfo: eval.debugInfo),
+    );
+  }
 }

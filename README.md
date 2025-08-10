@@ -24,7 +24,8 @@
 
 ---
 
-# 1. Business Requirements Document (BRD)
+<details>
+<summary>1. Business Requirements Document (BRD)</summary>
 
 **Purpose**
 The MVP of *Circuit Kids* teaches basic electric-circuit concepts through 5 puzzle types. It should deliver delightful “light bulb” moments, be kid-friendly (touch targets and visuals), and present a solid, testable pure-Dart logic engine that enables future level and feature expansion.
@@ -49,9 +50,10 @@ The MVP of *Circuit Kids* teaches basic electric-circuit concepts through 5 puzz
 *In scope*: 5 level types, drag/drop & rotate pieces, switch toggles, short detection, animations (bulb glow, wire flow), sounds & basic haptics, level JSON files, iOS & Android (tablet-optimized).
 *Out of scope*: In-app multiplayer, level editor, advanced timing sequencers, video tutorials.
 
----
+</details>
 
-# 2. Functional Requirements Documents (FRDs) — MVP Levels
+<details>
+<summary>2. Functional Requirements Documents (FRDs) — MVP Levels</summary>
 
 > Each level FRD lists purpose, flow, functional requirements, assets, and edge cases.
 
@@ -124,9 +126,10 @@ The MVP of *Circuit Kids* teaches basic electric-circuit concepts through 5 puzz
 
 **Assets:** irregular wire sprites (L, T, long segments), rotation UI.
 
----
+</details>
 
-# 3. Technical Requirements Document (TRD) — Minimal Flame (Mostly Pure Dart + Flutter)
+<details>
+<summary>3. Technical Requirements Document (TRD) — Minimal Flame (Mostly Pure Dart + Flutter)</summary>
 
 ## 3.1 High-level design principles
 
@@ -209,11 +212,13 @@ pubspec.yaml
 *   **lib/widgets/draggable_preview.dart:** UI preview for dragging.
 *   **lib/flame_integration/**: Optional Flame utilities.
 
+</details>
+
 ---
 
-# 4. Architecture Diagrams (ASCII — paste into .md)
+## 4. Architecture Diagrams
 
-## 4.1 System overview (components & layers)
+### 4.1 System overview (components & layers)
 
 ```
 +--------------------+        +---------------------+        +-------------------+
@@ -227,7 +232,7 @@ pubspec.yaml
   (flame_integration/*)  <-- optional asset preloader / particles / audio
 ```
 
-## 4.2 Sequence diagram: user action -> visual update
+### 4.2 Sequence diagram: user action -> visual update
 
 ```
 User taps/drags
@@ -251,7 +256,7 @@ CanvasPainter reads RenderState -> paints grid/wires/bulbs; AnimationScheduler d
 If eval.isShort -> UI overlay shows warning + FlameParticles optionally
 ```
 
-## 4.3 Data model (simplified)
+### 4.3 Data model (simplified)
 
 ```
 Grid
@@ -267,9 +272,9 @@ Grid
 
 ---
 
-# 5. Core Logic & Algorithms
+## 5. Core Logic & Algorithms
 
-## 5.1 Terminal mapping
+### 5.1 Terminal mapping
 
 *   Each component type defines terminal positions relative to cell and rotation.
     Example (component terminals by rotation):
@@ -281,11 +286,11 @@ Grid
 
 Store terminals as `Terminal { id, componentId, cellR, cellC, direction }`.
 
-## 5.2 Graph building
+### 5.2 Graph building
 
 *   Terminals in adjacent cells and matching facing directions are connected. Build adjacency map `Map<TerminalId, Set<TerminalId>>`.
 
-## 5.3 BFS evaluation
+### 5.3 BFS evaluation
 
 *   Start BFS from battery positive terminals, traverse adjacency, mark visited components.
 *   `EvaluationResult` includes:
@@ -295,15 +300,15 @@ Store terminals as `Terminal { id, componentId, cellR, cellC, direction }`.
     *   `List<Terminal> openEndpoints`
     *   optional `debugTrace` for overlays
 
-## 5.4 Short detection
+### 5.4 Short detection
 
 *   Check for path from any positive terminal to any negative terminal where no bulb (load) is encountered. If found -> short.
 
 ---
 
-# 6. UI Layout & Interaction Details
+## 6. UI Layout & Interaction Details
 
-## 6.1 Screen layout (tablet-first)
+### 6.1 Screen layout (tablet-first)
 
 ```
 +--------------------------------------------------------------+
@@ -322,64 +327,81 @@ Store terminals as `Terminal { id, componentId, cellR, cellC, direction }`.
 +--------------------------------------------------------------+
 ```
 
-## 6.2 Canvas & hit targets
+### 6.2 Canvas & hit targets
 
 *   Default grid: **6×6** for MVP. Allow scaling for different screen sizes but keep cell logical size ≥ 72 px for touch-friendly targets.
 *   Drag preview: semi-transparent sprite that follows finger; snapping occurs on drop to nearest cell center.
 *   Rotation: Rotate button while dragging to rotate 90° clockwise. Optionally long-press rotates.
 
-## 6.3 Visual states
+### 6.3 Visual states
 
 *   Bulb: `off`, `fade-in`, `pulse` states. Implement pulse as sinusoidal intensity between 0.9–1.2 scale.
 *   Wires: stroke + animated "flow" offset (phase shift along path). Use `shader` or path-dash animation (offset by `wireOffset` in `RenderState`).
 *   Switch: two static frames or small lever rotation; toggling updates `LogicEngine` immediately.
 
-## 6.4 HUD
+### 6.4 HUD
 
 *   Top-left back button and level title. Top-right: hint and reset. Bottom: component palette (draggable). Right overlay: optional debug (toggle).
 
 ---
 
-# 7. Technical Considerations & Implementation Notes
+## 7. Getting Started
 
-## 7.1 Assets & naming
+### Next Recommended Immediate Tasks (practical)
+
+1.  Implement `services/logic_engine.dart` and create `test/logic_engine_test.dart` with canonical cases (series, parallel, short, T-junctions). Make this green first.
+2.  Create `engine/game_engine.dart` pure-Dart orchestrator with a minimal `placeComponent()` API and produce `RenderState` snapshots.
+3.  Implement `ui/game_canvas.dart` + `ui/canvas_painter.dart` to render `RenderState` for a static level.
+4.  Wire drag-and-drop preview and snapping.
+5.  Add `animation_scheduler.dart` for bulb & wire animation values.
+6.  Optionally add `flame_integration/flame_preloader.dart` only after above is stable.
+
+---
+
+## 8. Development
+
+<details>
+<summary>Technical Considerations & Implementation Notes</summary>
+
+### 7.1 Assets & naming
 
 *   Images: PNG or SVG (pref rasterize to PNG for `Canvas.drawImage`). Naming: `battery.png`, `bulb_off.png`, `bulb_on.png`, `wire_straight.png`, `wire_corner.png`, `wire_t.png`. Use lowercase snake_case.
 *   Audio: WAV for short SFX (`place.wav`, `toggle.wav`, `success.wav`). Use `just_audio` or `audioplayers` through a small wrapper service. Provide preloading.
 *   Sizes: supply image assets at 1x, 2x, 3x for typical device pixel ratios.
 
-## 7.2 Performance
+### 7.2 Performance
 
 *   Reuse `Paint` and `Path` objects. Avoid allocations in `paint()`.
 *   Cache wire `Path`s per level and per rotation.
 *   Use `RepaintBoundary` around the GameCanvas.
 *   Preload assets before entering gameplay to avoid hitches.
 
-## 7.3 Accessibility
+### 7.3 Accessibility
 
 *   Provide `large_touch` mode (increase cell size & palette icon sizes).
 *   Text-to-speech for instructions and hints (localization-ready).
 *   Color contrast for glow & wire states.
 
-## 7.4 Animations & 150ms target
+### 7.4 Animations & 150ms target
 
 *   Logic: evaluate synchronously in pure Dart (fast for 6×6 grid).
 *   UI: `notifyListeners()` immediately after `GameEngine` updates; `Canvas` repaints same frame or next frame. Start animations (via `AnimationScheduler`) immediately on change to stay within 150ms.
 
-## 7.5 Testing
+### 7.5 Testing
 
 *   Unit tests for `LogicEngine` (edge cases: loops, multiple batteries, multiple bulbs, T-junctions).
 *   Widget tests for `GameCanvas` interactions: drag/drop, rotate, tap.
 *   Integration/device tests for performance & multi-touch.
 
----
+</details>
 
-# 8. Dev Roadmap & Sprint Plan (detailed)
+<details>
+<summary>Dev Roadmap & Sprint Plan (detailed)</summary>
 
 **Team**: 2 devs (1 Flutter UI + 1 pure-Dart logic) + 1 part-time artist/sound.
 **Duration**: 6–8 weeks (minimal Flame) — conservative.
 
-## Sprint breakdown (6–8 weeks)
+### Sprint breakdown (6–8 weeks)
 
 *   **Sprint 0 (Setup, 1 week)**: Repo, `flutter_lints`, `pubspec.yaml`, CI workflow, project docs, asset placeholders.
 *   **Sprint 1 (Logic Engine, 1.5 weeks)**:
@@ -406,11 +428,12 @@ Store terminals as `Terminal { id, componentId, cellR, cellC, direction }`.
 
     *   Device testing, bug fixes, performance tuning, prepare store builds.
 
----
+</details>
 
-# 9. Architecture & Integration Diagrams (ASCII)
+<details>
+<summary>Architecture & Integration Diagrams (ASCII)</summary>
 
-## 9.1 Component Interaction (detailed)
+### 9.1 Component Interaction (detailed)
 
 ```
 [User] -> [GameCanvas (UI)]
@@ -424,7 +447,7 @@ Store terminals as `Terminal { id, componentId, cellR, cellC, direction }`.
    Optional: flame_integration responds to RenderState to show particles/audio
 ```
 
-## 9.2 File boundaries (who may import Flame)
+### 9.2 File boundaries (who may import Flame)
 
 ```
 ALLOWED: lib/flame_integration/*   (may import Flame)
@@ -432,9 +455,10 @@ NOT-ALLOWED: lib/services/*, lib/engine/*  (must NOT import Flame)
 UI: lib/ui/* can optionally call flame_integration for preloader at startup
 ```
 
----
+</details>
 
-# 10. Risks & Mitigations (updated for minimal-Flame)
+<details>
+<summary>Risks & Mitigations (updated for minimal-Flame)</summary>
 
 |                                    Risk | Impact | Mitigation                                                                                                     |
 | --------------------------------------: | :----: | :------------------------------------------------------------------------------------------------------------- |
@@ -444,9 +468,10 @@ UI: lib/ui/* can optionally call flame_integration for preloader at startup
 |        Optional Flame dependency misuse |   Low  | Strict file policy: only `lib/flame_integration` uses Flame; CI checks to enforce.                             |
 |  Overrun of dev timeline due to visuals | Medium | Start with minimal visuals (simple vector look) then polish VFX in later sprints.                              |
 
----
+</details>
 
-# 11. Testing, CI, and QA
+<details>
+<summary>Testing, CI, and QA</summary>
 
 **Unit tests**
 
@@ -470,9 +495,11 @@ UI: lib/ui/* can optionally call flame_integration for preloader at startup
 
 *   Debug overlay: draw terminals, adjacency edges and BFS traversal order. Toggle via dev menu.
 
+</details>
+
 ---
 
-# 12. Delivery Checklist
+## 9. Delivery Checklist
 
 *   [ ] Repo with `README.md` explaining architecture & optional Flame usage.
 *   [ ] `pubspec.yaml` with minimal, pinned dependencies.
@@ -488,9 +515,10 @@ UI: lib/ui/* can optionally call flame_integration for preloader at startup
 
 ---
 
-# 13. Appendix — Useful Snippets & Schemas (copyable)
+## 10. Appendix — Useful Snippets & Schemas (copyable)
 
-## 13.1 Level JSON schema (short)
+<details>
+<summary>13.1 Level JSON schema (short)</summary>
 
 ```json
 {
@@ -522,7 +550,10 @@ UI: lib/ui/* can optionally call flame_integration for preloader at startup
 }
 ```
 
-## 13.2 `EvaluationResult` (Dart)
+</details>
+
+<details>
+<summary>13.2 `EvaluationResult` (Dart)</summary>
 
 ```dart
 class EvaluationResult {
@@ -539,7 +570,10 @@ class EvaluationResult {
 }
 ```
 
-## 13.3 Minimal `pubspec.yaml` entries
+</details>
+
+<details>
+<summary>13.3 Minimal `pubspec.yaml` entries</summary>
 
 ```yaml
 name: circuit_kids
@@ -559,24 +593,15 @@ dev_dependencies:
   mockito: ^5.0.0
 ```
 
----
-
-# 14. Next Recommended Immediate Tasks (practical)
-
-1.  Implement `services/logic_engine.dart` and create `test/logic_engine_test.dart` with canonical cases (series, parallel, short, T-junctions). Make this green first.
-2.  Create `engine/game_engine.dart` pure-Dart orchestrator with a minimal `placeComponent()` API and produce `RenderState` snapshots.
-3.  Implement `ui/game_canvas.dart` + `ui/canvas_painter.dart` to render `RenderState` for a static level.
-4.  Wire drag-and-drop preview and snapping.
-5.  Add `animation_scheduler.dart` for bulb & wire animation values.
-6.  Optionally add `flame_integration/flame_preloader.dart` only after above is stable.
+</details>
 
 ---
 
-# 15. Advanced Logic Engine Implementation
+## 11. Advanced Logic Engine Implementation
 
 > This section describes a richer `LogicEngine` implementation that supports multi-cell components, long wires, and more complex internal connectivity.
 
-## 15.1 Models
+### 15.1 Models
 Great — I implemented the fixes and the new debug-output features you asked for. Below are three copy-paste-ready files to replace your existing ones:
 
 * `lib/models/component.dart` — richer model: per-terminal labels, per-terminal blocking hints, explicit `internalConnections`, validation helpers.
@@ -593,7 +618,8 @@ Paste these files into your project (overwrite the previous versions), run your 
 
 ---
 
-## `lib/models/component.dart`
+<details>
+<summary>`lib/models/component.dart`</summary>
 
 ```dart
 // lib/models/component.dart
@@ -752,9 +778,10 @@ class ComponentModel {
 }
 ```
 
----
+</details>
 
-## `lib/models/grid.dart`
+<details>
+<summary>`lib/models/grid.dart`</summary>
 
 ```dart
 // lib/models/grid.dart
@@ -889,9 +916,10 @@ class Grid {
 }
 ```
 
----
+</details>
 
-## `lib/services/logic_engine.dart`
+<details>
+<summary>`lib/services/logic_engine.dart`</summary>
 
 > This is the improved engine. It returns a richer `EvaluationResult` with `DebugInfo` that UI can use to draw terminals, adjacency edges, BFS order, and discovered pos→neg paths. The engine honors per-terminal blocking (via `comp.state['blockedTerminals']`) and can use `internalConnections` when present.
 
@@ -1287,9 +1315,11 @@ class _BfsState {
 }
 ```
 
+</details>
+
 ---
 
-## What I changed & why (summary)
+### What I changed & why (summary)
 
 1. **Per-terminal blocking** — switches may now list `blockedTerminals` in `component.state` to indicate which terminal indices are blocked when switch open. If absent, switch blocks all its terminals when open (backwards-compatible). This allows multi-terminal switches and partial blocking.
 
@@ -1313,7 +1343,7 @@ class _BfsState {
 
 ---
 
-## Tests & next steps (recommended)
+### Tests & next steps (recommended)
 
 * Update existing unit tests to assert `EvaluationResult.debugInfo` contains expected `terminals` and `bfsOrder`.
 * Add tests for:

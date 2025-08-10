@@ -41,6 +41,16 @@ class _GameScreenContent extends StatelessWidget {
               },
             ),
           ),
+          Positioned(
+            top: 40,
+            right: 80,
+            child: IconButton(
+              icon: const Icon(Icons.bug_report, color: Colors.white),
+              onPressed: () {
+                gameEngine.toggleDebugOverlay();
+              },
+            ),
+          ),
           if (gameEngine.isPaused)
             PauseMenu(onResume: gameEngine.resume),
           if (gameEngine.isWin)

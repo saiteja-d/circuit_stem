@@ -1,13 +1,81 @@
 {
-  "id": "lvl_01",
-  "title": "Circuit 1 - Series",
-  "rows": 3,
-  "cols": 5,
-  "initial_components": [
-    {"id":"batt_1","type":"battery","r":1,"c":0,"rotation":0},
-    {"id":"wire_1","type":"wire_straight","r":1,"c":1,"rotation":90},
-    {"id":"bulb_1","type":"bulb","r":1,"c":2,"rotation":0}
+  "id": "level_01",
+  "rows": 8,
+  "cols": 8,
+  "blockedCells": [
+    { "r": 0, "c": 3 },
+    { "r": 5, "c": 5 }
   ],
-  "goals":[ {"type":"power_bulb","r":1,"c":2} ],
-  "hints":["Connect the battery to the bulb by adding wire pieces."]
+  "components": [
+    {
+      "id": "bat1",
+      "type": "battery",
+      "position": { "r": 1, "c": 1 },
+      "rotation": 0,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 },
+        { "r": 1, "c": 0 }
+      ],
+      "terminals": [
+        { "id": "bat1_pos", "label": "+", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "bat1_neg", "label": "-", "offset": { "r": 1, "c": 0 }, "dir": "down" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "switch1",
+      "type": "circuit_switch",
+      "position": { "r": 3, "c": 4 },
+      "rotation": 270,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ],
+      "terminals": [
+        { "id": "sw1_in", "label": "in", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "sw1_out", "label": "out", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": { "switchOpen": false }
+    },
+    {
+      "id": "bulb1",
+      "type": "bulb",
+      "position": { "r": 4, "c": 2 },
+      "rotation": 0,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 },
+        { "r": 0, "c": 1 }
+      ],
+      "terminals": [
+        { "id": "bulb1_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "bulb1_b", "label": "B", "offset": { "r": 0, "c": 1 }, "dir": "right" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "timer1",
+      "type": "timer",
+      "position": { "r": 6, "c": 1 },
+      "rotation": 0,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ],
+      "terminals": [
+        { "id": "t1_in", "label": "in", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "t1_out", "label": "out", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": { "timeRemaining": 5 }
+    }
+  ],
+  "goals": [
+    { "type": "power_bulb", "targetId": "bulb1" },
+    { "type": "connect_terminals", "from": "bat1_pos", "to": "bat1_neg" },
+    { "type": "activate_component", "targetId": "timer1" }
+  ],
+  "hints": [
+    { "type": "ghost_wire", "path": [ { "r": 2, "c": 2 }, { "r": 3, "c": 2 } ] }
+  ],
+  "debugOverlay": {
+    "showPaths": true,
+    "bfsOrder": [ "bat1_pos", "wire1_a", "wire1_b", "bulb1_a", "bulb1_b" ]
+  }
 }
