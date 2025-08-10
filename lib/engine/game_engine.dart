@@ -41,26 +41,21 @@ class GameEngine extends ChangeNotifier {
   }
 
   /// Sets up the level based on the provided LevelDefinition.
-  Future<void> _setupLevel() async {
-    isWin = false;
-    _animationScheduler.reset();
-    grid = Grid(rows: levelDefinition.rows, cols: levelDefinition.cols);
+Future<void> _setupLevel() async {
+  isWin = false;
+  _animationScheduler.reset();
+  grid = Grid(rows: levelDefinition.rows, cols: levelDefinition.cols);
 
-    for (final compJson in levelDefinition.components) {
-      try {
-        // Use the ComponentFactory to create components
-        final comp = ComponentFactory.create(compJson);
-        final placed = grid.addComponent(comp);
-        if (!placed) {
-          debugPrint('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
-        }
-      } catch (e, st) {
-        debugPrint('Error creating component from json: $e\n$st');
-      }
+  for (final comp in levelDefinition.components) {
+    final placed = grid.addComponent(comp);
+    if (!placed) {
+      debugPrint('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
     }
-
-    _evaluateAndUpdateRenderState();
   }
+
+  _evaluateAndUpdateRenderState();
+}
+
 
   /// Called each frame / tick from the UI loop.
   void update({double dt = 0.0}) {
@@ -87,32 +82,37 @@ class GameEngine extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _checkWinCondition(EvaluationResult eval) {
-    if (isWin || eval.isShortCircuit) return;
+void _checkWinCondition(EvaluationResult eval) {
+  if (isWin || eval.isShortCircuit) return;
 
-    bool allGoalsMet = true;
-    for (final goal in levelDefinition.goals) {
-      final type = goal['type'];
-      if (type == 'power_bulb') {
-        final r = goal['r'] as int;
-        final c = goal['c'] as int;
-        final comps = grid.componentsAt(r, c);
-        final target = (comps.isNotEmpty) ? comps.first : null;
-        if (target == null || !eval.poweredComponentIds.contains(target.id)) {
-          allGoalsMet = false;
-          break;
-        }
-      } else {
-        // TODO: Handle other goal types or make extensible
+  bool allGoalsMet = true;
+  for (final goal in levelDefinition.goals) {
+    final type = goal.type;
+    if (type == 'power_bulb') {
+      final r = goal.r;
+      final c = goal.c;
+      if (r == null || c == null) {
+        allGoalsMet = false;
+        break;
       }
-    }
-
-    if (allGoalsMet) {
-      isWin = true;
-      _flameAdapter.playAudio('success.wav');
-      onWin?.call();
+      final comps = grid.componentsAt(r, c);
+      final target = comps.isNotEmpty ? comps.first : null;
+      if (target == null || !eval.poweredComponentIds.contains(target.id)) {
+        allGoalsMet = false;
+        break;
+      }
+    } else {
+      // TODO: handle other goal types
     }
   }
+
+  if (allGoalsMet) {
+    isWin = true;
+    _flameAdapter.playAudio('success.wav');
+    onWin?.call();
+  }
+}
+
 
   /// Toggles a switch component.
   void toggleSwitch(String componentId) {
