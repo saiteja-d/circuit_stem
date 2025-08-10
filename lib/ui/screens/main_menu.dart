@@ -32,7 +32,11 @@ class MainMenuScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(AppRoutes.levelSelect);
+                // Pass initial unlockedLevels (for example, 1)
+                Navigator.of(context).pushNamed(
+                  AppRoutes.levelSelect,
+                  arguments: 1,
+                );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),

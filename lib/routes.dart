@@ -12,17 +12,37 @@ class AppRoutes {
     switch (settings.name) {
       case mainMenu:
         return MaterialPageRoute(builder: (_) => const MainMenuScreen());
+
       case levelSelect:
-        return MaterialPageRoute(builder: (_) => const LevelSelectScreen());
+        // Expect optional argument: unlockedLevels (int)
+        final args = settings.arguments;
+        int unlockedLevels = 1;
+        if (args is int) {
+          unlockedLevels = args;
+        }
+        return MaterialPageRoute(
+          builder: (_) => LevelSelectScreen(unlockedLevels: unlockedLevels),
+        );
+
       case gameScreen:
-        final levelId = settings.arguments as String;
-        return MaterialPageRoute(builder: (_) => GameScreen(levelId: levelId));
+        final levelId = settings.arguments;
+        if (levelId is String) {
+          return MaterialPageRoute(builder: (_) => GameScreen(levelId: levelId));
+        }
+        // If levelId missing or wrong type, show error page
+        return MaterialPageRoute(builder: (_) => _errorRoute('Missing or invalid levelId'));
+
       default:
-        return MaterialPageRoute(builder: (_) => Scaffold( // Removed const
-          appBar: AppBar(title: const Text('Error')),
-          body: const Center(child: Text('Error: Unknown route')),
-        ));
+        return _errorRoute('Unknown route: ${settings.name}');
     }
   }
-}
 
+  static MaterialPageRoute _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(child: Text(message)),
+      ),
+    );
+  }
+}

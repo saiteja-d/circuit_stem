@@ -1,4 +1,5 @@
 // lib/models/component.dart
+import 'package:flutter/foundation.dart';
 import '../services/logic_engine.dart';
 
 /// Simple integer cell offset.
@@ -50,7 +51,7 @@ class TerminalSpec {
     }
 
     if (cellIndex == -1) {
-      throw Exception('TerminalSpec.fromJson: could not determine cellIndex');
+      throw Exception('TerminalSpec.fromJson: could not determine cellIndex from offset or cellIndex');
     }
 
     return TerminalSpec(
@@ -146,6 +147,22 @@ class ComponentModel {
         internalConnections = internalConnections ?? const [];
 
   factory ComponentModel.fromJson(Map<String, dynamic> json) {
+    final shapeOffsets = (json['shapeOffsets'] as List<dynamic>?)
+            ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [CellOffset(0, 0)];
+
+    final terminalsJson = (json['terminals'] as List<dynamic>?);
+
+    final terminals = terminalsJson != null
+        ? terminalsJson
+            .map((e) => TerminalSpec.fromJson(e as Map<String, dynamic>, shapeOffsets: shapeOffsets))
+            .toList()
+        : const [
+            TerminalSpec(cellIndex: 0, dir: Dir.north, label: null),
+            TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
+          ];
+
     return ComponentModel(
       id: json['id'] as String,
       type: _componentTypeFromString(json['type'] as String),
@@ -153,17 +170,8 @@ class ComponentModel {
       c: json['c'] as int,
       rotation: json['rotation'] as int? ?? 0,
       state: (json['state'] as Map<String, dynamic>?) ?? {},
-      shapeOffsets: (json['shapeOffsets'] as List<dynamic>?)
-              ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [CellOffset(0, 0)],
-      terminals: (json['terminals'] as List<dynamic>?)?
-              .map((e) => TerminalSpec.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [
-            TerminalSpec(cellIndex: 0, dir: Dir.north, label: null),
-            TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
-          ],
+      shapeOffsets: shapeOffsets,
+      terminals: terminals,
       internalConnections:
           (json['internalConnections'] as List<dynamic>?)
                   ?.map((e) =>
