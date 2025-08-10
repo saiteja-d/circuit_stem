@@ -1,0 +1,14 @@
+{
+  "levels": [
+    { "id": "level_01", "title": "Introduction", "unlocked": true },
+    { "id": "level_02", "title": "Basic Circuits", "unlocked": false },
+    { "id": "level_03", "title": "Series Connections", "unlocked": false },
+    { "id": "level_04", "title": "Parallel Circuits", "unlocked": false },
+    { "id": "level_05", "title": "Switches", "unlocked": false },
+    { "id": "level_06", "title": "Timers", "unlocked": false },
+    { "id": "level_07", "title": "Logic Gates", "unlocked": false },
+    { "id": "level_08", "title": "Complex Circuits", "unlocked": false },
+    { "id": "level_09", "title": "Advanced Components", "unlocked": false },
+    { "id": "level_10", "title": "Final Challenge", "unlocked": false }
+  ]
+}

@@ -1,0 +1,80 @@
+
+# Architecture & UI Design
+
+**Project:** Circuit STEM
+
+---
+
+This document provides visual diagrams of the system architecture, data flow, and UI layout to complement the code-level details in the TRD.
+
+## 1. System Architecture Diagram
+
+This diagram shows the high-level relationship between the primary layers of the application.
+
+```
++--------------------+        +---------------------+        +-------------------+
+|  Flutter UI Layer  | <----> |   GameEngine        | <----> |   LogicEngine     |
+|  (GameCanvas, HUD) |        |  (Stateful Notifier)|        |   (Pure Dart)     |
+|  - Renders State   |        |  - Manages Grid     |        | - BFS Evaluation  |
+|  - Handles Input   |        |  - Processes Actions|        | - Short Detection |
++--------------------+        +---------------------+        +-------------------+
+         ^                                      ^
+         |                                      |
+         | listens to                           | receives data from
+         |                                      |
++--------------------+        +---------------------+ 
+| UI Controllers     |        |   Services          |
+| (Debug, etc.)      |        |   (LevelManager)    |
++--------------------+        +---------------------+ 
+```
+
+## 2. Detailed Integration Diagram
+
+This diagram illustrates how the core components interact with each other.
+
+```
+[User] -> [GameCanvas (UI)]
+   -> calls GameEngine.handleTap() or .endDrag()
+      -> GameEngine updates Grid model
+         -> GameEngine calls LogicEngine.evaluate(grid)
+            -> returns EvaluationResult
+         <- GameEngine creates RenderState from result
+         <- GameEngine calls onEvaluate() callback for DebugOverlayController
+      <- GameEngine calls notifyListeners()
+   <- GameCanvas (via Consumer) rebuilds
+      -> CanvasPainter receives new RenderState and redraws
+```
+
+## 3. UI Layout & Interaction
+
+### Screen Layout (Tablet-First)
+
+```
++--------------------------------------------------------------+
+| [Top Bar: Back]         Level Title          [Debug] [Pause] |
++--------------------------------------------------------------+
+|                                                              |
+|   +---------------------------------------------+            |
+|   |                                             |            |
+|   |                 Game Canvas                 |            |
+|   |    (Grid and components drawn here)         |            |
+|   |                                             |            |
+|   |                                             |            |
+|   +---------------------------------------------+            |
+|                                                              |
+| [ Debug Output Area (Toggled) ]                              |
++--------------------------------------------------------------+
+```
+
+### Interaction Details
+
+*   **Grid & Snapping:** The game is played on a logical grid (e.g., 6x6). All components snap to the center of the grid cells.
+*   **Touch Targets:** The logical size of each cell is designed to be large enough (e.g., `64x64` logical pixels) to be easily tappable on mobile devices.
+*   **Drag & Drop:** Users can drag movable components. A semi-transparent preview of the component follows the user's finger. When the gesture ends, the component snaps to the nearest valid grid cell.
+*   **Tapping:** Tapping on an interactive component like a switch toggles its state instantly.
+
+### Visual States
+
+*   **Bulb:** Has distinct visual states for `off` and `on`. The `on` state includes a subtle pulsing glow driven by the `AnimationScheduler`.
+*   **Wires:** Have distinct visual states for `powered` and `unpowered`. The `powered` state includes an animated "flow" effect, also driven by the `AnimationScheduler`.
+*   **Switch:** Has two distinct visuals for its `open` and `closed` states.

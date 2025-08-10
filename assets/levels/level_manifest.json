@@ -1,0 +1,15 @@
+
+{
+  "levels": [
+    { "id": "level_01", "title": "First Spark" },
+    { "id": "level_02", "title": "The Corner" },
+    { "id": "level_03", "title": "T-Junction" },
+    { "id": "level_04", "title": "Simple Switch" },
+    { "id": "level_05", "title": "Double Trouble" },
+    { "id": "level_06", "title": "Logic Gate" },
+    { "id": "level_07", "title": "Roundabout" },
+    { "id": "level_08", "title": "Long Distance" },
+    { "id": "level_09", "title": "Crossroads" },
+    { "id": "level_10", "title": "The Final Circuit" }
+  ]
+}
