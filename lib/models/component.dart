@@ -34,7 +34,7 @@ class Component {
       type: ComponentType.values.firstWhere(
           (e) => e.toString() == 'ComponentType.${json['type'] as String}'),
       rotation: json['rotation'] as int? ?? 0,
-      state: (json['state'] as Map<String, dynamic>?) ?? {},
+      state: Map<String, dynamic>.from(json['state'] as Map? ?? {}),
       isDraggable: json['isDraggable'] as bool? ?? true,
       r: json['r'] as int? ?? 0,
       c: json['c'] as int? ?? 0,

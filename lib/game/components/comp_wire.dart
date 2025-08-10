@@ -1,11 +1,15 @@
 import 'package:flame/components.dart';
+import 'package:flame/flame.dart';
 import 'package:flutter/material.dart';
+// Import for ColorFilter
+import 'package:flutter/services.dart'; // Import for rootBundle
+// Import for ColorFilter
 import '../../models/component.dart' as model;
 import 'game_component.dart';
 
 class WireComponent extends GameComponent {
   bool hasCurrent = false;
-  late RectangleComponent wireBody;
+  late SpriteComponent wireBody;
 
   WireComponent({required model.Component componentModel})
       : super(
@@ -17,44 +21,35 @@ class WireComponent extends GameComponent {
   Future<void> onLoad() async {
     await super.onLoad();
     
-    wireBody = RectangleComponent(
-      size: size,
-      paint: Paint()..color = Colors.brown,
-    );
-    add(wireBody);
-    
-    // Add wire visual based on type
-    String wireSymbol = '─';
+    String imagePath;
     switch (componentModel.type) {
       case model.ComponentType.wireStraight:
-        wireSymbol = componentModel.rotation == 0 || componentModel.rotation == 180 ? '│' : '─';
+        imagePath = 'assets/images/wire_straight.png';
         break;
       case model.ComponentType.wireCorner:
-        wireSymbol = '└';
+        imagePath = 'assets/images/wire_corner.png';
         break;
       case model.ComponentType.wireT:
-        wireSymbol = '┬';
+        imagePath = 'assets/images/wire_t.png';
         break;
       default:
-        wireSymbol = '─';
+        imagePath = 'assets/images/wire_straight.png'; // Fallback
     }
+
+    final byteData = await rootBundle.load(imagePath);
+    final image = await Flame.images.fromByteData(imagePath, byteData);
+    wireBody = SpriteComponent.fromImage(image, size: size);
+    add(wireBody);
     
-    add(TextComponent(
-      text: wireSymbol,
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      position: Vector2(size.x / 2, size.y / 2),
-      anchor: Anchor.center,
-    ));
+    // Remove TextComponent related code
   }
 
   @override
   void updateVisuals() {
-    wireBody.paint = Paint()..color = hasCurrent ? Colors.orange : Colors.brown;
+    if (hasCurrent) {
+      wireBody.paint = Paint()..colorFilter = ColorFilter.mode(Colors.orange.withOpacity(0.5), BlendMode.srcATop);
+    } else {
+      wireBody.paint = Paint();
+    }
   }
 }

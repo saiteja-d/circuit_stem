@@ -1,10 +1,14 @@
-import 'package:flame/flame.dart'; // Changed from game.dart
-import 'package:flame_audio/flame_audio.dart';
-import 'package:flutter/foundation.dart'; // For debugPrint
+
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../engine/preloader.dart';
 
 class AssetManager {
   static final AssetManager _instance = AssetManager._internal();
-  final Map<String, dynamic> _cache = {};
+  final Map<String, ui.Image> _imageCache = {};
+  Preloader? _preloader;
 
   factory AssetManager() {
     return _instance;
@@ -12,41 +16,52 @@ class AssetManager {
 
   AssetManager._internal();
 
-  static Future<void> loadAllAssets() async {
-    await Flame.images.loadAll([
-      'battery.png',
-      'bulb_off.png',
-      'bulb_on.png',
-      'wire_straight.png',
-      'wire_corner.png',
-      'wire_t.png',
-      'switch_open.png',
-      'switch_closed.png',
-      'grid_bg_level1.png',
-    ]);
-
-    await FlameAudio.audioCache.loadAll([
-      'place.wav',
-      'toggle.wav',
-      'success.wav',
-      'short_warning.wav',
-    ]);
+  void setPreloader(Preloader preloader) {
+    _preloader = preloader;
   }
 
-  Future<dynamic> loadAsset(String path) async {
-    if (_cache.containsKey(path)) {
-      return _cache[path];
+  Future<void> loadAllAssets() async {
+    if (_preloader != null) {
+      await _preloader!.preloadAssets();
+    } else {
+      // Fallback to manual loading if no preloader is set
+      await _loadImages([
+        'images/battery.png',
+        'images/bulb_off.png',
+        'images/bulb_on.png',
+        'images/wire_straight.png',
+        'images/wire_corner.png',
+        'images/wire_t.png',
+        'images/switch_open.png',
+        'images/switch_closed.png',
+        'images/grid_bg_level1.png',
+      ]);
+    }
+  }
+
+  Future<void> _loadImages(List<String> paths) async {
+    for (final path in paths) {
+      await getImage(path);
+    }
+  }
+
+  Future<ui.Image> getImage(String path) async {
+    if (_imageCache.containsKey(path)) {
+      return _imageCache[path]!;
     }
     try {
-      // Assuming 'load' here refers to Flame.images.load for image assets.
-      // For audio, you would use FlameAudio.audioCache.load.
-      // A more robust solution would differentiate asset types.
-      final asset = await Flame.images.load(path);
-      _cache[path] = asset;
-      return asset;
+      final byteData = await rootBundle.load('assets/$path');
+      final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      _imageCache[path] = frame.image;
+      return frame.image;
     } catch (e) {
-      debugPrint('Failed to load asset: $e');
-      rethrow; // Handle error appropriately in your app
+      debugPrint('Failed to load image: $e');
+      rethrow;
     }
+  }
+
+  ui.Image? getImageFromCache(String path) {
+    return _imageCache[path];
   }
 }
