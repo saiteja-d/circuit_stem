@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/main_menu.dart';
-import 'screens/level_select.dart';
-import 'screens/game_screen.dart';
+import 'package:circuit_stem/ui/screens/main_menu.dart';
+import 'package:circuit_stem/ui/screens/level_select.dart';
+import 'package:circuit_stem/ui/game_screen.dart'; // Corrected import path
 
 class AppRoutes {
   static const String mainMenu = '/';

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flame/flame.dart';
 import 'app.dart';
 import 'common/asset_manager.dart';
-import 'flame_integration/flame_adapter.dart';
+import 'flame_integration/flame_preloader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +11,7 @@ void main() async {
   await Flame.device.setLandscape();
 
   final assetManager = AssetManager();
-  assetManager.setPreloader(FlameAdapter());
+  assetManager.setPreloader(FlamePreloader());
   await assetManager.loadAllAssets();
 
   runApp(const App());

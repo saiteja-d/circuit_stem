@@ -111,6 +111,18 @@ class LevelManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Marks the current level as complete, unlocks the next one, and saves progress.
+  Future<void> completeCurrentLevel() async {
+    if (!isLastLevel) {
+      final nextIndex = _currentIndex + 1;
+      if (nextIndex < _levels.length) {
+        _levels[nextIndex].unlocked = true;
+        await _saveUnlockedLevels();
+      }
+    }
+    notifyListeners();
+  }
+
   /// Loads the next level if available and unlocked.
   Future<void> goToNextLevel() async {
     if (isLastLevel) return;

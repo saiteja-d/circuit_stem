@@ -51,8 +51,6 @@ extension DirVec on Dir {
       case Dir.west:
         return Dir.east;
     }
-    // Defensive fallback, should never happen
-    throw Exception('Invalid Dir for opposite()');
   }
 }
 

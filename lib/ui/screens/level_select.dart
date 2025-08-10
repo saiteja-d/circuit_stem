@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../routes.dart';
+import 'package:circuit_stem/routes.dart';
 
 class LevelSelectScreen extends StatelessWidget {
   final int unlockedLevels;

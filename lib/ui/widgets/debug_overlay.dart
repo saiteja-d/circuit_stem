@@ -19,11 +19,13 @@ class DebugOverlay extends StatelessWidget {
         }
 
         final eval = controller.lastEvaluation!;
+        final debugInfo = eval.debugInfo;
         final textContent = [
-          'Powered Nodes: ${eval.poweredNodeIds.join(", ")}',
           'Powered Components: ${eval.poweredComponentIds.join(", ")}',
           'Short Circuit: ${eval.isShortCircuit}',
-          if (eval.isShortCircuit) 'Short Path: ${eval.shortCircuitPath.join(" -> ")}',
+          if (eval.isShortCircuit) 'Short Path: ${debugInfo.posToNegPaths.isNotEmpty ? debugInfo.posToNegPaths.first.join(" -> ") : "N/A"}',
+          'Powered Terminals (BFS Order): ${debugInfo.bfsOrder.join(", ")}',
+          if (debugInfo.notes.isNotEmpty) 'Notes: ${debugInfo.notes.join("; ")}',
         ].join('\n');
 
         return Positioned(

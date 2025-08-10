@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../routes.dart';
+import 'package:circuit_stem/routes.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({Key? key}) : super(key: key);
