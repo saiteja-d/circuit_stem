@@ -8,6 +8,7 @@ import '../flame_integration/flame_adapter.dart';
 import 'animation_scheduler.dart';
 import '../common/constants.dart';
 import '../common/asset_manager.dart';
+import '../common/logger.dart';
 
 /// GameEngine: pure-Dart orchestrator for game logic and state.
 ///
@@ -38,12 +39,14 @@ class GameEngine extends ChangeNotifier {
     this.onWin,
     this.onEvaluate,
   }) {
+    Logger.log('GameEngine: Initializing with level ${levelDefinition.id}');
     _flameAdapter = FlameAdapter(assetManager);
     _setupLevel();
   }
 
   /// Sets up the level based on the provided LevelDefinition.
   Future<void> _setupLevel() async {
+    Logger.log('GameEngine: Setting up level...');
     isWin = false;
     _animationScheduler.reset();
     grid = Grid(rows: levelDefinition.rows, cols: levelDefinition.cols);
@@ -51,11 +54,12 @@ class GameEngine extends ChangeNotifier {
     for (final comp in levelDefinition.components) {
       final placed = grid.addComponent(comp);
       if (!placed) {
-        debugPrint('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
+        Logger.log('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
       }
     }
 
     _evaluateAndUpdateRenderState();
+    Logger.log('GameEngine: Level setup complete.');
   }
 
   /// Called each frame / tick from the UI loop.
@@ -111,6 +115,7 @@ class GameEngine extends ChangeNotifier {
       isWin = true;
       _flameAdapter.playAudio('success.wav');
       onWin?.call();
+      Logger.log('GameEngine: Win condition met!');
     }
   }
 

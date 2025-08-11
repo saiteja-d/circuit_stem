@@ -1,6 +1,6 @@
-// lib/models/component.dart
 import 'package:flutter/foundation.dart';
 import '../services/logic_engine.dart';
+import '../common/logger.dart';
 
 /// Simple integer cell offset.
 class CellOffset {
@@ -147,6 +147,7 @@ class ComponentModel {
         internalConnections = internalConnections ?? const [];
 
   factory ComponentModel.fromJson(Map<String, dynamic> json) {
+    Logger.log('ComponentModel.fromJson: Parsing component ${json['id']}');
     final shapeOffsets = (json['shapeOffsets'] as List<dynamic>?)
             ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
             .toList() ??
@@ -163,11 +164,14 @@ class ComponentModel {
             TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
           ];
 
-    return ComponentModel(
+    final r = json.containsKey('position') ? json['position']['r'] as int : json['r'] as int;
+    final c = json.containsKey('position') ? json['position']['c'] as int : json['c'] as int;
+
+    final component = ComponentModel(
       id: json['id'] as String,
       type: _componentTypeFromString(json['type'] as String),
-      r: json['r'] as int,
-      c: json['c'] as int,
+      r: r,
+      c: c,
       rotation: json['rotation'] as int? ?? 0,
       state: (json['state'] as Map<String, dynamic>?) ?? {},
       shapeOffsets: shapeOffsets,
@@ -179,6 +183,8 @@ class ComponentModel {
                   .toList() ??
               const [],
     );
+    Logger.log('ComponentModel.fromJson: Parsed component: $component');
+    return component;
   }
 
   Map<String, dynamic> toJson() {

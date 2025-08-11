@@ -1,9 +1,9 @@
-// lib/services/level_manager.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/level_definition.dart';
+import '../common/logger.dart';
 
 /// Holds basic metadata about a level.
 class LevelMetadata {
@@ -61,6 +61,7 @@ class LevelManager extends ChangeNotifier {
 
   /// Loads the manifest file and unlocks first level by default.
   Future<void> loadManifest() async {
+    Logger.log('LevelManager: Loading manifest...');
     _isLoading = true;
     notifyListeners();
 
@@ -71,10 +72,12 @@ class LevelManager extends ChangeNotifier {
       _levels = lvlList
           .map((e) => LevelMetadata.fromJson(e as Map<String, dynamic>))
           .toList();
+      Logger.log('LevelManager: Manifest loaded with ${_levels.length} levels.');
 
       // Load unlock states from prefs
       final prefs = await SharedPreferences.getInstance();
       final unlockedIds = prefs.getStringList(_prefsKeyUnlockedLevels) ?? [];
+      Logger.log('LevelManager: Loaded unlocked levels: $unlockedIds');
 
       // Mark unlocked based on saved data, unlock first level if none unlocked
       var anyUnlocked = false;
@@ -85,12 +88,13 @@ class LevelManager extends ChangeNotifier {
       if (!anyUnlocked && _levels.isNotEmpty) {
         _levels[0].unlocked = true;
         await _saveUnlockedLevels();
+        Logger.log('LevelManager: Unlocked first level by default.');
       }
 
       _currentIndex = 0;
       await _loadCurrentLevel();
     } catch (e) {
-      debugPrint('Failed to load level manifest: $e');
+      Logger.log('Failed to load level manifest: $e');
       _levels = [];
       _currentLevelDefinition = null;
     }
@@ -103,7 +107,7 @@ class LevelManager extends ChangeNotifier {
   Future<void> loadLevelByIndex(int index) async {
     if (index < 0 || index >= _levels.length) return;
     if (!_levels[index].unlocked) {
-      debugPrint('Attempted to load locked level: ${_levels[index].id}');
+      Logger.log('Attempted to load locked level: ${_levels[index].id}');
       return;
     }
     _currentIndex = index;
@@ -118,6 +122,7 @@ class LevelManager extends ChangeNotifier {
       if (nextIndex < _levels.length) {
         _levels[nextIndex].unlocked = true;
         await _saveUnlockedLevels();
+        Logger.log('LevelManager: Unlocked level ${nextIndex + 1}.');
       }
     }
     notifyListeners();
@@ -158,6 +163,7 @@ class LevelManager extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final unlockedIds = _levels.where((lvl) => lvl.unlocked).map((lvl) => lvl.id).toList();
     await prefs.setStringList(_prefsKeyUnlockedLevels, unlockedIds);
+    Logger.log('LevelManager: Saved unlocked levels: $unlockedIds');
   }
 
   Future<void> _loadCurrentLevel() async {
@@ -166,11 +172,13 @@ class LevelManager extends ChangeNotifier {
 
     try {
       final path = 'assets/levels/${_levels[_currentIndex].id}.json';
+      Logger.log('LevelManager: Loading level from $path');
       final jsonString = await rootBundle.loadString(path);
       final jsonMap = json.decode(jsonString);
       _currentLevelDefinition = LevelDefinition.fromJson(jsonMap);
+      Logger.log('LevelManager: Level loaded successfully.');
     } catch (e) {
-      debugPrint('Error loading level: $e');
+      Logger.log('Error loading level: $e');
       _currentLevelDefinition = null;
     }
 
