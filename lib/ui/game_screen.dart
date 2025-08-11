@@ -9,6 +9,7 @@ import '../ui/widgets/debug_overlay.dart';
 import 'screens/win_screen.dart';
 import 'widgets/pause_menu.dart';
 import 'game_canvas.dart';
+import '../common/asset_manager.dart';
 
 class GameScreen extends StatelessWidget {
   final String levelId; // The initial level to load.
@@ -41,6 +42,7 @@ class GameScreen extends StatelessWidget {
           return ChangeNotifierProvider(
             create: (ctx) => GameEngine(
               levelDefinition: levelManager.currentLevelDefinition!,
+              assetManager: AssetManager(),
               onWin: () {
                 // When the level is won, notify the LevelManager.
                 levelManager.completeCurrentLevel();

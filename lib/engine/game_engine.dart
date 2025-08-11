@@ -7,6 +7,7 @@ import 'render_state.dart';
 import '../flame_integration/flame_adapter.dart';
 import 'animation_scheduler.dart';
 import '../common/constants.dart';
+import '../common/asset_manager.dart';
 
 /// GameEngine: pure-Dart orchestrator for game logic and state.
 ///
@@ -15,6 +16,7 @@ class GameEngine extends ChangeNotifier {
   final LevelDefinition levelDefinition;
   final VoidCallback? onWin;
   final Function(EvaluationResult)? onEvaluate;
+  final AssetManager assetManager;
 
   late Grid grid;
   final LogicEngine logicEngine = LogicEngine();
@@ -27,14 +29,16 @@ class GameEngine extends ChangeNotifier {
   String? _draggedComponentId;
   Offset? _dragPosition;
 
-  final FlameAdapter _flameAdapter = FlameAdapter();
+  late final FlameAdapter _flameAdapter;
   final AnimationScheduler _animationScheduler = AnimationScheduler();
 
   GameEngine({
     required this.levelDefinition,
+    required this.assetManager,
     this.onWin,
     this.onEvaluate,
   }) {
+    _flameAdapter = FlameAdapter(assetManager);
     _setupLevel();
   }
 

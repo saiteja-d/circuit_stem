@@ -1,17 +1,14 @@
 import 'package:flame_audio/flame_audio.dart';
+import '../common/asset_manager.dart';
 import 'flame_preloader.dart';
 
 class FlameAdapter {
-  static final FlameAdapter _instance = FlameAdapter._internal();
+  final AssetManager _assetManager;
 
-  factory FlameAdapter() {
-    return _instance;
-  }
-
-  FlameAdapter._internal();
+  FlameAdapter(this._assetManager);
 
   Future<void> preloadAssets() {
-    final preloader = FlamePreloader();
+    final preloader = FlamePreloader(_assetManager);
     return preloader.preloadAssets();
   }
 

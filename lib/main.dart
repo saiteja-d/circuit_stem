@@ -11,7 +11,7 @@ void main() async {
   await Flame.device.setLandscape();
 
   final assetManager = AssetManager();
-  assetManager.setPreloader(FlamePreloader());
+  assetManager.setPreloader(FlamePreloader(assetManager));
   await assetManager.loadAllAssets();
 
   runApp(const App());

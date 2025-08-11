@@ -340,7 +340,7 @@ class AssetManager {
     final strokePaint = Paint()
       ..color = Colors.grey.shade600
       ..strokeWidth = 2;
-    canvas.drawLine(Offset(10, 10), Offset(width - 10.0, height - 10.0), strokePaint);
+    canvas.drawLine(const Offset(10, 10), Offset(width - 10.0, height - 10.0), strokePaint);
     canvas.drawLine(Offset(width - 10.0, 10), Offset(10, height - 10.0), strokePaint);
     
     final picture = recorder.endRecording();
