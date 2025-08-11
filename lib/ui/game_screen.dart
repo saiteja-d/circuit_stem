@@ -19,50 +19,46 @@ class GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Logger.log('GameScreen: Building with levelId: $levelId');
-    return MultiProvider(
-      providers: [
-        // The LevelManager now starts loading its manifest upon creation.
-        ChangeNotifierProvider(create: (_) => LevelManager()),
-        ChangeNotifierProvider(create: (_) => DebugOverlayController()),
-      ],
-      child: Consumer<LevelManager>(
-        builder: (context, levelManager, child) {
-          // Show a loading indicator while the manifest is being loaded.
-          if (levelManager.isLoading || levelManager.currentLevelDefinition == null) {
-            Logger.log('GameScreen: LevelManager is loading or has no level definition.');
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          // Once loaded, find the correct starting index.
-          final initialIndex = levelManager.levels.indexWhere((l) => l.id == levelId);
-          if (levelManager.currentLevelId != levelId) {
-            Logger.log('GameScreen: Loading level by index: $initialIndex');
-            levelManager.loadLevelByIndex(initialIndex >= 0 ? initialIndex : 0);
-          }
-
-          // Provide the GameEngine, which is dependent on the LevelManager's data.
-          return ChangeNotifierProvider(
-            create: (ctx) {
-              Logger.log('GameScreen: Creating GameEngine for level ${levelManager.currentLevelDefinition!.id}');
-              return GameEngine(
-                levelDefinition: levelManager.currentLevelDefinition!,
-                assetManager: AssetManager(),
-                onWin: () {
-                  // When the level is won, notify the LevelManager.
-                  levelManager.completeCurrentLevel();
-                },
-                onEvaluate: (evalResult) {
-                  Provider.of<DebugOverlayController>(ctx, listen: false)
-                      .updateEvaluation(evalResult);
-                },
-              );
-            },
-            child: const _GameScreenContent(),
+    return Consumer<LevelManager>(
+      builder: (context, levelManager, child) {
+        Logger.log('GameScreen: Consumer<LevelManager> builder called.');
+        Logger.log('GameScreen: levelManager.isLoading: ${levelManager.isLoading}');
+        Logger.log('GameScreen: levelManager.currentLevelDefinition: ${levelManager.currentLevelDefinition}');
+        // Show a loading indicator while the manifest is being loaded.
+        if (levelManager.isLoading || levelManager.currentLevelDefinition == null) {
+          Logger.log('GameScreen: LevelManager is loading or has no level definition.');
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+
+        // Once loaded, find the correct starting index.
+        final initialIndex = levelManager.levels.indexWhere((l) => l.id == levelId);
+        if (levelManager.currentLevelId != levelId) {
+          Logger.log('GameScreen: Loading level by index: $initialIndex');
+          levelManager.loadLevelByIndex(initialIndex >= 0 ? initialIndex : 0);
+        }
+
+        // Provide the GameEngine, which is dependent on the LevelManager's data.
+        return ChangeNotifierProvider(
+          create: (ctx) {
+            Logger.log('GameScreen: Creating GameEngine for level ${levelManager.currentLevelDefinition!.id}');
+            return GameEngine(
+              levelDefinition: levelManager.currentLevelDefinition!,
+              assetManager: AssetManager(),
+              onWin: () {
+                // When the level is won, notify the LevelManager.
+                levelManager.completeCurrentLevel();
+              },
+              onEvaluate: (evalResult) {
+                Provider.of<DebugOverlayController>(ctx, listen: false)
+                    .updateEvaluation(evalResult);
+              },
+            );
+          },
+          child: const _GameScreenContent(),
+        );
+      },
     );
   }
 }

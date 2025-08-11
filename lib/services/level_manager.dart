@@ -61,13 +61,16 @@ class LevelManager extends ChangeNotifier {
 
   /// Loads the manifest file and unlocks first level by default.
   Future<void> loadManifest() async {
-    Logger.log('LevelManager: Loading manifest...');
+    Logger.log('LevelManager: loadManifest() started.');
     _isLoading = true;
     notifyListeners();
 
     try {
+      Logger.log('LevelManager: Loading manifest from assets...');
       final jsonString = await rootBundle.loadString('assets/levels/manifest.json');
+      Logger.log('LevelManager: Manifest string loaded.');
       final jsonMap = json.decode(jsonString) as Map<String, dynamic>;
+      Logger.log('LevelManager: Manifest JSON decoded.');
       final lvlList = jsonMap['levels'] as List<dynamic>;
       _levels = lvlList
           .map((e) => LevelMetadata.fromJson(e as Map<String, dynamic>))
@@ -75,6 +78,7 @@ class LevelManager extends ChangeNotifier {
       Logger.log('LevelManager: Manifest loaded with ${_levels.length} levels.');
 
       // Load unlock states from prefs
+      Logger.log('LevelManager: Loading unlocked levels from SharedPreferences...');
       final prefs = await SharedPreferences.getInstance();
       final unlockedIds = prefs.getStringList(_prefsKeyUnlockedLevels) ?? [];
       Logger.log('LevelManager: Loaded unlocked levels: $unlockedIds');
@@ -92,7 +96,9 @@ class LevelManager extends ChangeNotifier {
       }
 
       _currentIndex = 0;
+      Logger.log('LevelManager: Loading current level...');
       await _loadCurrentLevel();
+      Logger.log('LevelManager: Current level loaded.');
     } catch (e) {
       Logger.log('Failed to load level manifest: $e');
       _levels = [];
@@ -185,4 +191,4 @@ class LevelManager extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
-}
+  }

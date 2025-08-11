@@ -9,7 +9,10 @@ class CellOffset {
   const CellOffset(this.dr, this.dc);
 
   factory CellOffset.fromJson(Map<String, dynamic> json) {
-    return CellOffset(json['dr'] as int, json['dc'] as int);
+    return CellOffset(
+      (json['dr'] ?? json['r']) as int,
+      (json['dc'] ?? json['c']) as int,
+    );
   }
 
   Map<String, dynamic> toJson() => {'dr': dr, 'dc': dc};
@@ -20,7 +23,10 @@ class CellOffset {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CellOffset && runtimeType == other.runtimeType && dr == other.dr && dc == other.dc;
+      other is CellOffset &&
+          runtimeType == other.runtimeType &&
+          dr == other.dr &&
+          dc == other.dc;
 
   @override
   int get hashCode => dr.hashCode ^ dc.hashCode;
@@ -39,19 +45,23 @@ class TerminalSpec {
     this.role,
   });
 
-  factory TerminalSpec.fromJson(Map<String, dynamic> json, {List<CellOffset>? shapeOffsets}) {
+  factory TerminalSpec.fromJson(Map<String, dynamic> json,
+      {List<CellOffset>? shapeOffsets}) {
     int cellIndex = -1;
     if (json.containsKey('offset')) {
-      final offset = CellOffset.fromJson(json['offset'] as Map<String, dynamic>);
+      final offset =
+          CellOffset.fromJson(json['offset'] as Map<String, dynamic>);
       if (shapeOffsets != null) {
-        cellIndex = shapeOffsets.indexWhere((e) => e.dr == offset.dr && e.dc == offset.dc);
+        cellIndex = shapeOffsets
+            .indexWhere((e) => e.dr == offset.dr && e.dc == offset.dc);
       }
     } else if (json.containsKey('cellIndex')) {
       cellIndex = json['cellIndex'] as int;
     }
 
     if (cellIndex == -1) {
-      throw Exception('TerminalSpec.fromJson: could not determine cellIndex from offset or cellIndex');
+      throw Exception(
+          'TerminalSpec.fromJson: could not determine cellIndex from offset or cellIndex');
     }
 
     return TerminalSpec(
@@ -89,7 +99,11 @@ class TerminalSpec {
           role == other.role;
 
   @override
-  int get hashCode => cellIndex.hashCode ^ dir.hashCode ^ (label?.hashCode ?? 0) ^ (role?.hashCode ?? 0);
+  int get hashCode =>
+      cellIndex.hashCode ^
+      dir.hashCode ^
+      (label?.hashCode ?? 0) ^
+      (role?.hashCode ?? 0);
 }
 
 /// Component types used by logic engine rendering & rules.
@@ -124,8 +138,10 @@ class ComponentModel {
   int rotation; // 0, 90, 180, 270
   Map<String, dynamic> state;
   final List<CellOffset> shapeOffsets; // relative cells at rotation 0
-  final List<TerminalSpec> terminals; // terminals described relative to shapeOffsets
-  final List<List<int>> internalConnections; // explicit internal terminal index connections
+  final List<TerminalSpec>
+      terminals; // terminals described relative to shapeOffsets
+  final List<List<int>>
+      internalConnections; // explicit internal terminal index connections
 
   ComponentModel({
     required this.id,
@@ -148,6 +164,7 @@ class ComponentModel {
 
   factory ComponentModel.fromJson(Map<String, dynamic> json) {
     Logger.log('ComponentModel.fromJson: Parsing component ${json['id']}');
+    Logger.log('ComponentModel.fromJson: json: $json');
     final shapeOffsets = (json['shapeOffsets'] as List<dynamic>?)
             ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
             .toList() ??
@@ -157,15 +174,21 @@ class ComponentModel {
 
     final terminals = terminalsJson != null
         ? terminalsJson
-            .map((e) => TerminalSpec.fromJson(e as Map<String, dynamic>, shapeOffsets: shapeOffsets))
+            .map((e) => TerminalSpec.fromJson(e as Map<String, dynamic>,
+                shapeOffsets: shapeOffsets))
             .toList()
         : const [
             TerminalSpec(cellIndex: 0, dir: Dir.north, label: null),
             TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
           ];
 
-    final r = json.containsKey('position') ? json['position']['r'] as int : json['r'] as int;
-    final c = json.containsKey('position') ? json['position']['c'] as int : json['c'] as int;
+    final r = (json['position']?['r'] ?? json['r']) as int?;
+    final c = (json['position']?['c'] ?? json['c']) as int?;
+    Logger.log('ComponentModel.fromJson: r: $r, c: $c');
+
+    if (r == null || c == null) {
+      throw Exception('ComponentModel.fromJson: r or c is null');
+    }
 
     final component = ComponentModel(
       id: json['id'] as String,
@@ -176,12 +199,10 @@ class ComponentModel {
       state: (json['state'] as Map<String, dynamic>?) ?? {},
       shapeOffsets: shapeOffsets,
       terminals: terminals,
-      internalConnections:
-          (json['internalConnections'] as List<dynamic>?)
-                  ?.map((e) =>
-                      (e as List<dynamic>).map((x) => x as int).toList())
-                  .toList() ??
-              const [],
+      internalConnections: (json['internalConnections'] as List<dynamic>?)
+              ?.map((e) => (e as List<dynamic>).map((x) => x as int).toList())
+              .toList() ??
+          const [],
     );
     Logger.log('ComponentModel.fromJson: Parsed component: $component');
     return component;
@@ -262,16 +283,18 @@ class ComponentModel {
       r: r ?? this.r,
       c: c ?? this.c,
       rotation: rotation ?? this.rotation,
-      state: state != null ? Map<String, dynamic>.from(state) : Map.from(this.state),
+      state: state != null
+          ? Map<String, dynamic>.from(state)
+          : Map.from(this.state),
       shapeOffsets: List<CellOffset>.from(shapeOffsets),
       terminals: List<TerminalSpec>.from(terminals),
-      internalConnections: internalConnections
-          .map((pair) => List<int>.from(pair))
-          .toList(),
+      internalConnections:
+          internalConnections.map((pair) => List<int>.from(pair)).toList(),
     );
   }
 
-  bool get isDraggable => type != ComponentType.battery && type != ComponentType.bulb;
+  bool get isDraggable =>
+      type != ComponentType.battery && type != ComponentType.bulb;
 
   @override
   String toString() =>
