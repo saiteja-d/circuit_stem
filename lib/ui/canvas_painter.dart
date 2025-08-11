@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../common/asset_manager.dart';
 import '../common/constants.dart';
@@ -65,6 +66,7 @@ class CanvasPainter extends CustomPainter {
       final y = (comp.r + off.dr) * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
       final image = assetManager.getImageFromCache(imagePath);
+      
       if (image != null) {
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
         final dst = Rect.fromLTWH(x, y, cellSize, cellSize);
@@ -85,16 +87,8 @@ class CanvasPainter extends CustomPainter {
 
         canvas.drawImageRect(image, src, dst, paint);
       } else {
-        // fallback simple vector drawing
-        final rect = Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8);
-        canvas.drawRRect(
-            RRect.fromRectAndRadius(rect, const Radius.circular(6)),
-            Paint()..color = Colors.blueGrey.shade200);
-        if (isPowered) {
-          canvas.drawRRect(
-              RRect.fromRectAndRadius(rect, const Radius.circular(6)),
-              Paint()..color = Colors.orange.withAlpha((0.25 * 255).round()));
-        }
+        // Enhanced fallback drawing with component-specific styling
+        _drawFallbackComponent(canvas, x, y, isPowered, comp.type);
       }
     }
   }
@@ -111,41 +105,152 @@ class CanvasPainter extends CustomPainter {
       final y = anchorY + off.dr * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
       final image = assetManager.getImageFromCache(imagePath);
+      
       if (image != null) {
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
         final dst = Rect.fromLTWH(x, y, cellSize, cellSize);
-        canvas.drawImageRect(
-            image, src, dst, Paint()..color = Colors.white.withAlpha((0.75 * 255).round()));
+        
+        // Apply transparency for drag preview
+        final paint = Paint()..color = Colors.white.withAlpha((0.75 * 255).round());
+        canvas.drawImageRect(image, src, dst, paint);
       } else {
-        canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8),
-                const Radius.circular(6)),
-            Paint()..color = Colors.white.withAlpha((0.7 * 255).round()));
+        // Fallback for dragged component
+        _drawFallbackComponent(canvas, x, y, false, comp.type, isDragged: true);
       }
     }
   }
 
+  void _drawFallbackComponent(Canvas canvas, double x, double y, bool isPowered, ComponentType type, {bool isDragged = false}) {
+    final rect = Rect.fromLTWH(x + 4, y + 4, cellSize - 8, cellSize - 8);
+    
+    // Base color based on component type
+    Color baseColor;
+    switch (type) {
+      case ComponentType.battery:
+        baseColor = Colors.red.shade200;
+        break;
+      case ComponentType.bulb:
+        baseColor = isPowered ? Colors.yellow.shade300 : Colors.grey.shade300;
+        break;
+      case ComponentType.sw:
+        baseColor = Colors.blue.shade200;
+        break;
+      case ComponentType.wireStraight:
+      case ComponentType.wireCorner:
+      case ComponentType.wireT:
+      case ComponentType.wireLong:
+        baseColor = isPowered ? Colors.orange.shade300 : Colors.blueGrey.shade200;
+        break;
+      default:
+        baseColor = Colors.blueGrey.shade200;
+    }
+
+    // Apply drag transparency
+    if (isDragged) {
+      baseColor = baseColor.withAlpha((0.7 * 255).round());
+    }
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+      Paint()..color = baseColor
+    );
+
+    // Add powered overlay (except for bulbs which change base color)
+    if (isPowered && type != ComponentType.bulb && !isDragged) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+        Paint()..color = Colors.orange.withAlpha((0.25 * 255).round())
+      );
+    }
+
+    // Draw simple component indicators
+    _drawComponentIcon(canvas, rect, type, isPowered);
+  }
+
+  void _drawComponentIcon(Canvas canvas, Rect rect, ComponentType type, bool isPowered) {
+    final paint = Paint()
+      ..color = Colors.black54
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final center = rect.center;
+    final iconSize = rect.width * 0.3;
+
+    switch (type) {
+      case ComponentType.battery:
+        // Draw battery symbol
+        final batteryRect = Rect.fromCenter(center: center, width: iconSize, height: iconSize * 0.6);
+        canvas.drawRect(batteryRect, paint);
+        // Battery terminal
+        canvas.drawLine(
+          Offset(batteryRect.right, batteryRect.top + batteryRect.height * 0.3),
+          Offset(batteryRect.right, batteryRect.bottom - batteryRect.height * 0.3),
+          paint..strokeWidth = 3
+        );
+        break;
+        
+      case ComponentType.bulb:
+        // Draw light bulb circle
+        canvas.drawCircle(center, iconSize / 2, paint);
+        if (isPowered) {
+          // Draw light rays
+          for (int i = 0; i < 8; i++) {
+            final angle = (i * 45) * (3.14159 / 180);
+            final start = Offset(
+              center.dx + (iconSize / 2 + 2) * cos(angle),
+              center.dy + (iconSize / 2 + 2) * sin(angle)
+            );
+            final end = Offset(
+              center.dx + (iconSize / 2 + 6) * cos(angle),
+              center.dy + (iconSize / 2 + 6) * sin(angle)
+            );
+            canvas.drawLine(start, end, paint);
+          }
+        }
+        break;
+        
+      case ComponentType.sw:
+        // Draw switch
+        canvas.drawLine(
+          Offset(center.dx - iconSize/2, center.dy),
+          Offset(center.dx + iconSize/2, center.dy - iconSize/3),
+          paint
+        );
+        canvas.drawCircle(Offset(center.dx - iconSize/2, center.dy), 2, paint..style = PaintingStyle.fill);
+        canvas.drawCircle(Offset(center.dx + iconSize/2, center.dy), 2, paint..style = PaintingStyle.fill);
+        break;
+        
+      default:
+        // Draw simple line for wires
+        canvas.drawLine(
+          Offset(center.dx - iconSize/2, center.dy),
+          Offset(center.dx + iconSize/2, center.dy),
+          paint..strokeWidth = 3
+        );
+    }
+  }
+
   String _getImagePathForComponent(ComponentModel comp, CellOffset partOffset) {
-    // Basic mapping by ComponentType; extend to map offsets -> sub-images if needed.
+    // Updated to use SVG files
     switch (comp.type) {
       case ComponentType.battery:
-        return 'images/battery.png';
+        return 'images/battery.svg';
       case ComponentType.bulb:
         final isPowered = renderState?.evaluationResult.poweredComponentIds.contains(comp.id) ?? false;
-        return isPowered ? 'images/bulb_on.png' : 'images/bulb_off.png';
+        return isPowered ? 'images/bulb_on.svg' : 'images/bulb_off.svg';
       case ComponentType.wireStraight:
-        return 'images/wire_straight.png';
+        return 'images/wire_straight.svg';
       case ComponentType.wireCorner:
-        return 'images/wire_corner.png';
+        return 'images/wire_corner.svg';
       case ComponentType.wireT:
-        return 'images/wire_t.png';
+        return 'images/wire_t.svg';
       case ComponentType.wireLong:
-        return 'images/wire_long.png';
+        return 'images/wire_long.svg';
       case ComponentType.sw:
         final isOpen = comp.state['closed'] == true ? false : true;
-        return isOpen ? 'images/switch_open.png' : 'images/switch_closed.png';
+        return isOpen ? 'images/switch_open.svg' : 'images/switch_closed.svg';
       default:
-        return 'images/placeholder.png';
+        return 'images/placeholder.svg';
     }
   }
 
@@ -154,8 +259,6 @@ class CanvasPainter extends CustomPainter {
     final adjPaint = Paint()
       ..color = Colors.blue.withAlpha((0.5 * 255).round())
       ..strokeWidth = 2;
-    final bfsPaint = Paint()
-      ..color = Colors.green.withAlpha((0.9 * 255).round());
 
     // Draw adjacency edges
     for (final entry in debugInfo.adjacency.entries) {

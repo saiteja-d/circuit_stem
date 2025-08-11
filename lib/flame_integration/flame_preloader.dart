@@ -7,14 +7,14 @@ class FlamePreloader implements Preloader {
   @override
   Future<void> preloadAssets() async {
     await Flame.images.loadAll([
-      'battery.png',
-      'bulb_off.png',
-      'bulb_on.png',
-      'wire_straight.png',
-      'wire_corner.png',
-      'wire_t.png',
-      'switch_open.png',
-      'switch_closed.png',
+      'battery.svg',
+      'bulb_off.svg',
+      'bulb_on.svg',
+      'wire_straight.svg',
+      'wire_corner.svg',
+      'wire_t.svg',
+      'switch_open.svg',
+      'switch_closed.svg',
       'grid_bg_level1.png',
     ]);
 
