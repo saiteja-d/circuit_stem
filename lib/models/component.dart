@@ -116,6 +116,8 @@ enum ComponentType {
   wireLong,
   sw,
   timer,
+  resistor,
+  blocked,
   custom
 }
 

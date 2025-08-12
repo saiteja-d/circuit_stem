@@ -117,3 +117,130 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+.DS_Store
+.idea/.DS_Store
+android/.DS_Store
+assets/.DS_Store
+DOCS/.DS_Store
+ios/.DS_Store
+lib/.DS_Store
+linux/.DS_Store
+macos/.DS_Store
+windows/.DS_Store
+.DS_Store
+.idea/.DS_Store
+android/.DS_Store
+assets/.DS_Store
+DOCS/.DS_Store
+ios/.DS_Store
+lib/.DS_Store
+linux/.DS_Store
+macos/.DS_Store
+windows/.DS_Store
+.DS_Store
+.idea/.DS_Store
+android/.DS_Store
+assets/.DS_Store
+DOCS/.DS_Store
+ios/.DS_Store
+lib/.DS_Store
+linux/.DS_Store
+macos/.DS_Store
+windows/.DS_Store
+.DS_Store
+# DS_Store files
+.DS_Store
+.idea/.DS_Store
+android/.DS_Store
+assets/.DS_Store
+DOCS/.DS_Store
+ios/.DS_Store
+lib/.DS_Store
+linux/.DS_Store
+macos/.DS_Store
+windows/.DS_Store
+
+# IDE-specific files
+.idea/
+.vscode/
+.vscode-test/
+
+# Build and generated files
+build/
+android/app/build/
+ios/Runner.xcworkspace/
+ios/Runner.xcworkspace/xcshareddata/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/
+macos/Runner.xcworkspace/
+macos/Runner.xcworkspace/xcshareddata/
+macos/Runner.xcodeproj/project.xcworkspace/
+macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/
+
+# Platform-specific files
+android/app/src/debug/
+android/app/src/profile/
+ios/Runner/Base.lproj/
+ios/Runner/Assets.xcassets/
+macos/Runner/Base.lproj/
+macos/Runner/Assets.xcassets/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+# DS_Store files
+.DS_Store
+.idea/.DS_Store
+android/.DS_Store
+assets/.DS_Store
+DOCS/.DS_Store
+ios/.DS_Store
+lib/.DS_Store
+linux/.DS_Store
+macos/.DS_Store
+windows/.DS_Store
+
+# IDE-specific files
+.idea/
+.vscode/
+.vscode-test/
+
+# Build and generated files
+build/
+android/app/build/
+ios/Runner.xcworkspace/
+ios/Runner.xcworkspace/xcshareddata/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/
+macos/Runner.xcworkspace/
+macos/Runner.xcworkspace/xcshareddata/
+macos/Runner.xcodeproj/project.xcworkspace/
+macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/
+
+# Platform-specific files
+android/app/src/debug/
+android/app/src/profile/
+ios/Runner/Base.lproj/
+ios/Runner/Assets.xcassets/
+macos/Runner/Base.lproj/
+macos/Runner/Assets.xcassets/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo

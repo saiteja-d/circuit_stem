@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flame/flame.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'common/asset_manager.dart';
 import 'common/logger.dart';
 import 'services/level_manager.dart';
-import 'ui/controllers/debug_overlay_controller.dart';
+import 'core/providers.dart';
 
 void main() async {
   Logger.log('main() called');
@@ -24,11 +24,11 @@ void main() async {
   Logger.log('LevelManager created and manifest loaded.');
 
   runApp(
-    MultiProvider(
-      providers: [
-        Provider.value(value: assetManager),
-        ChangeNotifierProvider.value(value: levelManager),
-        ChangeNotifierProvider(create: (_) => DebugOverlayController()),
+    ProviderScope(
+      overrides: [
+        assetManagerProvider.overrideWithValue(assetManager),
+        levelManagerProvider.overrideWithValue(levelManager),
+        debugOverlayControllerProvider.overrideWithValue(DebugOverlayController()),
       ],
       child: const App(),
     ),

@@ -7,6 +7,8 @@ import 'component.dart';
 class Grid {
   final int rows;
   final int cols;
+
+  bool get isEmpty => componentsById.isEmpty;
   final Map<String, ComponentModel> componentsById = {};
   final Map<String, String> occupancy = {}; // "r:c" -> componentId
 

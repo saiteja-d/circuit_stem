@@ -14,7 +14,20 @@ An engaging and educational puzzle game built with Flutter, designed to teach th
 *   **Data-Driven:** Levels are loaded from simple JSON files, making it easy to add new content.
 *   **Clean Architecture:** Built with a modular, service-oriented architecture for maintainability and scalability.
 
-## 🚀 Getting Started
+## � Changelog
+
+### 2025-08-12
+
+#### Code Structure and Organization
+- **Removed**: Legacy MVP reference files to resolve analyzer conflicts
+- **Fixed**: `LevelManager` class structure and organization
+  - Removed duplicate class definitions
+  - Fixed field declarations and access modifiers
+  - Streamlined provider implementations
+  - Added proper imports for Riverpod and SharedPreferences
+- **Optimized**: Removed unused fields and improved code organization
+
+## �🚀 Getting Started
 
 1.  Ensure you have the Flutter SDK installed.
 2.  Clone the repository:
