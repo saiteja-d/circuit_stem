@@ -37,4 +37,4 @@ flutter test test/services/logic_engine_test.dart
 
 -   **`LogicEngine`**: This is the most critical component for testing. The goal is to maintain near 100% test coverage for its evaluation logic.
 -   **Models & Grid**: The data models and `Grid` class are tested to ensure component placement, collision detection, and validation work as expected.
--   **UI/Widgets**: Key widgets are tested to ensure they respond correctly to state changes from their providers.
+-   **UI/Widgets**: Key widgets are tested to ensure they respond correctly to state changes from their providers. Note: The recent UI/UX overhaul has introduced several new widgets and significantly modified existing ones. Comprehensive widget tests for these new and updated UI components are crucial and should be prioritized.

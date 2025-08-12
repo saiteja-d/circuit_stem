@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart'; // For Ticker
 import 'package:provider/provider.dart';
 import '../common/constants.dart'; // For cellSize
-import '../common/asset_manager.dart';
 import '../engine/game_engine.dart';
 import '../ui/canvas_painter.dart';
 import '../ui/controllers/debug_overlay_controller.dart';
@@ -16,7 +15,6 @@ class GameCanvas extends StatefulWidget {
 
 class _GameCanvasState extends State<GameCanvas> with TickerProviderStateMixin {
   String? _draggedComponentId;
-  final AssetManager _assetManager = AssetManager();
   late final Ticker _ticker;
   Duration _lastElapsed = Duration.zero;
 
@@ -85,8 +83,8 @@ void _onTick(Duration elapsed) {
           return CustomPaint(
             painter: CanvasPainter(
               renderState: engine.renderState,
-              assetManager: _assetManager,
               showDebugOverlay: debugController.isVisible,
+              context: context, // Pass context here
             ),
             size: Size.infinite,
           );

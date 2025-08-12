@@ -11,9 +11,8 @@ This document provides a step-by-step narrative of how the application executes,
 
 1.  **`main.dart`**: Execution begins here.
     -   `WidgetsFlutterBinding.ensureInitialized()` prepares the Flutter framework.
-    -   `Flame.device` is used to set the screen to landscape mode.
-    -   An instance of `AssetManager` is created.
-    -   A `FlamePreloader` is passed to the `AssetManager`, which then calls `loadAllAssets()` to pre-load all critical images and audio into memory before the app displays anything. This prevents stutter during gameplay.
+    -   `SystemChrome.setPreferredOrientations` is used to set the screen to landscape mode.
+    -   An instance of `AssetManager` is created and `loadAllAssets()` is called to pre-load all critical images and audio into memory before the app displays anything. This prevents stutter during gameplay.
     -   `runApp(const App())` inflates the root widget.
 
 2.  **`app.dart`**: The `App` widget builds the `MaterialApp`.
@@ -24,10 +23,10 @@ This document provides a step-by-step narrative of how the application executes,
 
 1.  **`routes.dart`**: The initial route `/` is mapped to `MainMenuScreen`.
 
-2.  **`ui/screens/main_menu.dart`**: The user sees the main menu.
-    -   When the user taps "Start Game", `Navigator.of(context).pushNamed(AppRoutes.levelSelect)` is called.
+2.  **`ui/screens/main_menu.dart`**: The user sees the main menu, which now features a dynamic gradient background, animated logo, and slide transitions for buttons.
+    -   When the user taps "Start Playing", `Navigator.of(context).pushNamed(AppRoutes.levelSelect)` is called.
 
-3.  **`ui/screens/level_select.dart`**: The level selection grid is displayed.
+3.  **`ui/screens/level_select.dart`**: The level selection grid is displayed, featuring a dynamic `SliverAppBar` and animated `LevelCard` widgets.
     -   When the user taps on an unlocked level (e.g., Level 1), `Navigator.of(context).pushNamed(AppRoutes.gameScreen, arguments: 'level_01')` is called. The level ID is passed as an argument.
 
 ## 3. Initializing the Game Screen
@@ -36,7 +35,7 @@ This is the most critical part of the setup, where all services and controllers 
 
 1.  **`routes.dart`**: The `/game` route is mapped to the `GameScreen` widget, passing along the `levelId`.
 
-2.  **`ui/game_screen.dart`**: The `GameScreen` widget's `build` method is executed.
+2.  **`ui/game_screen.dart`**: The `GameScreen` widget's `build` method is executed. This screen now includes a dynamic "Status bar" and a `ComponentPalette`.
     -   A `MultiProvider` is created to provide services to all descendant widgets.
         -   `ChangeNotifierProvider(create: (_) => LevelManager())`: Creates the `LevelManager`. Its constructor immediately starts loading `level_manifest.json` and the user's saved progress from `shared_preferences`.
         -   `ChangeNotifierProvider(create: (_) => DebugOverlayController())`: Creates the controller for the debug UI.

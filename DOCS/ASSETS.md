@@ -32,19 +32,20 @@ Adding a new level is a two-step process:
 ## 2. How to Add New Images
 
 1.  **File Format & Location:**
-    -   Images should be in **PNG** format.
+    -   Images should be in **SVG** or **PNG** format. SVG is preferred for scalable components.
     -   Place the new image file in the `assets/images/` directory.
 
 2.  **Update Asset Manager:**
-    -   The `AssetManager` uses a preloader to load all assets at startup. You must add your new image to the preload list.
-    -   Open `lib/flame_integration/flame_preloader.dart`.
-    -   Add the relative path of your new image to the `Flame.images.loadAll()` list.
+    -   The `AssetManager` (`lib/common/asset_manager.dart`) is responsible for loading all assets at startup.
+    -   Open `lib/common/asset_manager.dart`.
+    -   Locate the `_loadImages` method (which is called by `loadAllAssets`).
+    -   Add the relative path of your new image to the list of paths passed to `_loadImages`.
 
     ```dart
-    // in flame_preloader.dart
-    await Flame.images.loadAll([
+    // in lib/common/asset_manager.dart
+    await _loadImages([
       // ... existing images
-      'my_new_image.png',
+      'images/my_new_image.svg', // or .png
     ]);
     ```
 
@@ -53,20 +54,21 @@ Adding a new level is a two-step process:
 
 ## 3. How to Add New Audio Files
 
-The process is nearly identical to adding images.
+The process is similar to adding images.
 
 1.  **File Format & Location:**
     -   Short sound effects should be in **WAV** format.
     -   Place the new audio file in the `assets/audio/` directory.
 
 2.  **Update Asset Manager:**
-    -   Open `lib/flame_integration/flame_preloader.dart`.
+    -   Open `lib/common/asset_manager.dart`.
+    -   Locate the `loadAllAssets` method.
     -   Add the filename of your new audio file to the `FlameAudio.audioCache.loadAll()` list.
 
     ```dart
-    // in flame_preloader.dart
+    // in lib/common/asset_manager.dart
     await FlameAudio.audioCache.loadAll([
       // ... existing audio files
-      'my_new_sound.wav',
+      'audio/my_new_sound.wav',
     ]);
     ```

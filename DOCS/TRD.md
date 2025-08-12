@@ -42,12 +42,11 @@ lib/
 ├── engine/             # Core stateful game logic and controllers
 ├── models/             # Plain data models for game objects
 ├── services/           # App-wide singleton services (logic, levels)
-├── ui/                 # All UI-related code
-│   ├── controllers/    # UI-specific state controllers
-│   ├── screens/        # Top-level screen widgets
-│   ├── widgets/        # Reusable UI components
-│   └── canvas_painter.dart
-└── flame_integration/  # Optional Flame engine helpers for audio/assets
+└── ui/                 # All UI-related code
+    ├── controllers/    # UI-specific state controllers
+    ├── screens/        # Top-level screen widgets
+    ├── widgets/        # Reusable UI components
+    └── canvas_painter.dart
 ```
 
 ## 5. File-by-File Breakdown

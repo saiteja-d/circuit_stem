@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -42,7 +41,7 @@ class DarkModeColors {
   static const darkError = Color(0xFFEF5350);
   static const darkOnError = Color(0xFF8B0000);
   static const darkErrorContainer = Color(0xFFB71C1C);
-  static const darkOnErrorContainer = Color(0xFFFFCDD2);
+  static const darkOnErrorContainer = Color(0xFFB71C1C);
   static const darkInversePrimary = Color(0xFF2E7D32);
   static const darkShadow = Color(0xFF000000);
   static const darkSurface = Color(0xFF121212);
@@ -56,6 +55,46 @@ class DarkModeColors {
   static const componentActive = Color(0xFFFFD54F);
   static const componentInactive = Color(0xFF757575);
   static const gridLines = Color(0xFF303030);
+}
+
+extension AppGradients on ThemeData {
+  static LinearGradient get mainMenuBackgroundGradient => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          LightModeColors.lightPrimaryContainer,
+          LightModeColors.lightSurface,
+          LightModeColors.lightSecondaryContainer,
+        ],
+      );
+
+  static LinearGradient get levelSelectBackgroundGradient => const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          LightModeColors.lightPrimaryContainer,
+          LightModeColors.lightSurface,
+        ],
+      );
+}
+
+extension CustomTextStyles on TextTheme {
+  TextStyle? get appTitle => headlineMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+      );
+
+  TextStyle? get sectionTitle => titleMedium?.copyWith(
+        fontWeight: FontWeight.bold,
+      );
+
+  TextStyle? get bodyTextSecondary => bodyMedium?.copyWith(
+        color: const Color(0xFF616161), // A neutral gray for secondary text
+        height: 1.4,
+      );
+
+  TextStyle? get bodyTextSmallSecondary => bodySmall?.copyWith(
+        color: const Color(0xFF616161), // A neutral gray for secondary text
+      );
 }
 
 class FontSizes {
@@ -106,12 +145,18 @@ ThemeData get lightTheme => ThemeData(
     style: ElevatedButton.styleFrom(
       foregroundColor: LightModeColors.lightOnPrimary,
       backgroundColor: LightModeColors.lightPrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
   ),
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
       foregroundColor: LightModeColors.lightPrimary,
-      side: const BorderSide(color: LightModeColors.lightPrimary),
+      side: const BorderSide(color: LightModeColors.lightPrimary, width: 2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
   ),
   textButtonTheme: TextButtonThemeData(
@@ -213,12 +258,18 @@ ThemeData get darkTheme => ThemeData(
     style: ElevatedButton.styleFrom(
       foregroundColor: DarkModeColors.darkOnPrimary,
       backgroundColor: DarkModeColors.darkPrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
   ),
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
       foregroundColor: DarkModeColors.darkPrimary,
-      side: const BorderSide(color: DarkModeColors.darkPrimary),
+      side: const BorderSide(color: DarkModeColors.darkPrimary, width: 2),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
   ),
   textButtonTheme: TextButtonThemeData(

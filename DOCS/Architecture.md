@@ -47,24 +47,25 @@ This diagram illustrates how the core components interact with each other.
 
 ## 3. UI Layout & Interaction
 
-### Screen Layout (Tablet-First)
+### Screen Layout
 
-```
-+--------------------------------------------------------------+
-| [Top Bar: Back]         Level Title          [Debug] [Pause] |
-+--------------------------------------------------------------+
-|                                                              |
-|   +---------------------------------------------+            |
-|   |                                             |            |
-|   |                 Game Canvas                 |            |
-|   |    (Grid and components drawn here)         |            |
-|   |                                             |            |
-|   |                                             |            |
-|   +---------------------------------------------+            |
-|                                                              |
-| [ Debug Output Area (Toggled) ]                              |
-+--------------------------------------------------------------+
-```
+The application features three primary screens, each designed for intuitive interaction and visual appeal:
+
+*   **Main Menu (`lib/ui/screens/main_menu.dart`):**
+    *   Features a dynamic `LinearGradient` background.
+    *   Includes an animated app logo and buttons with slide transitions.
+    *   Provides access to "How to Play" instructions (via a modal bottom sheet) and "About" information (via a dialog).
+
+*   **Level Selection Screen (`lib/ui/screens/level_select.dart`):**
+    *   Utilizes a `CustomScrollView` with a `SliverAppBar` for a dynamic, expanding header.
+    *   Displays levels using animated `LevelCard` widgets in a grid layout, showing lock/completion status and level details.
+    *   Includes a progress indicator to show overall level completion.
+
+*   **Game Screen (`lib/ui/game_screen.dart`):**
+    *   Features a dynamic "Status bar" at the top for immediate feedback (e.g., short circuits, level completion).
+    *   Integrates a `ComponentPalette` for easy drag-and-drop component selection.
+    *   The main game area (`GameCanvas`) renders the circuit grid and components.
+    *   Components are drawn programmatically, allowing for dynamic visual feedback (e.g., wires changing color when powered, bulbs glowing).
 
 ### Interaction Details
 

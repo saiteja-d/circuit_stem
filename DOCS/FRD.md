@@ -1,4 +1,3 @@
-
 # Functional Requirements Document (FRD)
 
 **Project:** Circuit STEM
@@ -11,7 +10,7 @@ This document outlines the functional requirements for the application, detailin
 
 *   **FR-1.1 (Grid-based Play):** The game shall be presented on a grid. All components must snap to this grid.
 *   **FR-1.2 (Component Interaction):**
-    *   Users must be able to drag and drop movable components from a palette or within the grid.
+    *   Users must be able to drag and drop movable components from a dedicated `ComponentPalette` or within the grid.
     *   Users must be able to rotate components in 90-degree increments.
     *   Users must be able to tap on interactive components (like switches) to toggle their state.
 *   **FR-1.3 (Component Placement):** The system shall prevent the placement of a component in a grid cell that is already occupied by another component.
@@ -27,7 +26,7 @@ This document outlines the functional requirements for the application, detailin
 ### 3. User Feedback
 
 *   **FR-3.1 (Visual Feedback):**
-    *   Powered wires and components must be visually distinct from unpowered ones (e.g., through color change, glowing effects, or animation).
+    *   Powered wires and components must be visually distinct from unpowered ones through programmatic drawing (e.g., color change, glowing effects, or animation).
     *   The system shall display a clear success animation or indicator when a level's goal is met.
     *   The system shall provide a distinct visual warning when a short circuit is detected.
 *   **FR-3.2 (Audio Feedback):** The system shall provide sound effects for key actions, such as placing a component, toggling a switch, and completing a level.
