@@ -4,7 +4,7 @@ import '../models/grid.dart';
 import '../models/component.dart';
 import '../services/logic_engine.dart';
 import 'render_state.dart';
-import '../flame_integration/flame_adapter.dart';
+import '../services/audio_service.dart';
 import 'animation_scheduler.dart';
 import '../common/constants.dart';
 import '../common/asset_manager.dart';
@@ -21,6 +21,7 @@ class GameEngine extends ChangeNotifier {
 
   late Grid grid;
   final LogicEngine logicEngine = LogicEngine();
+  final AudioService audioService = AudioService();
   bool isPaused = false;
   bool isWin = false;
 
@@ -30,7 +31,6 @@ class GameEngine extends ChangeNotifier {
   String? _draggedComponentId;
   Offset? _dragPosition;
 
-  late final FlameAdapter _flameAdapter;
   final AnimationScheduler _animationScheduler = AnimationScheduler();
 
   GameEngine({
@@ -40,7 +40,6 @@ class GameEngine extends ChangeNotifier {
     this.onEvaluate,
   }) {
     Logger.log('GameEngine: Initializing with level ${levelDefinition.id}');
-    _flameAdapter = FlameAdapter(assetManager);
     _setupLevel();
   }
 
@@ -113,7 +112,7 @@ class GameEngine extends ChangeNotifier {
 
     if (allGoalsMet) {
       isWin = true;
-      _flameAdapter.playAudio('success.wav');
+      audioService.play('success.wav');
       onWin?.call();
       Logger.log('GameEngine: Win condition met!');
     }
@@ -126,7 +125,7 @@ class GameEngine extends ChangeNotifier {
 
     final closed = comp.state['closed'] == true;
     comp.state['closed'] = !closed;
-    _flameAdapter.playAudio('toggle.wav');
+    audioService.play('toggle.wav');
     _evaluateAndUpdateRenderState();
   }
 
@@ -155,7 +154,7 @@ class GameEngine extends ChangeNotifier {
       final attempted = comp.copyWith(r: newRow, c: newCol);
       final success = grid.updateComponent(attempted);
       if (!success) {
-        _flameAdapter.playAudio('short_warning.wav');
+        audioService.play('short_warning.wav');
       }
     }
 

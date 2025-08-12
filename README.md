@@ -1,4 +1,3 @@
-
 # Circuit STEM
 
 ![Circuit STEM Banner](https://user-images.githubusercontent.com/1296468/269848727-e3d72b33-5783-4043-80a7-051b5133a05c.png)
@@ -54,3 +53,23 @@ This project is documented using the following standards. All documents can be f
 ---
 
 *This README was updated to reflect the new modular architecture. The previous, highly-detailed content was split into the formal documents linked above.*
+
+---
+
+## Changelog
+
+### 2025-08-11: Major Refactoring & Simplification
+
+The project underwent a significant refactoring to simplify its architecture, remove redundant code, and improve maintainability.
+
+**Key Changes:**
+
+*   **Unified Asset Management:** The `AssetManager` is now fully self-contained. The separate `FlamePreloader` class was merged into it, and the abstract `Preloader` interface was removed. This simplifies the app's startup sequence in `main.dart`.
+*   **Streamlined Services:**
+    *   The `FlameAdapter` was refactored into a dedicated `AudioService` and moved to the `lib/services` directory.
+    *   Redundant or unused services (`SoundService`, `PersistenceService`) were removed.
+*   **Code Deletion and Cleanup:**
+    *   **Models:** Deleted the deprecated `cell.dart` and the unnecessary `ComponentFactory`.
+    *   **Widgets:** Removed unused widgets `LevelCard` and `RoundedButton`.
+    *   **Placeholders:** Deleted several empty or placeholder component files.
+    *   **Directories:** Removed the `flame_integration`, `flame_components_optional` and `game/components` directories after their contents were refactored or deleted.

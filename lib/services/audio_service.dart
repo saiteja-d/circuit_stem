@@ -1,7 +1,7 @@
 import 'package:flame_audio/flame_audio.dart';
 
-class SoundService {
-  void playSound(String fileName) {
+class AudioService {
+  void play(String fileName) {
     FlameAudio.play(fileName);
   }
 }

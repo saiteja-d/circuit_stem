@@ -1,65 +1,60 @@
 import 'dart:ui' as ui;
 import 'dart:math';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../engine/preloader.dart';
 
 class AssetManager {
   static final AssetManager _instance = AssetManager._internal();
   final Map<String, ui.Image> _imageCache = {};
-  Preloader? _preloader;
 
   factory AssetManager() => _instance;
 
   AssetManager._internal();
 
-  void setPreloader(Preloader preloader) {
-    _preloader = preloader;
-  }
-
   Future<void> loadAllAssets() async {
-    if (_preloader != null) {
-      await _preloader!.preloadAssets();
-    } else {
-      await _loadAssets([
-        'images/battery.svg',
-        'images/bulb_off.svg',
-        'images/bulb_on.svg',
-        'images/wire_straight.svg',
-        'images/wire_corner.svg',
-        'images/wire_t.svg',
-        'images/switch_open.svg',
-        'images/switch_closed.svg',
-        'images/grid_bg_level1.png', // Keep PNG for background
-      ]);
-    }
+    // Load all images
+    await _loadImages([
+      'images/battery.svg',
+      'images/bulb_off.svg',
+      'images/bulb_on.svg',
+      'images/wire_straight.svg',
+      'images/wire_corner.svg',
+      'images/wire_t.svg',
+      'images/switch_open.svg',
+      'images/switch_closed.svg',
+      'images/grid_bg_level1.png',
+    ]);
+
+    // Load all audio
+    await FlameAudio.audioCache.loadAll([
+      'audio/place.wav',
+      'audio/toggle.wav',
+      'audio/success.wav',
+      'audio/short_warning.wav',
+    ]);
   }
 
-  Future<void> _loadAssets(List<String> paths) async {
+  Future<void> _loadImages(List<String> paths) async {
     for (final path in paths) {
       try {
         await getImage(path);
-        debugPrint('Successfully loaded: $path');
+        debugPrint('Successfully loaded image: $path');
       } catch (e) {
         debugPrint('Failed to load asset "$path": $e');
-        // Continue with other assets even if one fails
       }
     }
   }
 
   Future<ui.Image> getImage(String path) async {
-    // Remove 'assets/' prefix if present since rootBundle.load expects the path as-is
     final assetPath = path.startsWith('assets/') ? path : 'assets/$path';
-    
     if (_imageCache.containsKey(path)) {
       return _imageCache[path]!;
     }
 
-    // For SVG files, create custom drawn images instead of trying to parse SVG
     if (path.toLowerCase().endsWith('.svg')) {
       try {
-        final ui.Image image = await _createCustomComponentImage(path, 128, 128);
+        final image = await _createCustomComponentImage(path, 128, 128);
         _imageCache[path] = image;
         debugPrint('Successfully created custom image for: $path');
         return image;
@@ -71,7 +66,6 @@ class AssetManager {
       }
     }
 
-    // Handle regular image files (PNG, JPG, etc.)
     try {
       final byteData = await rootBundle.load(assetPath);
       final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());

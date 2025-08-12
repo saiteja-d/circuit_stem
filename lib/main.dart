@@ -4,7 +4,6 @@ import 'package:flame/flame.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'common/asset_manager.dart';
-import 'flame_integration/flame_preloader.dart';
 import 'common/logger.dart';
 import 'services/level_manager.dart';
 import 'ui/controllers/debug_overlay_controller.dart';
@@ -15,10 +14,9 @@ void main() async {
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
 
-  final assetManager = AssetManager();
-  assetManager.setPreloader(FlamePreloader(assetManager));
+  // AssetManager now handles its own preloading.
   Logger.log('Asset loading started...');
-  await assetManager.loadAllAssets();
+  await AssetManager().loadAllAssets();
   Logger.log('Asset loading finished.');
 
   Logger.log('Creating LevelManager...');
