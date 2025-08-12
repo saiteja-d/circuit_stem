@@ -12,37 +12,56 @@ import 'game_canvas.dart';
 import '../common/asset_manager.dart';
 import '../common/logger.dart';
 
-class GameScreen extends StatelessWidget {
+class GameScreen extends StatefulWidget {
   final String levelId; // The initial level to load.
   const GameScreen({Key? key, required this.levelId}) : super(key: key);
 
   @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Use addPostFrameCallback to ensure the build is complete before we load data.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final levelManager = Provider.of<LevelManager>(context, listen: false);
+      final initialIndex =
+          levelManager.levels.indexWhere((l) => l.id == widget.levelId);
+      if (levelManager.currentLevelId != widget.levelId) {
+        Logger.log(
+            'GameScreen: Loading level by index in initState: $initialIndex');
+        levelManager.loadLevelByIndex(initialIndex >= 0 ? initialIndex : 0);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Logger.log('GameScreen: Building with levelId: $levelId');
+    Logger.log('GameScreen: Building with levelId: ${widget.levelId}');
     return Consumer<LevelManager>(
       builder: (context, levelManager, child) {
         Logger.log('GameScreen: Consumer<LevelManager> builder called.');
-        Logger.log('GameScreen: levelManager.isLoading: ${levelManager.isLoading}');
-        Logger.log('GameScreen: levelManager.currentLevelDefinition: ${levelManager.currentLevelDefinition}');
+        Logger.log(
+            'GameScreen: levelManager.isLoading: ${levelManager.isLoading}');
+        Logger.log(
+            'GameScreen: levelManager.currentLevelDefinition: ${levelManager.currentLevelDefinition}');
         // Show a loading indicator while the manifest is being loaded.
-        if (levelManager.isLoading || levelManager.currentLevelDefinition == null) {
-          Logger.log('GameScreen: LevelManager is loading or has no level definition.');
+        if (levelManager.isLoading ||
+            levelManager.currentLevelDefinition == null) {
+          Logger.log(
+              'GameScreen: LevelManager is loading or has no level definition.');
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Once loaded, find the correct starting index.
-        final initialIndex = levelManager.levels.indexWhere((l) => l.id == levelId);
-        if (levelManager.currentLevelId != levelId) {
-          Logger.log('GameScreen: Loading level by index: $initialIndex');
-          levelManager.loadLevelByIndex(initialIndex >= 0 ? initialIndex : 0);
-        }
-
         // Provide the GameEngine, which is dependent on the LevelManager's data.
         return ChangeNotifierProvider(
           create: (ctx) {
-            Logger.log('GameScreen: Creating GameEngine for level ${levelManager.currentLevelDefinition!.id}');
+            Logger.log(
+                'GameScreen: Creating GameEngine for level ${levelManager.currentLevelDefinition!.id}');
             return GameEngine(
               levelDefinition: levelManager.currentLevelDefinition!,
               assetManager: AssetManager(),
@@ -62,6 +81,7 @@ class GameScreen extends StatelessWidget {
     );
   }
 }
+
 
 /// The main content of the game screen, including the canvas and UI overlays.
 class _GameScreenContent extends StatelessWidget {

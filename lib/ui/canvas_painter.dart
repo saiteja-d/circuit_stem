@@ -249,6 +249,8 @@ class CanvasPainter extends CustomPainter {
       case ComponentType.sw:
         final isOpen = comp.state['closed'] == true ? false : true;
         return isOpen ? 'images/switch_open.svg' : 'images/switch_closed.svg';
+      case ComponentType.timer:
+        return 'images/timer.svg';
       default:
         return 'images/placeholder.svg';
     }

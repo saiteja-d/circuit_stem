@@ -7,6 +7,7 @@ import 'common/asset_manager.dart';
 import 'flame_integration/flame_preloader.dart';
 import 'common/logger.dart';
 import 'services/level_manager.dart';
+import 'ui/controllers/debug_overlay_controller.dart';
 
 void main() async {
   Logger.log('main() called');
@@ -25,9 +26,14 @@ void main() async {
   await levelManager.loadManifest();
   Logger.log('LevelManager created and manifest loaded.');
 
-  runApp(ChangeNotifierProvider.value(
-    value: levelManager,
-    child: const App(),
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: levelManager),
+        ChangeNotifierProvider(create: (_) => DebugOverlayController()),
+      ],
+      child: const App(),
+    ),
+  );
   Logger.log('runApp() called');
 }
