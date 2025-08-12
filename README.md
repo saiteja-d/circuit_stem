@@ -58,25 +58,15 @@ This project is documented using the following standards. All documents can be f
 
 ## Changelog
 
-### 2025-08-11: Major Refactoring & Simplification
+### 2025-08-12: Architectural Improvements and UI/UX Refinements
 
-The project underwent a significant refactoring to simplify its architecture, remove redundant code, and improve maintainability.
+This update focuses on enhancing the game's underlying architecture, improving state management, and refining the user experience through targeted UI/UX adjustments.
 
 **Key Changes:**
 
-*   **Unified Asset Management:** The `AssetManager` is now fully self-contained. The separate `FlamePreloader` class was merged into it, and the abstract `Preloader` interface was removed. This simplifies the app's startup sequence in `main.dart`.
-*   **Streamlined Services:**
-    *   The `FlameAdapter` was refactored into a dedicated `AudioService` and moved to the `lib/services` directory.
-    *   Redundant or unused services (`SoundService`, `PersistenceService`) were removed.
-*   **Code Deletion and Cleanup:**
-    *   **Models:** Deleted the deprecated `cell.dart` and the unnecessary `ComponentFactory`.
-    *   **Widgets:** Removed unused widgets `LevelCard` and `RoundedButton`.
-    *   **Placeholders:** Deleted several empty or placeholder component files.
-    *   **Directories:** Removed the `flame_integration`, `flame_components_optional` and `game/components` directories after their contents were refactored or deleted.
-
----
-
-## Changelog
+*   **Enhanced Level Management:** Implemented a robust system for tracking completed levels, providing persistent player progress. Improved error handling for level loading operations ensures a more stable experience.
+*   **Improved Code Architecture:** Refactored `CanvasPainter` to utilize dependency injection for `AssetManager`, promoting modularity, testability, and adherence to best practices.
+*   **Streamlined UI Flow:** Optimized navigation and level loading logic. The `GameScreen` is now simplified, with `LevelManager` handling complex loading processes. The level selection screen offers clearer error feedback, and the main menu features a smoother screen transition.
 
 ### 2025-08-12: UI/UX Overhaul from `stem_cir` Reference
 
@@ -105,3 +95,24 @@ The project underwent a significant refactoring to simplify its architecture, re
     *   **Widgets:** Removed unused widgets `LevelCard` and `RoundedButton`.
     *   **Placeholders:** Deleted several empty or placeholder component files.
     *   **Directories:** Removed the `flame_integration`, `flame_components_optional` and `game/components` directories after their contents were refactored or deleted.
+
+
+    ### 2025-08-11: Major Refactoring & Simplification
+
+The project underwent a significant refactoring to simplify its architecture, remove redundant code, and improve maintainability.
+
+**Key Changes:**
+
+*   **Unified Asset Management:** The `AssetManager` is now fully self-contained. The separate `FlamePreloader` class was merged into it, and the abstract `Preloader` interface was removed. This simplifies the app's startup sequence in `main.dart`.
+*   **Streamlined Services:**
+    *   The `FlameAdapter` was refactored into a dedicated `AudioService` and moved to the `lib/services` directory.
+    *   Redundant or unused services (`SoundService`, `PersistenceService`) were removed.
+*   **Code Deletion and Cleanup:**
+    *   **Models:** Deleted the deprecated `cell.dart` and the unnecessary `ComponentFactory`.
+    *   **Widgets:** Removed unused widgets `LevelCard` and `RoundedButton`.
+    *   **Placeholders:** Deleted several empty or placeholder component files.
+    *   **Directories:** Removed the `flame_integration`, `flame_components_optional` and `game/components` directories after their contents were refactored or deleted.
+
+---
+
+## Changelog

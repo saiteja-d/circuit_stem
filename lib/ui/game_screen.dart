@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../engine/game_engine.dart';
@@ -15,7 +14,6 @@ import '../models/component.dart'; // For ComponentType
 import '../ui/widgets/component_palette.dart'; // Import ComponentPalette
 
 class GameScreen extends StatefulWidget {
-  final String levelId; // The initial level to load.
   const GameScreen({Key? key}) : super(key: key);
 
   @override
@@ -34,25 +32,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-
-    // Use addPostFrameCallback to ensure the build is complete before we load data.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final levelManager = Provider.of<LevelManager>(context, listen: false);
-      final initialIndex =
-          levelManager.levels.indexWhere((l) => l.id == widget.levelId);
-      if (levelManager.currentLevelId != widget.levelId) {
-        Logger.log(
-            'GameScreen: Loading level by index in initState: $initialIndex');
-        levelManager.loadLevelByIndex(initialIndex >= 0 ? initialIndex : 0);
-      }
-
-      // Show tutorial for Level 1 (assuming levelId 'level_01')
-      if (widget.levelId == 'level_01') {
-        setState(() {
-          _showTutorial = true;
-        });
-      }
-    });
   }
 
   @override
@@ -104,7 +83,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    Logger.log('GameScreen: Building with levelId: ${widget.levelId}');
     return Consumer<LevelManager>(
       builder: (context, levelManager, child) {
         Logger.log('GameScreen: Consumer<LevelManager> builder called.');
@@ -127,9 +105,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           create: (ctx) {
             Logger.log(
                 'GameScreen: Creating GameEngine for level ${levelManager.currentLevelDefinition!.id}');
+            final assetManager = Provider.of<AssetManager>(ctx, listen: false);
             return GameEngine(
               levelDefinition: levelManager.currentLevelDefinition!,
-              assetManager: AssetManager(),
+              assetManager: assetManager,
               onWin: () {
                 // When the level is won, notify the LevelManager.
                 levelManager.completeCurrentLevel();
@@ -144,7 +123,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           child: Consumer<GameEngine>(
             builder: (context, gameEngine, _) {
               // Show tutorial if needed
-              if (_showTutorial && widget.levelId == 'level_01') {
+              if (_showTutorial && levelManager.currentLevelDefinition!.id == 'level_01') {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _showTutorialOverlay();
                 });

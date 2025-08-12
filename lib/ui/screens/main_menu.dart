@@ -73,9 +73,24 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   }
   
   void _navigateToLevelSelection() {
-    Navigator.of(context).pushNamed(
-      AppRoutes.levelSelect,
-      arguments: 1, // Pass initial unlockedLevels (for example, 1)
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LevelSelectScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
     );
   }
 

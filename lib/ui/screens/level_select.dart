@@ -32,16 +32,30 @@ class _LevelSelectScreenState extends State<LevelSelectScreen>
   }
   
   void _navigateToLevel(String levelId) {
-    Navigator.of(context).pushNamed(
-      AppRoutes.gameScreen,
-      arguments: levelId,
+    // Set the current level in LevelManager before navigating
+    Provider.of<LevelManager>(context, listen: false).loadLevelByIndex(
+      Provider.of<LevelManager>(context, listen: false).levels.indexWhere((lvl) => lvl.id == levelId)
     );
+    Navigator.of(context).pushNamed(AppRoutes.gameScreen);
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LevelManager>(
       builder: (context, levelManager, child) {
+        if (levelManager.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: Center(
+              child: Text(
+                levelManager.errorMessage ?? 'An unknown error occurred.',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+
         final levels = levelManager.levels;
         final completedLevelsCount = levelManager.completedLevels.length;
         final totalLevels = levels.length;
