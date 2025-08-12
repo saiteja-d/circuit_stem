@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'services/asset_manager.dart';
 import 'common/logger.dart';
-import 'services/level_manager.dart' hide levelManagerProvider;
+import 'services/level_manager.dart';
 import 'core/providers.dart';
-import 'ui/widgets/debug_overlay.dart';
+import 'ui/controllers/debug_overlay_controller.dart';
 
 void main() async {
   Logger.log('main() called');
@@ -15,25 +15,26 @@ void main() async {
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
 
-  Logger.log('Asset loading started...');
+  // --- Service Initialization ---
+  Logger.log('Initializing services...');
+
+  final prefs = await SharedPreferences.getInstance();
   final assetManager = AssetManager();
   await assetManager.loadAllAssets();
-  Logger.log('Asset loading finished.');
-
-  Logger.log('Creating SharedPreferences instance...');
-  final prefs = await SharedPreferences.getInstance();
-
-  Logger.log('Creating LevelManager...');
   final levelManager = LevelManager(assetManager, prefs);
   await levelManager.loadManifest();
-  Logger.log('LevelManager created and manifest loaded.');
+  final debugController = DebugOverlayController();
+
+  Logger.log('All services initialized.');
 
   runApp(
     ProviderScope(
       overrides: [
-        assetManagerProvider.overrideWithValue(assetManager),
-        levelManagerProvider.overrideWithValue(levelManager),
-        debugOverlayControllerProvider.overrideWithValue(DebugOverlayController()),
+        // Override the providers with the initialized service instances.
+        sharedPreferencesProvider.overrideWith((ref) => prefs),
+        assetManagerProvider.overrideWith((ref) => assetManager),
+        levelManagerProvider.overrideWith((ref) => levelManager),
+        debugOverlayControllerProvider.overrideWith((ref) => debugController),
       ],
       child: const App(),
     ),

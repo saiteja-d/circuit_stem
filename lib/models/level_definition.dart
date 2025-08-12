@@ -1,7 +1,7 @@
 import 'component.dart';
 import 'goal.dart';
 import 'hint.dart';
-import 'blocked_cell.dart';
+import './position.dart';
 
 class LevelDefinition {
   final String id;
@@ -12,7 +12,7 @@ class LevelDefinition {
   final int version;
   final int rows;
   final int cols;
-  final List<BlockedCell> blockedCells;
+  final List<Position> blockedCells;
   final List<ComponentModel> components;
   final List<Goal> goals;
   final List<Hint> hints;
@@ -43,7 +43,7 @@ class LevelDefinition {
       rows: json['rows'] as int,
       cols: json['cols'] as int,
       blockedCells: (json['blockedCells'] as List<dynamic>?)
-              ?.map((e) => BlockedCell.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => Position.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       components: (json['components'] as List<dynamic>)

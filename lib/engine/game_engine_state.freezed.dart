@@ -19,7 +19,7 @@ mixin _$GameEngineState {
   Grid get grid => throw _privateConstructorUsedError;
   bool get isPaused => throw _privateConstructorUsedError;
   bool get isWin => throw _privateConstructorUsedError;
-  LevelDefinition get currentLevel => throw _privateConstructorUsedError;
+  LevelDefinition? get currentLevel => throw _privateConstructorUsedError;
   String? get draggedComponentId => throw _privateConstructorUsedError;
   Offset? get dragPosition => throw _privateConstructorUsedError;
   bool get isShortCircuit => throw _privateConstructorUsedError;
@@ -42,7 +42,7 @@ abstract class $GameEngineStateCopyWith<$Res> {
       {Grid grid,
       bool isPaused,
       bool isWin,
-      LevelDefinition currentLevel,
+      LevelDefinition? currentLevel,
       String? draggedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
@@ -67,7 +67,7 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
     Object? grid = null,
     Object? isPaused = null,
     Object? isWin = null,
-    Object? currentLevel = null,
+    Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
@@ -86,10 +86,10 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
           ? _value.isWin
           : isWin // ignore: cast_nullable_to_non_nullable
               as bool,
-      currentLevel: null == currentLevel
+      currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as LevelDefinition,
+              as LevelDefinition?,
       draggedComponentId: freezed == draggedComponentId
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
@@ -122,7 +122,7 @@ abstract class _$$GameEngineStateImplCopyWith<$Res>
       {Grid grid,
       bool isPaused,
       bool isWin,
-      LevelDefinition currentLevel,
+      LevelDefinition? currentLevel,
       String? draggedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
@@ -145,7 +145,7 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
     Object? grid = null,
     Object? isPaused = null,
     Object? isWin = null,
-    Object? currentLevel = null,
+    Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
@@ -164,10 +164,10 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
           ? _value.isWin
           : isWin // ignore: cast_nullable_to_non_nullable
               as bool,
-      currentLevel: null == currentLevel
+      currentLevel: freezed == currentLevel
           ? _value.currentLevel
           : currentLevel // ignore: cast_nullable_to_non_nullable
-              as LevelDefinition,
+              as LevelDefinition?,
       draggedComponentId: freezed == draggedComponentId
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
@@ -195,7 +195,7 @@ class _$GameEngineStateImpl implements _GameEngineState {
       {required this.grid,
       required this.isPaused,
       required this.isWin,
-      required this.currentLevel,
+      this.currentLevel,
       this.draggedComponentId,
       this.dragPosition,
       this.isShortCircuit = false,
@@ -208,7 +208,7 @@ class _$GameEngineStateImpl implements _GameEngineState {
   @override
   final bool isWin;
   @override
-  final LevelDefinition currentLevel;
+  final LevelDefinition? currentLevel;
   @override
   final String? draggedComponentId;
   @override
@@ -272,7 +272,7 @@ abstract class _GameEngineState implements GameEngineState {
       {required final Grid grid,
       required final bool isPaused,
       required final bool isWin,
-      required final LevelDefinition currentLevel,
+      final LevelDefinition? currentLevel,
       final String? draggedComponentId,
       final Offset? dragPosition,
       final bool isShortCircuit,
@@ -285,7 +285,7 @@ abstract class _GameEngineState implements GameEngineState {
   @override
   bool get isWin;
   @override
-  LevelDefinition get currentLevel;
+  LevelDefinition? get currentLevel;
   @override
   String? get draggedComponentId;
   @override

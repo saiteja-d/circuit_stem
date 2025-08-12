@@ -1,22 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/level_definition.dart';
 import '../common/logger.dart';
 import 'asset_manager.dart';
-
-// Provider for LevelManager
-
-// Define sharedPreferencesProvider for Riverpod
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
-
-final levelManagerProvider = Provider<LevelManager>((ref) {
-  final assetManager = ref.watch(assetManagerProvider);
-  final sharedPrefs = ref.watch(sharedPreferencesProvider);
-  return LevelManager(assetManager, sharedPrefs);
-});
 
 /// Holds basic metadata about a level.
 class LevelMetadata {
@@ -111,7 +99,7 @@ class LevelManager extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      final jsonString = await rootBundle.loadString('assets/levels/manifest.json');
+      final jsonString = await rootBundle.loadString('assets/levels/level_manifest.json');
       final jsonMap = json.decode(jsonString) as Map<String, dynamic>;
       final lvlList = jsonMap['levels'] as List<dynamic>;
       _levels = lvlList.map((e) => LevelMetadata.fromJson(e as Map<String, dynamic>)).toList();

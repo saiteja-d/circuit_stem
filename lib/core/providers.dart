@@ -1,54 +1,47 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../common/asset_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import '../services/asset_manager.dart';
 import '../services/level_manager.dart';
-import '../core/state/game_state.dart';
-import '../engine/render_state.dart';
-import '../engine/animation_scheduler.dart';
-import '../services/logic_engine.dart';
+import '../engine/game_engine_notifier.dart';
+import '../engine/game_engine_state.dart';
 import '../ui/controllers/debug_overlay_controller.dart';
 
-/// Global provider for AssetManager
+// This file is the single source of truth for all core providers.
+
+// 1. Foundational Service Providers
+// These are designed to be overridden in main.dart with a concrete, initialized instance.
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('SharedPreferences provider was not overridden');
+});
+
 final assetManagerProvider = Provider<AssetManager>((ref) {
-  throw UnimplementedError('Needs to be overridden with a value');
+  throw UnimplementedError('AssetManager provider was not overridden');
 });
 
-/// Global provider for LevelManager
-final levelManagerProvider = Provider<LevelManager>((ref) {
-  throw UnimplementedError('Needs to be overridden with a value');
+// 2. Dependent Service Providers
+
+final levelManagerProvider = ChangeNotifierProvider<LevelManager>((ref) {
+  throw UnimplementedError('LevelManager provider was not overridden');
 });
 
-/// Global provider for the animation scheduler
-final animationSchedulerProvider = Provider((ref) => AnimationScheduler());
-
-/// Global provider for the logic engine
-final logicEngineProvider = Provider((ref) => LogicEngine());
-
-/// Primary game state provider
-final gameStateProvider = StateNotifierProvider<GameStateNotifier, GameState>((ref) {
-  return GameStateNotifier();
+final debugOverlayControllerProvider = ChangeNotifierProvider<DebugOverlayController>((ref) {
+  throw UnimplementedError('DebugOverlayController provider was not overridden');
 });
 
-/// Debug overlay controller provider
-final debugOverlayControllerProvider = Provider<DebugOverlayController>((ref) {
-  throw UnimplementedError('Needs to be overridden with a value');
-});
+// 3. Game State Provider
 
-/// Computed render state based on game state
-final renderStateProvider = Provider<RenderState?>((ref) {
-  final gameState = ref.watch(gameStateProvider);
-  final animationScheduler = ref.watch(animationSchedulerProvider);
-  final logicEngine = ref.watch(logicEngineProvider);
+final gameEngineProvider = StateNotifierProvider<GameEngineNotifier, GameEngineState>((ref) {
+  final levelManager = ref.watch(levelManagerProvider);
+  final currentLevel = levelManager.currentLevel;
 
-  if (gameState.grid.componentsById.isEmpty) return null;
-
-  final evalResult = logicEngine.evaluate(gameState.grid);
-  
-  return RenderState.fromEvaluation(
-    grid: gameState.grid,
-    eval: evalResult,
-    bulbIntensity: animationScheduler.bulbIntensity,
-    wireOffset: animationScheduler.wireOffset,
-    draggedComponentId: gameState.draggedComponentId,
-    dragPosition: null, // Handled by gesture provider
+  // The GameEngineNotifier can be created even without a level.
+  // It will be in an idle state until a level is loaded and provided.
+  return GameEngineNotifier(
+    initialLevel: currentLevel,
+    onWin: () {
+      levelManager.markCurrentLevelComplete();
+    },
   );
 });

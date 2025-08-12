@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../engine/game_engine.dart';
+import '../core/providers.dart';
 import '../routes.dart';
-import '../services/level_manager.dart' hide levelManagerProvider;
 import '../ui/controllers/debug_overlay_controller.dart';
 import '../ui/widgets/debug_overlay.dart';
-import 'screens/win_screen.dart';
 import 'widgets/pause_menu.dart';
 import 'game_canvas.dart';
-import '../common/asset_manager.dart';
-import '../common/logger.dart';
 import '../models/component.dart';
 import '../ui/widgets/component_palette.dart';
-import '../core/providers.dart';
 import '../common/theme.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
@@ -23,66 +18,30 @@ class GameScreen extends ConsumerStatefulWidget {
 }
 
 class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStateMixin {
-  late AnimationController _celebrationController;
-  bool _showTutorial = false;
-  ComponentModel? _selectedComponent;
-
-  @override
-  void initState() {
-    super.initState();
-    _celebrationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _celebrationController.dispose();
-    super.dispose();
-  }
-
-  void _showTutorialOverlay() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Welcome to Level 1!'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Text('Here are some tips to get started:'),
-                SizedBox(height: 8),
-                Text('1. Drag components from the palette on the right'),
-                Text('2. Connect power sources to create circuits'),
-                Text('3. Light up all the bulbs to complete the level'),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Got it!'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _showTutorial = false;
-                });
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  ComponentModel? _selectedComponent; // Added to manage selected component
 
   @override
   Widget build(BuildContext context) {
     final levelManager = ref.watch(levelManagerProvider);
-    final assetManager = ref.watch(assetManagerProvider);
+    final gameEngineNotifier = ref.watch(gameEngineProvider.notifier);
+    final gameEngineState = ref.watch(gameEngineProvider);
     final debugController = ref.watch(debugOverlayControllerProvider);
-    final gameEngine = ref.watch(gameEngineProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Listen for win state to trigger celebration
+    ref.listen<bool>(gameEngineProvider.select((state) => state.isWin), (prev, next) {
+      if (next) {
+        // You can trigger animations or dialogs here, e.g., WinScreen
+      }
+    });
+
+    if (levelManager.currentLevel == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('No level selected. Please go back to the main menu.'),
+        ),
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -94,13 +53,13 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
                 Expanded(
                   flex: 3,
                   child: GameCanvas(
-                    key: ValueKey(levelManager.currentLevel.id),
+                    key: ValueKey(levelManager.currentLevel!.id),
                   ),
                 ),
                 SizedBox(
                   width: 200,
                   child: ComponentPalette(
-                    components: levelManager.currentLevel.availableComponents,
+                    availableComponents: levelManager.currentLevel!.components,
                     onComponentSelected: (component) {
                       setState(() {
                         _selectedComponent = component;
@@ -118,13 +77,13 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
               right: 16,
               child: DebugOverlay(),
             ),
-          if (gameEngine.isPaused)
+          if (gameEngineState.isPaused)
             PauseMenu(
               onResume: () {
-                gameEngine.togglePause();
+                gameEngineNotifier.setPaused(false);
               },
               onRestart: () {
-                gameEngine.resetLevel();
+                gameEngineNotifier.resetLevel(); // Use gameEngineNotifier's resetLevel
               },
               onExit: () {
                 Navigator.pushReplacementNamed(context, AppRoutes.levelSelect);

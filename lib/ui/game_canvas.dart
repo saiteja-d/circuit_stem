@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart'; // For Ticker
-import 'package:provider/provider.dart';
-import '../common/constants.dart'; // For cellSize
-import '../engine/game_engine.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../common/constants.dart';
+import '../core/providers.dart';
 import '../ui/canvas_painter.dart';
-import '../ui/controllers/debug_overlay_controller.dart';
-import '../common/asset_manager.dart';
 
-class GameCanvas extends StatefulWidget {
+class GameCanvas extends ConsumerStatefulWidget {
   const GameCanvas({Key? key}) : super(key: key);
 
   @override
-  _GameCanvasState createState() => _GameCanvasState();
+  ConsumerState<GameCanvas> createState() => _GameCanvasState();
 }
 
-class _GameCanvasState extends State<GameCanvas> with TickerProviderStateMixin {
+class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStateMixin {
   String? _draggedComponentId;
   late final Ticker _ticker;
   Duration _lastElapsed = Duration.zero;
@@ -22,17 +20,15 @@ class _GameCanvasState extends State<GameCanvas> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // Alternative: create Ticker via constructor and pass this as vsync
     _ticker = Ticker(_onTick)..start();
   }
 
-void _onTick(Duration elapsed) {
-  final gameEngine = Provider.of<GameEngine>(context, listen: false);
-  final dt = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
-  _lastElapsed = elapsed;
-  gameEngine.update(dt: dt);
-}
-
+  void _onTick(Duration elapsed) {
+    final gameEngineNotifier = ref.read(gameEngineProvider.notifier);
+    final dt = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
+    _lastElapsed = elapsed;
+    gameEngineNotifier.update(dt);
+  }
 
   @override
   void dispose() {
@@ -42,7 +38,10 @@ void _onTick(Duration elapsed) {
 
   @override
   Widget build(BuildContext context) {
-    final gameEngine = Provider.of<GameEngine>(context, listen: false);
+    final gameEngineNotifier = ref.read(gameEngineProvider.notifier);
+    final gameEngineState = ref.watch(gameEngineProvider);
+    final debugController = ref.watch(debugOverlayControllerProvider);
+    final assetManager = ref.watch(assetManagerProvider);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -50,46 +49,41 @@ void _onTick(Duration elapsed) {
         final tapPos = details.localPosition;
         final col = (tapPos.dx / cellSize).floor();
         final row = (tapPos.dy / cellSize).floor();
-        gameEngine.handleTap(row, col);
+        gameEngineNotifier.handleTap(row, col);
       },
       onPanStart: (details) {
         final startPos = details.localPosition;
         final col = (startPos.dx / cellSize).floor();
         final row = (startPos.dy / cellSize).floor();
 
-        final component = gameEngine.findComponentByPosition(row, col);
+        final component = gameEngineNotifier.findComponentByPosition(row, col);
         if (component != null && component.isDraggable) {
           setState(() {
             _draggedComponentId = component.id;
           });
-          gameEngine.startDrag(component.id);
+          gameEngineNotifier.startDragging(component.id, startPos);
         }
       },
       onPanUpdate: (details) {
         if (_draggedComponentId != null) {
-          gameEngine.updateDrag(_draggedComponentId!, details.localPosition);
+          gameEngineNotifier.updateDragPosition(details.localPosition);
         }
       },
       onPanEnd: (details) {
         if (_draggedComponentId != null) {
-          gameEngine.endDrag(_draggedComponentId!);
+          gameEngineNotifier.endDragging();
           setState(() {
             _draggedComponentId = null;
           });
         }
       },
-      child: Consumer2<GameEngine, DebugOverlayController>(
-        builder: (context, engine, debugController, _) {
-          final assetManager = Provider.of<AssetManager>(context, listen: false);
-          return CustomPaint(
-            painter: CanvasPainter(
-              renderState: engine.renderState,
-              showDebugOverlay: debugController.isVisible,
-              assetManager: assetManager,
-            ),
-            size: Size.infinite,
-          );
-        },
+      child: CustomPaint(
+        painter: CanvasPainter(
+          renderState: gameEngineState.renderState,
+          showDebugOverlay: debugController.isVisible,
+          assetManager: assetManager,
+        ),
+        size: Size.infinite,
       ),
     );
   }

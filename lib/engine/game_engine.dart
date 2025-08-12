@@ -7,7 +7,6 @@ import 'render_state.dart';
 import '../services/audio_service.dart';
 import 'animation_scheduler.dart';
 import '../common/constants.dart';
-import '../common/asset_manager.dart';
 import '../common/logger.dart';
 
 /// GameEngine: pure-Dart orchestrator for game logic and state.
@@ -17,7 +16,6 @@ class GameEngine extends ChangeNotifier {
   final LevelDefinition levelDefinition;
   final VoidCallback? onWin;
   final Function(EvaluationResult)? onEvaluate;
-  final AssetManager assetManager;
 
   late Grid grid;
   final LogicEngine logicEngine = LogicEngine();
@@ -35,7 +33,6 @@ class GameEngine extends ChangeNotifier {
 
   GameEngine({
     required this.levelDefinition,
-    required this.assetManager,
     this.onWin,
     this.onEvaluate,
   }) {
@@ -71,17 +68,6 @@ class GameEngine extends ChangeNotifier {
   void update({double dt = 0.0}) {
     if (isPaused) return;
     _evaluateAndUpdateRenderState();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _animationScheduler.addCallback((dt) {
-      if (!isPaused) {
-        _evaluateAndUpdateRenderState();
-      }
-    });
-    _animationScheduler.start();
   }
 
   void _evaluateAndUpdateRenderState() {

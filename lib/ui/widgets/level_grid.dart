@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
+import '../../services/level_manager.dart'; // Import LevelManager for LevelMetadata
 import '../screens/game_screen.dart';
 
 class LevelGrid extends ConsumerWidget {
@@ -34,7 +35,7 @@ class LevelGrid extends ConsumerWidget {
               final level = levels[index];
               return _LevelCard(
                 level: level,
-                onTap: level.unlocked ? () => _startLevel(context, level.id) : null,
+                onTap: level.unlocked ? () => _startLevel(context, ref, index) : null,
               );
             },
           ),
@@ -43,11 +44,13 @@ class LevelGrid extends ConsumerWidget {
     );
   }
 
-  void _startLevel(BuildContext context, String levelId) {
+  void _startLevel(BuildContext context, WidgetRef ref, int index) async {
+    final levelManager = ref.read(levelManagerProvider);
+    await levelManager.loadLevelByIndex(index);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GameScreen(levelId: levelId),
+        builder: (context) => const GameScreen(),
       ),
     );
   }
@@ -81,7 +84,7 @@ class _LevelCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Level ${level.id}',
+                'Level ${level.levelNumber}',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: isLocked ? Colors.grey : null,
                 ),
