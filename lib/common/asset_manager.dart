@@ -5,12 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AssetManager {
-  static final AssetManager _instance = AssetManager._internal();
   final Map<String, ui.Image> _imageCache = {};
+  late final Map<String, Function> _drawFunctions;
 
-  factory AssetManager() => _instance;
-
-  AssetManager._internal();
+  AssetManager() {
+    _drawFunctions = {
+      'battery': _drawBattery,
+      'bulb_on': (Canvas c, Size s) => _drawBulb(c, s, true),
+      'bulb_off': (Canvas c, Size s) => _drawBulb(c, s, false),
+      'wire_straight': _drawWireStraight,
+      'wire_corner': _drawWireCorner,
+      'wire_t': _drawWireT,
+      'switch_open': (Canvas c, Size s) => _drawSwitch(c, s, true),
+      'switch_closed': (Canvas c, Size s) => _drawSwitch(c, s, false),
+    };
+  }
 
   Future<void> loadAllAssets() async {
     // Load all images
@@ -91,23 +100,11 @@ class AssetManager {
       Paint()..color = Colors.transparent,
     );
 
-    // Draw component based on filename
-    if (path.contains('battery')) {
-      _drawBattery(canvas, size);
-    } else if (path.contains('bulb_on')) {
-      _drawBulb(canvas, size, true);
-    } else if (path.contains('bulb_off')) {
-      _drawBulb(canvas, size, false);
-    } else if (path.contains('wire_straight')) {
-      _drawWireStraight(canvas, size);
-    } else if (path.contains('wire_corner')) {
-      _drawWireCorner(canvas, size);
-    } else if (path.contains('wire_t')) {
-      _drawWireT(canvas, size);
-    } else if (path.contains('switch_open')) {
-      _drawSwitch(canvas, size, true);
-    } else if (path.contains('switch_closed')) {
-      _drawSwitch(canvas, size, false);
+    final key = path.split('/').last.split('.').first;
+    final drawFunction = _drawFunctions[key];
+
+    if (drawFunction != null) {
+      drawFunction(canvas, size);
     } else {
       _drawGenericComponent(canvas, size);
     }

@@ -5,6 +5,7 @@ import '../common/constants.dart'; // For cellSize
 import '../engine/game_engine.dart';
 import '../ui/canvas_painter.dart';
 import '../ui/controllers/debug_overlay_controller.dart';
+import '../common/asset_manager.dart';
 
 class GameCanvas extends StatefulWidget {
   const GameCanvas({Key? key}) : super(key: key);
@@ -31,7 +32,6 @@ void _onTick(Duration elapsed) {
   _lastElapsed = elapsed;
   gameEngine.update(dt: dt);
 }
-
 
 
   @override
@@ -80,11 +80,12 @@ void _onTick(Duration elapsed) {
       },
       child: Consumer2<GameEngine, DebugOverlayController>(
         builder: (context, engine, debugController, _) {
+          final assetManager = Provider.of<AssetManager>(context, listen: false);
           return CustomPaint(
             painter: CanvasPainter(
               renderState: engine.renderState,
               showDebugOverlay: debugController.isVisible,
-              context: context, // Pass context here
+              assetManager: assetManager,
             ),
             size: Size.infinite,
           );

@@ -83,7 +83,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: AppGradients.mainMenuBackgroundGradient,
         ),
         child: SafeArea(

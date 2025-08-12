@@ -8,13 +8,13 @@ import '../services/logic_engine.dart';
 
 class CanvasPainter extends CustomPainter {
   final RenderState? renderState;
-  final AssetManager assetManager;
   final bool showDebugOverlay;
+  final BuildContext context; // Added context
 
   CanvasPainter({
     this.renderState,
-    required this.assetManager,
     required this.showDebugOverlay,
+    required this.context, // Added context
   });
 
   @override
@@ -65,7 +65,7 @@ class CanvasPainter extends CustomPainter {
       final x = (comp.c + off.dc) * cellSize;
       final y = (comp.r + off.dr) * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
-      final image = assetManager.getImageFromCache(imagePath);
+      final image = AssetManager().getImageFromCache(imagePath); // Access AssetManager directly
       
       if (image != null) {
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
@@ -104,7 +104,7 @@ class CanvasPainter extends CustomPainter {
       final x = anchorX + off.dc * cellSize;
       final y = anchorY + off.dr * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
-      final image = assetManager.getImageFromCache(imagePath);
+      final image = AssetManager().getImageFromCache(imagePath); // Access AssetManager directly
       
       if (image != null) {
         final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
@@ -313,5 +313,5 @@ class CanvasPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CanvasPainter oldDelegate) =>
-      oldDelegate.renderState != renderState;
+      oldDelegate.renderState != renderState; // Removed assetManager from comparison
 }

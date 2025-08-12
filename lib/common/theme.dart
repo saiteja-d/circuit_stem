@@ -8,6 +8,7 @@ class LightModeColors {
   static const lightOnPrimaryContainer = Color(0xFF1B5E20);
   static const lightSecondary = Color(0xFF1976D2);
   static const lightOnSecondary = Color(0xFFFFFFFF);
+  static const lightSecondaryContainer = Color(0xFFBBDEFB); // Added
   static const lightTertiary = Color(0xFFFF6F00);
   static const lightOnTertiary = Color(0xFFFFFFFF);
   static const lightError = Color(0xFFD32F2F);
@@ -36,6 +37,7 @@ class DarkModeColors {
   static const darkOnPrimaryContainer = Color(0xFFE8F5E8);
   static const darkSecondary = Color(0xFF64B5F6);
   static const darkOnSecondary = Color(0xFF0D47A1);
+  static const darkSecondaryContainer = Color(0xFF1565C0); // Added
   static const darkTertiary = Color(0xFFFFAB40);
   static const darkOnTertiary = Color(0xFFE65100);
   static const darkError = Color(0xFFEF5350);
@@ -57,8 +59,8 @@ class DarkModeColors {
   static const gridLines = Color(0xFF303030);
 }
 
-extension AppGradients on ThemeData {
-  static LinearGradient get mainMenuBackgroundGradient => const LinearGradient(
+class AppGradients {
+  static const LinearGradient mainMenuBackgroundGradient = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
@@ -68,7 +70,7 @@ extension AppGradients on ThemeData {
         ],
       );
 
-  static LinearGradient get levelSelectBackgroundGradient => const LinearGradient(
+  static const LinearGradient levelSelectBackgroundGradient = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [

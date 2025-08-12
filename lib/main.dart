@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flame/flame.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +13,9 @@ void main() async {
   await Flame.device.fullScreen();
   await Flame.device.setLandscape();
 
-  // AssetManager now handles its own preloading.
   Logger.log('Asset loading started...');
-  await AssetManager().loadAllAssets();
+  final assetManager = AssetManager();
+  await assetManager.loadAllAssets();
   Logger.log('Asset loading finished.');
 
   Logger.log('Creating LevelManager...');
@@ -27,6 +26,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider.value(value: assetManager),
         ChangeNotifierProvider.value(value: levelManager),
         ChangeNotifierProvider(create: (_) => DebugOverlayController()),
       ],

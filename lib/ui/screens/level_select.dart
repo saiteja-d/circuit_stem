@@ -61,7 +61,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen>
                     ),
                   ),
                   background: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       gradient: AppGradients.levelSelectBackgroundGradient,
                     ),
                     child: Center(
