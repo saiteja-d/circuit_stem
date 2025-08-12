@@ -40,7 +40,13 @@ class GameEngine extends ChangeNotifier {
     this.onEvaluate,
   }) {
     Logger.log('GameEngine: Initializing with level ${levelDefinition.id}');
+    _animationScheduler.addCallback((dt) {
+      if (!isPaused) {
+        _evaluateAndUpdateRenderState();
+      }
+    });
     _setupLevel();
+    _animationScheduler.start();
   }
 
   /// Sets up the level based on the provided LevelDefinition.
@@ -64,8 +70,18 @@ class GameEngine extends ChangeNotifier {
   /// Called each frame / tick from the UI loop.
   void update({double dt = 0.0}) {
     if (isPaused) return;
-    _animationScheduler.tick(dt);
     _evaluateAndUpdateRenderState();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animationScheduler.addCallback((dt) {
+      if (!isPaused) {
+        _evaluateAndUpdateRenderState();
+      }
+    });
+    _animationScheduler.start();
   }
 
   void _evaluateAndUpdateRenderState() {

@@ -6,6 +6,8 @@ import 'blocked_cell.dart';
 class LevelDefinition {
   final String id;
   final String title;
+  final String description;
+  final int levelNumber;
   final String author;
   final int version;
   final int rows;
@@ -18,6 +20,8 @@ class LevelDefinition {
   LevelDefinition({
     required this.id,
     required this.title,
+    required this.description,
+    required this.levelNumber,
     required this.author,
     required this.version,
     required this.rows,
@@ -32,6 +36,8 @@ class LevelDefinition {
     return LevelDefinition(
       id: json['id'] as String,
       title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      levelNumber: json['levelNumber'] as int? ?? 0,
       author: json['author'] as String? ?? '',
       version: json['version'] as int? ?? 1,
       rows: json['rows'] as int,

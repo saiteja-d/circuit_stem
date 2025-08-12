@@ -4,4 +4,12 @@ class AudioService {
   void play(String fileName) {
     FlameAudio.play(fileName);
   }
+
+  void playSuccess() {
+    play('success.wav');
+  }
+
+  void playToggle() {
+    play('toggle.wav');
+  }
 }

@@ -8,12 +8,6 @@ import '../common/logger.dart';
 import 'asset_manager.dart';
 
 // Provider for LevelManager
-// Import the providers from their respective files
-// Import Riverpod and SharedPreferences
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// Import assetManagerProvider from asset_manager.dart
-import '../services/asset_manager.dart' show assetManagerProvider;
 
 // Define sharedPreferencesProvider for Riverpod
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
@@ -28,23 +22,31 @@ final levelManagerProvider = Provider<LevelManager>((ref) {
 class LevelMetadata {
   final String id;
   final String title;
+  final String description;
+  final int levelNumber;
   bool unlocked;
 
   LevelMetadata({
     required this.id,
     required this.title,
+    required this.description,
+    required this.levelNumber,
     this.unlocked = false,
   });
 
   factory LevelMetadata.fromJson(Map<String, dynamic> json) => LevelMetadata(
         id: json['id'] as String,
         title: json['title'] as String,
+        description: json['description'] as String,
+        levelNumber: json['levelNumber'] as int,
         unlocked: json['unlocked'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
+        'description': description,
+        'levelNumber': levelNumber,
         'unlocked': unlocked,
       };
 }
@@ -62,7 +64,33 @@ class LevelManager extends ChangeNotifier {
   List<String> _completedLevelIds = [];
   static const String _prefsKeyUnlockedLevels = 'unlocked_levels';
   static const String _prefsKeyCompletedLevels = 'completed_levels';
-  // Removed unused _loadedLevels field
+
+  LevelDefinition get currentLevel {
+    if (_currentLevelDefinition == null) {
+      throw StateError('Current level not loaded');
+    }
+    return _currentLevelDefinition!;
+  }
+
+  List<String> get completedLevels => List.unmodifiable(_completedLevelIds);
+
+  Future<void> markCurrentLevelComplete() async {
+    if (_currentLevelDefinition == null) return;
+    
+    final levelId = _currentLevelDefinition!.id;
+    if (!_completedLevelIds.contains(levelId)) {
+      _completedLevelIds.add(levelId);
+      await sharedPrefs.setStringList(_prefsKeyCompletedLevels, _completedLevelIds);
+      
+      // Unlock next level if available
+      if (_currentIndex < _levels.length - 1) {
+        _levels[_currentIndex + 1].unlocked = true;
+        await _saveUnlockedLevels();
+      }
+      
+      notifyListeners();
+    }
+  }
 
   LevelManager(this.assetManager, this.sharedPrefs);
 
