@@ -35,14 +35,6 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
       }
     });
 
-    if (levelManager.currentLevel == null) {
-      return const Scaffold(
-        body: Center(
-          child: Text('No level selected. Please go back to the main menu.'),
-        ),
-      );
-    }
-
     return Scaffold(
       body: Stack(
         children: [
@@ -53,13 +45,13 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
                 Expanded(
                   flex: 3,
                   child: GameCanvas(
-                    key: ValueKey(levelManager.currentLevel!.id),
+                    key: ValueKey(levelManager.currentLevel.id),
                   ),
                 ),
                 SizedBox(
                   width: 200,
                   child: ComponentPalette(
-                    availableComponents: levelManager.currentLevel!.components,
+                    availableComponents: levelManager.currentLevel.components,
                     onComponentSelected: (component) {
                       setState(() {
                         _selectedComponent = component;

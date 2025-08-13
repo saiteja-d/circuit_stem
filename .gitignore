@@ -245,3 +245,6 @@ macos/Runner/Assets.xcassets/
 *.swp
 *.swo
 GEMINI.md
+
+# IDE and system files
+.metadata

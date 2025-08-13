@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/grid.dart';
 import '../../models/component.dart';
-import '../../engine/render_state.dart';
 
 part 'game_state.freezed.dart';
 
