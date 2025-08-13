@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:circuit_stem/models/component.dart';
 import 'package:circuit_stem/common/theme.dart';
-import 'package:circuit_stem/common/constants.dart';
+
 
 class CircuitComponentPainter extends CustomPainter {
   final ComponentModel component;
@@ -78,7 +78,6 @@ class CircuitComponentPainter extends CustomPainter {
         _paintBlocked(canvas, size, paint, fillPaint, componentColor, center, radius);
         break;
       case ComponentType.custom:
-      default:
         // Draw a placeholder for unknown or custom components
         _paintBlocked(canvas, size, paint, fillPaint, Colors.grey, center, radius);
         break;

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/providers.dart';
-import '../routes.dart';
-import '../ui/controllers/debug_overlay_controller.dart';
+
 import '../ui/widgets/debug_overlay.dart';
 import 'widgets/pause_menu.dart';
 import 'game_canvas.dart';

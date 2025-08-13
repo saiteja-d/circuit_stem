@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../models/level_metadata.dart';
-import '../../services/level_manager.dart';
+
 import '../game_screen.dart';
 
 class LevelGrid extends ConsumerWidget {

@@ -1,8 +1,8 @@
 import 'dart:collection';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/grid.dart';
 import '../models/component.dart';
-import '../common/logger.dart';
+
 
 /// Direction enum for component connections
 enum Dir { north, east, south, west }

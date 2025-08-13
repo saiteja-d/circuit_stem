@@ -1,3 +1,4 @@
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,7 @@ void main() async {
 
   // --- Service Initialization ---
   Logger.log('Initializing services...');
+  FlameAudio.audioCache.prefix = '';
 
   final prefs = await SharedPreferences.getInstance();
   final assetManager = AssetManager();

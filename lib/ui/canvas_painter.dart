@@ -81,7 +81,7 @@ class CanvasPainter extends CustomPainter {
               BlendMode.srcATop);
         }
 
-        final Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
+        const Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
         canvas.save();
         canvas.translate(x, y);
 
@@ -117,7 +117,7 @@ class CanvasPainter extends CustomPainter {
       if (svgDrawable != null) {
         final paint = Paint()..color = Colors.white.withOpacity(0.75);
 
-        final Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
+        const Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
         canvas.save();
         canvas.translate(x, y);
         canvas.saveLayer(bounds, paint);

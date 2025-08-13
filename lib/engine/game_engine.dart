@@ -114,7 +114,7 @@ class GameEngine extends ChangeNotifier {
 
     if (allGoalsMet) {
       isWin = true;
-      audioService.play('success.wav');
+      audioService.play('success.mp3');
       onWin?.call();
       Logger.log('GameEngine: Win condition met!');
     }
@@ -127,7 +127,7 @@ class GameEngine extends ChangeNotifier {
 
     final closed = comp.state['closed'] == true;
     comp.state['closed'] = !closed;
-    audioService.play('toggle.wav');
+    audioService.play('toggle.mp3');
     _evaluateAndUpdateRenderState();
   }
 
@@ -156,7 +156,7 @@ class GameEngine extends ChangeNotifier {
       final attempted = comp.copyWith(r: newRow, c: newCol);
       final success = grid.updateComponent(attempted);
       if (!success) {
-        audioService.play('short_warning.wav');
+        audioService.play('short_warning.mp3');
       }
     }
 

@@ -6,10 +6,10 @@ class AudioService {
   }
 
   void playSuccess() {
-    play('success.wav');
+    play('success.mp3');
   }
 
   void playToggle() {
-    play('toggle.wav');
+    play('toggle.mp3');
   }
 }
