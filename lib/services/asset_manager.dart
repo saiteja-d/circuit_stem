@@ -5,7 +5,7 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_svg/vector_graphics.dart' as vg;
+import 'package:vector_graphics/vector_graphics.dart' as vg;
 
 import '../common/logger.dart';
 
