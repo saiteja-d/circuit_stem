@@ -1,7 +1,7 @@
-
 # Asset Management Guide
 
 **Project:** Circuit STEM
+**Last Updated:** 2025-08-12 EST
 
 ---
 
@@ -36,16 +36,16 @@ Adding a new level is a two-step process:
     -   Place the new image file in the `assets/images/` directory.
 
 2.  **Update Asset Manager:**
-    -   The `AssetManager` (`lib/common/asset_manager.dart`) is responsible for loading all assets at startup.
-    -   Open `lib/common/asset_manager.dart`.
-    -   Locate the `_loadImages` method (which is called by `loadAllAssets`).
-    -   Add the relative path of your new image to the list of paths passed to `_loadImages`.
+    -   The `AssetManager` (`lib/services/asset_manager.dart`) is responsible for loading all assets at startup.
+    -   Open `lib/services/asset_manager.dart`.
+    -   Locate the `_loadImages` or `_loadSvgs` method (which are called by `loadAllAssets`).
+    -   Add the relative path of your new image to the appropriate list.
 
     ```dart
-    // in lib/common/asset_manager.dart
-    await _loadImages([
+    // in lib/services/asset_manager.dart
+    await _loadSvgs([
       // ... existing images
-      'images/my_new_image.svg', // or .png
+      'assets/images/my_new_image.svg',
     ]);
     ```
 
@@ -61,14 +61,14 @@ The process is similar to adding images.
     -   Place the new audio file in the `assets/audio/` directory.
 
 2.  **Update Asset Manager:**
-    -   Open `lib/common/asset_manager.dart`.
+    -   Open `lib/services/asset_manager.dart`.
     -   Locate the `loadAllAssets` method.
     -   Add the filename of your new audio file to the `FlameAudio.audioCache.loadAll()` list.
 
     ```dart
-    // in lib/common/asset_manager.dart
+    // in lib/services/asset_manager.dart
     await FlameAudio.audioCache.loadAll([
       // ... existing audio files
-      'audio/my_new_sound.wav',
+      'my_new_sound.wav', // Note: path relative to assets/audio/
     ]);
     ```

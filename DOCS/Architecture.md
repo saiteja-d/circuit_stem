@@ -1,51 +1,65 @@
-
 # Architecture & UI Design
 
 **Project:** Circuit STEM
+**Last Updated:** 2025-08-12 EST
 
 ---
 
 This document provides visual diagrams of the system architecture, data flow, and UI layout to complement the code-level details in the TRD.
 
-## 1. System Architecture Diagram
+## 1. Architectural Principles
+
+This project follows a modern, reactive architecture based on a few core principles:
+
+*   **State Management (Riverpod & StateNotifier):** All complex view state is managed by `StateNotifier` classes, which are provided to the UI using `StateNotifierProvider` from the `flutter_riverpod` package. This pattern is preferred for its compile-time safety, testability, and for enforcing a unidirectional data flow with immutable state objects.
+
+*   **Immutability (`freezed`):** All state and data model classes are immutable. We use the `freezed` package to generate boilerplate-free, immutable data classes. This prevents entire classes of bugs caused by accidental state mutation and makes state changes predictable and easy to debug.
+
+*   **Dependency Injection (Riverpod):** All services and providers are exposed to the application via Riverpod. This decouples our UI from our business logic, improves testability, and allows services to be easily mocked or replaced.
+
+## 2. System Architecture Diagram
 
 This diagram shows the high-level relationship between the primary layers of the application.
 
 ```
-+--------------------+        +---------------------+        +-------------------+
-|  Flutter UI Layer  | <----> |   GameEngine        | <----> |   LogicEngine     |
-|  (GameCanvas, HUD) |        |  (Stateful Notifier)|        |   (Pure Dart)     |
-|  - Renders State   |        |  - Manages Grid     |        | - BFS Evaluation  |
-|  - Handles Input   |        |  - Processes Actions|        | - Short Detection |
-+--------------------+        +---------------------+        +-------------------+
-         ^                                      ^
-         |                                      |
-         | listens to                           | receives data from
-         |                                      |
-+--------------------+        +---------------------+ 
-| UI Controllers     |        |   Services          |
-| (Debug, etc.)      |        |   (LevelManager)    |
-+--------------------+        +---------------------+ 
++--------------------+ watches +---------------------------------+
+|  Flutter UI Layer  | ------> | Riverpod StateNotifierProvider  | --provides--+ GameEngineNotifier              |
+|  (GameCanvas, HUD) |         | (in lib/core/providers.dart)    |             | (StateNotifier<GameEngineState>) |
+|  - Rebuilds on     |         +---------------------------------+             | - Manages Grid State            |
+|    new State       |                                                       | - Processes Actions             |
++--------------------+                                                       +---------------------------------+
+         ^                                                                                    |
+         |                                                                                    v
+         | receives input                                                                     | calls
+         |                                                                                    |
++--------------------+                                                       +---------------------------------+
+| User Input         |                                                       | LogicEngine (Pure Dart)         |
+| (Tap, Drag)        |                                                       | - Evaluates Circuit             |
++--------------------+                                                       +---------------------------------+
+
 ```
 
-## 2. Detailed Integration Diagram
+## 3. Detailed Integration Diagram (State Update Flow)
 
-This diagram illustrates how the core components interact with each other.
+This diagram illustrates how user input leads to a new state and a UI update.
 
 ```
 [User] -> [GameCanvas (UI)]
-   -> calls GameEngine.handleTap() or .endDrag()
-      -> GameEngine updates Grid model
-         -> GameEngine calls LogicEngine.evaluate(grid)
+   -> calls methods on GameEngineNotifier (e.g., handleTap(), endDrag())
+      -> GameEngineNotifier creates a new, updated GameEngineState object
+         -> It may call LogicEngine.evaluate(grid) to get data for the new state
             -> returns EvaluationResult
-         <- GameEngine creates RenderState from result
-         <- GameEngine calls onEvaluate() callback for DebugOverlayController
-      <- GameEngine calls notifyListeners()
-   <- GameCanvas (via Consumer) rebuilds
-      -> CanvasPainter receives new RenderState and redraws
+         <- GameEngineNotifier incorporates the result into the new state
+      <- GameEngineNotifier updates its state via `state = newState;`
+
+[Riverpod] -> detects a new state has been emitted
+   -> Notifies all listening widgets
+
+[GameCanvas (via ref.watch)] -> receives the new GameEngineState and rebuilds
+   -> CanvasPainter receives new RenderState and redraws the frame
 ```
 
-## 3. UI Layout & Interaction
+## 4. UI Layout & Interaction
 
 ### Screen Layout
 

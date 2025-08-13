@@ -111,6 +111,27 @@ This section outlines potential areas for improving and refactoring the codebase
 
 ## Changelog
 
+### 2025-08-12 9 pm EST
+
+This is a major stabilization and modernization update that completes a previously unfinished architectural refactoring. The result is a more robust, stable, and maintainable codebase aligned with modern Flutter best practices.
+
+**Key Changes:**
+
+*   **Architectural Refactoring:**
+    *   **State Management:** Solidified the migration to a `StateNotifier` and Riverpod-based architecture. Removed legacy provider files and ensured a consistent, unidirectional data flow.
+    *   **Immutability:** Refactored core data models (`LevelMetadata`) to be immutable using the `freezed` package, improving state predictability and safety.
+    *   **Services:** Corrected the `AssetManager` service to use the modern `flutter_svg` v2 API for high-performance SVG caching.
+
+*   **Bug Fixes & Stability:**
+    *   Resolved dozens of analyzer errors caused by the incomplete refactoring, including incorrect widget constructors, broken import paths, type mismatches, and null-safety issues across the entire UI layer.
+    *   Fixed logic errors in widgets like `CircuitGrid` and `CanvasPainter`.
+
+*   **Documentation Overhaul:**
+    *   Updated all core technical documents (`Architecture.md`, `CodeExecutionFlow.md`, `TRD.md`) to accurately reflect the new `StateNotifier` architecture, removing misleading and obsolete information.
+    *   Added new sections explaining architectural principles and best practices for testing.
+    *   Corrected file paths and minor inaccuracies in `ASSETS.md` and `TESTING.md`.
+    *   Added timestamps to all updated documents.
+
 ### 2025-08-12 16:55:59 EDT
 
 ### 2025-08-12: Codebase Refactoring and Simplification

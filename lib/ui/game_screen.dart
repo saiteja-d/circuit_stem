@@ -74,12 +74,6 @@ class _GameScreenState extends ConsumerState<GameScreen> with TickerProviderStat
               onResume: () {
                 gameEngineNotifier.setPaused(false);
               },
-              onRestart: () {
-                gameEngineNotifier.resetLevel(); // Use gameEngineNotifier's resetLevel
-              },
-              onExit: () {
-                Navigator.pushReplacementNamed(context, AppRoutes.levelSelect);
-              },
             ),
         ],
       ),

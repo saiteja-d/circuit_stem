@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:circuit_stem/routes.dart';
 import 'package:circuit_stem/common/theme.dart'; // Import the theme file
+import 'level_select.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({Key? key}) : super(key: key);
@@ -406,10 +407,10 @@ class _MainMenuScreenState extends State<MainMenuScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              '• Interactive drag-and-drop interface\n'
-              '• Realistic circuit simulation\n'
-              '• Progressive difficulty levels\n'
-              '• Visual and audio feedback\n'
+              '• Interactive drag-and-drop interface\n' + 
+              '• Realistic circuit simulation\n' + 
+              '• Progressive difficulty levels\n' + 
+              '• Visual and audio feedback\n' + 
               '• Educational and fun gameplay',
               style: Theme.of(context).textTheme.bodyMedium,
             ),

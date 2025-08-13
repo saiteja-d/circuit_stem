@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:circuit_stem/models/level_definition.dart';
+import 'package:circuit_stem/models/level_metadata.dart';
 
 class LevelCard extends StatefulWidget {
-  final LevelDefinition level;
+  final LevelMetadata level;
   final bool isUnlocked;
   final bool isCompleted;
   final VoidCallback? onTap;

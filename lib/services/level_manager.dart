@@ -3,43 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/level_definition.dart';
+import '../models/level_metadata.dart';
 import '../common/logger.dart';
 import 'asset_manager.dart';
 
-/// Holds basic metadata about a level.
-class LevelMetadata {
-  final String id;
-  final String title;
-  final String description;
-  final int levelNumber;
-  bool unlocked;
-
-  LevelMetadata({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.levelNumber,
-    this.unlocked = false,
-  });
-
-  factory LevelMetadata.fromJson(Map<String, dynamic> json) => LevelMetadata(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        levelNumber: json['levelNumber'] as int,
-        unlocked: json['unlocked'] as bool? ?? false,
-      );
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'levelNumber': levelNumber,
-        'unlocked': unlocked,
-      };
-}
-
-// Move LevelManager to top level
 class LevelManager extends ChangeNotifier {
   final AssetManager assetManager;
   final SharedPreferences sharedPrefs;
@@ -64,18 +31,23 @@ class LevelManager extends ChangeNotifier {
 
   Future<void> markCurrentLevelComplete() async {
     if (_currentLevelDefinition == null) return;
-    
+
     final levelId = _currentLevelDefinition!.id;
     if (!_completedLevelIds.contains(levelId)) {
       _completedLevelIds.add(levelId);
       await sharedPrefs.setStringList(_prefsKeyCompletedLevels, _completedLevelIds);
-      
+
       // Unlock next level if available
       if (_currentIndex < _levels.length - 1) {
-        _levels[_currentIndex + 1].unlocked = true;
+        final nextIndex = _currentIndex + 1;
+        _levels = [
+          ..._levels.sublist(0, nextIndex),
+          _levels[nextIndex].copyWith(unlocked: true),
+          ..._levels.sublist(nextIndex + 1),
+        ];
         await _saveUnlockedLevels();
       }
-      
+
       notifyListeners();
     }
   }
@@ -91,7 +63,8 @@ class LevelManager extends ChangeNotifier {
   List<String> get completedLevelIds => List.unmodifiable(_completedLevelIds);
   String get currentLevelId => _levels.isNotEmpty ? _levels[_currentIndex].id : '';
   bool get isLastLevel => _currentIndex >= _levels.length - 1;
-  bool get isCurrentLevelUnlocked => _levels.isNotEmpty && _levels[_currentIndex].unlocked;
+  bool get isCurrentLevelUnlocked =>
+      _levels.isNotEmpty && _levels[_currentIndex].unlocked;
 
   Future<void> loadManifest() async {
     _isLoading = true;
@@ -99,21 +72,31 @@ class LevelManager extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      final jsonString = await rootBundle.loadString('assets/levels/level_manifest.json');
+      final jsonString =
+          await rootBundle.loadString('assets/levels/level_manifest.json');
       final jsonMap = json.decode(jsonString) as Map<String, dynamic>;
       final lvlList = jsonMap['levels'] as List<dynamic>;
-      _levels = lvlList.map((e) => LevelMetadata.fromJson(e as Map<String, dynamic>)).toList();
+      final tempLevels = lvlList
+          .map((e) => LevelMetadata.fromJson(e as Map<String, dynamic>))
+          .toList();
       final unlockedIds = sharedPrefs.getStringList(_prefsKeyUnlockedLevels) ?? [];
-      _completedLevelIds = sharedPrefs.getStringList(_prefsKeyCompletedLevels) ?? [];
-      var anyUnlocked = false;
-      for (var lvl in _levels) {
-        lvl.unlocked = unlockedIds.contains(lvl.id);
-        if (lvl.unlocked) anyUnlocked = true;
-      }
+      _completedLevelIds =
+          sharedPrefs.getStringList(_prefsKeyCompletedLevels) ?? [];
+
+      _levels = tempLevels.map((lvl) {
+        return lvl.copyWith(unlocked: unlockedIds.contains(lvl.id));
+      }).toList();
+
+      final anyUnlocked = _levels.any((lvl) => lvl.unlocked);
+
       if (!anyUnlocked && _levels.isNotEmpty) {
-        _levels[0].unlocked = true;
+        _levels = [
+          _levels[0].copyWith(unlocked: true),
+          ..._levels.sublist(1),
+        ];
         await _saveUnlockedLevels();
       }
+
       _currentIndex = 0;
       await _loadCurrentLevel();
     } catch (e) {
@@ -135,9 +118,13 @@ class LevelManager extends ChangeNotifier {
   }
 
   Future<void> unlockLevel(String levelId) async {
-    final level = _levels.firstWhere((lvl) => lvl.id == levelId, orElse: () => throw Exception('Level $levelId not found'));
-    if (!level.unlocked) {
-      level.unlocked = true;
+    final levelIndex = _levels.indexWhere((lvl) => lvl.id == levelId);
+    if (levelIndex != -1 && !_levels[levelIndex].unlocked) {
+      _levels = [
+        ..._levels.sublist(0, levelIndex),
+        _levels[levelIndex].copyWith(unlocked: true),
+        ..._levels.sublist(levelIndex + 1),
+      ];
       await _saveUnlockedLevels();
       notifyListeners();
     }
@@ -146,7 +133,8 @@ class LevelManager extends ChangeNotifier {
   Future<void> saveCompletedLevels() async {
     try {
       await sharedPrefs.setStringList(_prefsKeyCompletedLevels, _completedLevelIds);
-      await sharedPrefs.setStringList(_prefsKeyUnlockedLevels, _levels.where((l) => l.unlocked).map((l) => l.id).toList());
+      await sharedPrefs.setStringList(_prefsKeyUnlockedLevels,
+          _levels.where((l) => l.unlocked).map((l) => l.id).toList());
     } catch (e) {
       // Log error if needed
     }
@@ -168,7 +156,8 @@ class LevelManager extends ChangeNotifier {
   }
 
   Future<void> _saveUnlockedLevels() async {
-    final unlockedIds = _levels.where((lvl) => lvl.unlocked).map((lvl) => lvl.id).toList();
+    final unlockedIds =
+        _levels.where((lvl) => lvl.unlocked).map((lvl) => lvl.id).toList();
     await sharedPrefs.setStringList(_prefsKeyUnlockedLevels, unlockedIds);
   }
 
@@ -192,7 +181,9 @@ class LevelManager extends ChangeNotifier {
   }
 
   bool isLevelUnlocked(String levelId) {
-    final level = _levels.firstWhere((lvl) => lvl.id == levelId, orElse: () => LevelMetadata(id: '', title: '', unlocked: false));
+    final level = _levels.firstWhere((lvl) => lvl.id == levelId,
+        orElse: () => const LevelMetadata(
+            id: '', title: '', description: 'Level not found', levelNumber: 0));
     return level.unlocked;
   }
 
