@@ -12,6 +12,7 @@ import '../common/logger.dart';
 import '../common/constants.dart';
 import '../models/goal.dart';
 import 'game_engine_state.dart';
+import '../common/assets.dart';
 
 /// GameEngineNotifier: Immutable state management for the game engine
 class GameEngineNotifier extends StateNotifier<GameEngineState> {
@@ -113,7 +114,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
     if (allGoalsMet) {
       state = state.copyWith(isWin: true);
-      _audioService.playSuccess();
+      _audioService.play(AppAssets.audioSuccess);
       onWin?.call();
       Logger.log('GameEngine: Win condition met!');
     }
@@ -175,7 +176,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
       if (newGrid.validate().isEmpty) {
           state = state.copyWith(grid: newGrid);
       } else {
-        _audioService.play('short_warning.mp3');
+        _audioService.play(AppAssets.audioWarning);
       }
     }
 
@@ -196,7 +197,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     newComponents[componentId] = updatedComponent;
 
     state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
-    _audioService.playToggle();
+    _audioService.play(AppAssets.audioToggle);
     _evaluateAndUpdateRenderState();
   }
 

@@ -1,5 +1,10 @@
 {
   "id": "level_01",
+  "title": "Introduction to Circuits",
+  "description": "Learn the basics of connecting components.",
+  "levelNumber": 1,
+  "author": "SA",
+  "version": 1,
   "rows": 8,
   "cols": 8,
   "blockedCells": [

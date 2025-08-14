@@ -42,6 +42,8 @@ abstract class $LevelManagerStateCopyWith<$Res> {
       bool isLoading,
       LevelDefinition? currentLevelDefinition,
       String? errorMessage});
+
+  $LevelDefinitionCopyWith<$Res>? get currentLevelDefinition;
 }
 
 /// @nodoc
@@ -88,6 +90,21 @@ class _$LevelManagerStateCopyWithImpl<$Res, $Val extends LevelManagerState>
               as String?,
     ) as $Val);
   }
+
+  /// Create a copy of LevelManagerState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $LevelDefinitionCopyWith<$Res>? get currentLevelDefinition {
+    if (_value.currentLevelDefinition == null) {
+      return null;
+    }
+
+    return $LevelDefinitionCopyWith<$Res>(_value.currentLevelDefinition!,
+        (value) {
+      return _then(_value.copyWith(currentLevelDefinition: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -104,6 +121,9 @@ abstract class _$$LevelManagerStateImplCopyWith<$Res>
       bool isLoading,
       LevelDefinition? currentLevelDefinition,
       String? errorMessage});
+
+  @override
+  $LevelDefinitionCopyWith<$Res>? get currentLevelDefinition;
 }
 
 /// @nodoc

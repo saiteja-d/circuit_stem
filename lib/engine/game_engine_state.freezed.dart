@@ -49,6 +49,7 @@ abstract class $GameEngineStateCopyWith<$Res> {
       RenderState? renderState});
 
   $GridCopyWith<$Res> get grid;
+  $LevelDefinitionCopyWith<$Res>? get currentLevel;
 }
 
 /// @nodoc
@@ -120,6 +121,20 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
       return _then(_value.copyWith(grid: value) as $Val);
     });
   }
+
+  /// Create a copy of GameEngineState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $LevelDefinitionCopyWith<$Res>? get currentLevel {
+    if (_value.currentLevel == null) {
+      return null;
+    }
+
+    return $LevelDefinitionCopyWith<$Res>(_value.currentLevel!, (value) {
+      return _then(_value.copyWith(currentLevel: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -142,6 +157,8 @@ abstract class _$$GameEngineStateImplCopyWith<$Res>
 
   @override
   $GridCopyWith<$Res> get grid;
+  @override
+  $LevelDefinitionCopyWith<$Res>? get currentLevel;
 }
 
 /// @nodoc

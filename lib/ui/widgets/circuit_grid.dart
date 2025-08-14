@@ -144,7 +144,7 @@ class _GridCell extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               color: isHighlighted
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+                  ? Theme.of(context).colorScheme.primary.withAlpha(51)
                   : Colors.transparent,
               border: Border.all(
                 color: hasComponent
@@ -152,8 +152,8 @@ class _GridCell extends StatelessWidget {
                     : isHighlighted
                         ? Theme.of(context).colorScheme.primary
                         : isDark
-                            ? DarkModeColors.gridLines.withOpacity(0.3)
-                            : LightModeColors.gridLines.withOpacity(0.5),
+                            ? DarkModeColors.gridLines.withAlpha(77)
+                            : LightModeColors.gridLines.withAlpha(128),
                 width: isHighlighted ? 2.0 : 0.5,
               ),
               borderRadius: isHighlighted ? BorderRadius.circular(4) : null,
@@ -182,8 +182,8 @@ class _GridPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = isDark
-          ? DarkModeColors.gridLines.withOpacity(0.2)
-          : LightModeColors.gridLines.withOpacity(0.3)
+          ? DarkModeColors.gridLines.withAlpha(51)
+          : LightModeColors.gridLines.withAlpha(77)
       ..strokeWidth = 0.5;
 
     // Draw vertical lines

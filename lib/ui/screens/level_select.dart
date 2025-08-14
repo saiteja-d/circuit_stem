@@ -35,6 +35,7 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
     // Load the level definition and then navigate
     ref.read(levelManagerProvider.notifier).loadLevelByIndex(index).then((level) {
       if (level != null) {
+        if (!mounted) return;
         ref.read(gameEngineProvider.notifier).loadLevel(level);
         Navigator.of(context).pushNamed(AppRoutes.gameScreen);
       }

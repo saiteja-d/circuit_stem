@@ -37,7 +37,7 @@ class GameEngineState with _$GameEngineState {
   );
 
   /// Factory constructor for empty state (no level loaded)
-  factory GameEngineState.empty() => const GameEngineState(
+  factory GameEngineState.empty() => GameEngineState(
     grid: Grid(rows: 0, cols: 0),
     isPaused: false,
     isWin: false,

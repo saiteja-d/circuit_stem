@@ -194,7 +194,7 @@ class CircuitComponentPainter extends CustomPainter {
 
     if (isPowered) {
       // Fill with light color when powered
-      fillPaint.color = color.withOpacity(0.3);
+      fillPaint.color = color.withAlpha(77);
       canvas.drawCircle(center, radius, fillPaint);
 
       // Add light rays
@@ -280,7 +280,7 @@ class CircuitComponentPainter extends CustomPainter {
   void _paintTimer(Canvas canvas, Size size, Paint paint, Paint fillPaint, Color color,
       Offset center, double radius) {
     paint.color = color;
-    fillPaint.color = color.withOpacity(0.2);
+    fillPaint.color = color.withAlpha(51);
 
     // Draw clock face
     canvas.drawCircle(center, radius, fillPaint);
@@ -298,7 +298,7 @@ class CircuitComponentPainter extends CustomPainter {
   void _paintBlocked(Canvas canvas, Size size, Paint paint, Paint fillPaint, Color color,
       Offset center, double radius) {
     paint.color = color;
-    fillPaint.color = color.withOpacity(0.2);
+    fillPaint.color = color.withAlpha(51);
 
     // Draw a cross or 'X' to indicate blocked
     paint.strokeWidth = 4.0;

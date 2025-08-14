@@ -126,7 +126,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.primary.withAlpha(77),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -157,7 +157,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                 Text(
                   'Circuit Simulation Game',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(204),
                   ),
                 ),
                 
@@ -284,7 +284,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
               height: 4,
               margin: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(77),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -407,10 +407,10 @@ class _MainMenuScreenState extends State<MainMenuScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              '• Interactive drag-and-drop interface\n' + 
-              '• Realistic circuit simulation\n' + 
-              '• Progressive difficulty levels\n' + 
-              '• Visual and audio feedback\n' + 
+              '• Interactive drag-and-drop interface\n'
+              '• Realistic circuit simulation\n'
+              '• Progressive difficulty levels\n'
+              '• Visual and audio feedback\n'
               '• Educational and fun gameplay',
               style: Theme.of(context).textTheme.bodyMedium,
             ),

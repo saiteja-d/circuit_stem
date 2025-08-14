@@ -1,12 +1,17 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/foundation.dart';
 import '../services/logic_engine.dart';
-import '../common/logger.dart';
 
-/// Simple integer cell offset.
-class CellOffset {
-  final int dr;
-  final int dc;
-  const CellOffset(this.dr, this.dc);
+part 'component.freezed.dart';
+part 'component.g.dart';
+
+@freezed
+class CellOffset with _$CellOffset {
+  const CellOffset._();
+  const factory CellOffset(
+    int dr,
+    int dc,
+  ) = _CellOffset;
 
   factory CellOffset.fromJson(Map<String, dynamic> json) {
     return CellOffset(
@@ -16,97 +21,23 @@ class CellOffset {
   }
 
   Map<String, dynamic> toJson() => {'dr': dr, 'dc': dc};
-
-  @override
-  String toString() => 'CellOffset($dr,$dc)';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is CellOffset &&
-          runtimeType == other.runtimeType &&
-          dr == other.dr &&
-          dc == other.dc;
-
-  @override
-  int get hashCode => dr.hashCode ^ dc.hashCode;
 }
 
-/// Terminal specification attached to a component.
-class TerminalSpec {
-  final int cellIndex;
-  final Dir dir;
-  final String? label;
-  final String? role;
-  const TerminalSpec({
-    required this.cellIndex,
-    required this.dir,
-    this.label,
-    this.role,
-  });
+@freezed
+class TerminalSpec with _$TerminalSpec {
+  const factory TerminalSpec({
+    required int cellIndex,
+    required Dir dir,
+    String? label,
+    String? role,
+  }) = _TerminalSpec;
 
-  factory TerminalSpec.fromJson(Map<String, dynamic> json,
-      {List<CellOffset>? shapeOffsets}) {
-    int cellIndex = -1;
-    if (json.containsKey('offset')) {
-      final offset =
-          CellOffset.fromJson(json['offset'] as Map<String, dynamic>);
-      if (shapeOffsets != null) {
-        cellIndex = shapeOffsets
-            .indexWhere((e) => e.dr == offset.dr && e.dc == offset.dc);
-      }
-    } else if (json.containsKey('cellIndex')) {
-      cellIndex = json['cellIndex'] as int;
-    }
-
-    if (cellIndex == -1) {
-      throw Exception(
-          'TerminalSpec.fromJson: could not determine cellIndex from offset or cellIndex');
-    }
-
-    return TerminalSpec(
-      cellIndex: cellIndex,
-      dir: Dir.values.firstWhere(
-        (e) => e.name == (json['dir'] as String),
-        orElse: () => Dir.north,
-      ),
-      label: json['label'] as String?,
-      role: json['role'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'cellIndex': cellIndex,
-      'dir': dir.name,
-      if (label != null) 'label': label,
-      if (role != null) 'role': role,
-    };
-  }
-
-  @override
-  String toString() =>
-      'TerminalSpec(cellIndex=$cellIndex,dir=$dir,label=$label,role=$role)';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TerminalSpec &&
-          runtimeType == other.runtimeType &&
-          cellIndex == other.cellIndex &&
-          dir == other.dir &&
-          label == other.label &&
-          role == other.role;
-
-  @override
-  int get hashCode =>
-      cellIndex.hashCode ^
-      dir.hashCode ^
-      (label?.hashCode ?? 0) ^
-      (role?.hashCode ?? 0);
+  factory TerminalSpec.fromJson(Map<String, dynamic> json) =>
+      _$TerminalSpecFromJson(json);
 }
 
-/// Component types used by logic engine rendering & rules.
+
+
 enum ComponentType {
   battery,
   bulb,
@@ -131,98 +62,43 @@ ComponentType _componentTypeFromString(String type) {
 
 String _componentTypeToString(ComponentType type) => type.name;
 
-/// Component model supporting multi-cell shapes and labeled terminals.
-class ComponentModel {
-  final String id;
-  final ComponentType type;
-  int r;
-  int c;
-  int rotation; // 0, 90, 180, 270
-  Map<String, dynamic> state;
-  final List<CellOffset> shapeOffsets; // relative cells at rotation 0
-  final List<TerminalSpec>
-      terminals; // terminals described relative to shapeOffsets
-  final List<List<int>>
-      internalConnections; // explicit internal terminal index connections
+Dir _dirFromString(String dir) {
+  final lowerDir = dir.toLowerCase();
+  if (lowerDir == 'up') return Dir.north;
+  if (lowerDir == 'down') return Dir.south;
+  if (lowerDir == 'left') return Dir.west;
+  if (lowerDir == 'right') return Dir.east;
+  return Dir.values.firstWhere(
+    (e) => e.name.toLowerCase() == lowerDir,
+    orElse: () {
+      // For backward compatibility with older level files
+      if (lowerDir == 'n') return Dir.north;
+      if (lowerDir == 'e') return Dir.east;
+      if (lowerDir == 's') return Dir.south;
+      if (lowerDir == 'w') return Dir.west;
+      throw Exception('Unknown direction string: $dir');
+    },
+  );
+}
 
-  ComponentModel({
-    required this.id,
-    required this.type,
-    required this.r,
-    required this.c,
-    this.rotation = 0,
-    Map<String, dynamic>? state,
-    List<CellOffset>? shapeOffsets,
-    List<TerminalSpec>? terminals,
-    List<List<int>>? internalConnections,
-  })  : state = Map<String, dynamic>.from(state ?? {}),
-        shapeOffsets = shapeOffsets ?? const [CellOffset(0, 0)],
-        terminals = terminals ??
-            const [
-              TerminalSpec(cellIndex: 0, dir: Dir.north, label: null),
-              TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
-            ],
-        internalConnections = internalConnections ?? const [];
+@freezed
+class ComponentModel with _$ComponentModel {
+  const ComponentModel._();
 
-  factory ComponentModel.fromJson(Map<String, dynamic> json) {
-    Logger.log('ComponentModel.fromJson: Parsing component ${json['id']}');
-    Logger.log('ComponentModel.fromJson: json: $json');
-    final shapeOffsets = (json['shapeOffsets'] as List<dynamic>?)
-            ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [CellOffset(0, 0)];
-
-    final terminalsJson = (json['terminals'] as List<dynamic>?);
-
-    final terminals = terminalsJson != null
-        ? terminalsJson
-            .map((e) => TerminalSpec.fromJson(e as Map<String, dynamic>,
-                shapeOffsets: shapeOffsets))
-            .toList()
-        : const [
-            TerminalSpec(cellIndex: 0, dir: Dir.north, label: null),
-            TerminalSpec(cellIndex: 0, dir: Dir.south, label: null)
-          ];
-
-    final r = (json['position']?['r'] ?? json['r']) as int?;
-    final c = (json['position']?['c'] ?? json['c']) as int?;
-    Logger.log('ComponentModel.fromJson: r: $r, c: $c');
-
-    if (r == null || c == null) {
-      throw Exception('ComponentModel.fromJson: r or c is null');
-    }
-
-    final component = ComponentModel(
-      id: json['id'] as String,
-      type: _componentTypeFromString(json['type'] as String),
-      r: r,
-      c: c,
-      rotation: json['rotation'] as int? ?? 0,
-      state: (json['state'] as Map<String, dynamic>?) ?? {},
-      shapeOffsets: shapeOffsets,
-      terminals: terminals,
-      internalConnections: (json['internalConnections'] as List<dynamic>?)
-              ?.map((e) => (e as List<dynamic>).map((x) => x as int).toList())
-              .toList() ??
-          const [],
-    );
-    Logger.log('ComponentModel.fromJson: Parsed component: $component');
-    return component;
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'type': _componentTypeToString(type),
-      'r': r,
-      'c': c,
-      'rotation': rotation,
-      'state': state,
-      'shapeOffsets': shapeOffsets.map((e) => e.toJson()).toList(),
-      'terminals': terminals.map((e) => e.toJson()).toList(),
-      'internalConnections': internalConnections,
-    };
-  }
+  const factory ComponentModel({
+    required String id,
+    required ComponentType type,
+    required int r,
+    required int c,
+    @Default(0) int rotation,
+    @Default({}) Map<String, dynamic> state,
+    @Default([CellOffset(0, 0)]) List<CellOffset> shapeOffsets,
+    @Default([
+      TerminalSpec(cellIndex: 0, dir: Dir.north),
+      TerminalSpec(cellIndex: 0, dir: Dir.south)
+    ]) List<TerminalSpec> terminals,
+    @Default([]) List<List<int>> internalConnections,
+  }) = _ComponentModel;
 
   /// Factory: vertical long wire (length cells). Rotation rotates it.
   factory ComponentModel.longWire({
@@ -272,60 +148,67 @@ class ComponentModel {
     );
   }
 
-  /// Copy with changes.
-  ComponentModel copyWith({
-    int? r,
-    int? c,
-    int? rotation,
-    Map<String, dynamic>? state,
-  }) {
+  factory ComponentModel.fromJson(Map<String, dynamic> json) {
+    final shapeOffsets = (json['shapeOffsets'] as List<dynamic>?)
+            ?.map((e) => CellOffset.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [CellOffset(0, 0)];
+
+    final terminalsJson = json['terminals'] as List<dynamic>?;
+    final terminals = terminalsJson != null
+        ? terminalsJson.map((e) {
+            final termJson = e as Map<String, dynamic>;
+            int cellIndex = -1;
+            if (termJson.containsKey('offset')) {
+              final offset = CellOffset.fromJson(termJson['offset'] as Map<String, dynamic>);
+              cellIndex = shapeOffsets.indexWhere((e) => e.dr == offset.dr && e.dc == offset.dc);
+            } else if (termJson.containsKey('cellIndex')) {
+              cellIndex = termJson['cellIndex'] as int;
+            }
+            if (cellIndex == -1) {
+              throw Exception('TerminalSpec.fromJson: could not determine cellIndex');
+            }
+            return TerminalSpec(
+              cellIndex: cellIndex,
+              dir: _dirFromString(termJson['dir'] as String),
+              label: termJson['label'] as String?,
+              role: termJson['role'] as String?,
+            );
+          }).toList()
+        : const [
+            TerminalSpec(cellIndex: 0, dir: Dir.north),
+            TerminalSpec(cellIndex: 0, dir: Dir.south)
+          ];
+
     return ComponentModel(
-      id: id,
-      type: type,
-      r: r ?? this.r,
-      c: c ?? this.c,
-      rotation: rotation ?? this.rotation,
-      state: state != null
-          ? Map<String, dynamic>.from(state)
-          : Map.from(this.state),
-      shapeOffsets: List<CellOffset>.from(shapeOffsets),
-      terminals: List<TerminalSpec>.from(terminals),
-      internalConnections:
-          internalConnections.map((pair) => List<int>.from(pair)).toList(),
+      id: json['id'] as String,
+      type: _componentTypeFromString(json['type'] as String),
+      r: (json['position']?['r'] ?? json['r']) as int,
+      c: (json['position']?['c'] ?? json['c']) as int,
+      rotation: json['rotation'] as int? ?? 0,
+      state: (json['state'] as Map<String, dynamic>?) ?? {},
+      shapeOffsets: shapeOffsets,
+      terminals: terminals,
+      internalConnections: (json['internalConnections'] as List<dynamic>?)
+              ?.map((e) => (e as List<dynamic>).map((x) => x as int).toList())
+              .toList() ??
+          const [],
     );
   }
 
-  bool get isDraggable =>
-      type != ComponentType.battery && type != ComponentType.bulb;
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': _componentTypeToString(type),
+      'r': r,
+      'c': c,
+      'rotation': rotation,
+      'state': state,
+      'shapeOffsets': shapeOffsets.map((e) => e.toJson()).toList(),
+      'terminals': terminals.map((e) => e.toJson()).toList(),
+      'internalConnections': internalConnections,
+    };
+  }
 
-  @override
-  String toString() =>
-      'ComponentModel($id,type=$type,anchor=[$r,$c],rot=$rotation,shape=${shapeOffsets.length}cells,terms=${terminals.length})';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ComponentModel &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          type == other.type &&
-          r == other.r &&
-          c == other.c &&
-          rotation == other.rotation &&
-          mapEquals(state, other.state) &&
-          listEquals(shapeOffsets, other.shapeOffsets) &&
-          listEquals(terminals, other.terminals) &&
-          listEquals(internalConnections, other.internalConnections);
-
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      type.hashCode ^
-      r.hashCode ^
-      c.hashCode ^
-      rotation.hashCode ^
-      state.hashCode ^
-      shapeOffsets.hashCode ^
-      terminals.hashCode ^
-      internalConnections.hashCode;
+  bool get isDraggable => type != ComponentType.battery && type != ComponentType.bulb;
 }

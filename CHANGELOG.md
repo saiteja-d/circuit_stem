@@ -1,4 +1,45 @@
+## [Unreleased] - 2025-08-14
+
+### Added
+
+-   A new test suite for asset management (`test/common/assets_test.dart`) to ensure all asset paths are valid and prevent broken asset links in the future.
+
+### Fixed
+
+-   Fixed a critical bug in the level parser that caused a crash when loading levels. The parser now correctly handles various direction formats (e.g., "up", "down", "left", "right" in addition to "north", "south", "east", "west"), making the level loading process more robust.
+-   Resolved an audio playback issue on the web by converting all `.mp3` audio files to the more broadly supported `.wav` format.
+
+### Changed
+
+-   Refactored the asset management system to improve maintainability and flexibility. This includes:
+    -   Centralizing all asset paths into a new `AppAssets` class (`lib/common/assets.dart`).
+    -   Simplifying the `AudioService` to be more generic and reusable.
+    -   Updating the `AssetManager` to be driven by the new `AppAssets` manifest.
+
 # Change Log for Circuit STEM
+
+## [2025-08-14 9AM]
+### Comprehensive Refactoring & Quality Improvements
+
+This update details a significant effort to enhance code quality, enforce immutability, and resolve numerous analyzer issues across the project.
+
+#### Completed Tasks:
+- **Enforced Universal Immutability:**
+    - Deleted unused and empty model files (`game_level.dart`, `circuit_component.dart`, `level_goal.dart`).
+    - Converted `Position`, `Hint`, `LevelDefinition`, `CellOffset`, `TerminalSpec`, and `ComponentModel` to immutable classes using the `freezed` package.
+    - Verified build runner success and confirmed no breaking changes to existing logic due to `GameEngineNotifier`'s already immutable-first approach.
+- **Updated Documentation:**
+    - `DOCS/LOGIC.md` was updated to accurately reflect the implemented short-circuit detection algorithm.
+    - `README.md` was refactored for conciseness, with historical changelog entries moved to `CHANGELOG.md`.
+- **Fixed Analyzer Issues:**
+    - Resolved all critical errors (`const_with_non_const`, `undefined_method`, `non_abstract_class_inherits_abstract_member`).
+    - Fixed all `deprecated_member_use` warnings by replacing `withOpacity` with `withAlpha` across multiple UI files (`asset_manager.dart`, `circuit_component_painter.dart`, `main_menu.dart`, `component_palette.dart`, `debug_overlay.dart`, `level_card.dart`, `menu_button.dart`).
+    - Fixed `curly_braces_in_flow_control_structures` warnings in `asset_manager.dart`.
+    - Fixed `prefer_adjacent_string_concatenation` warnings in `main_menu.dart`.
+    - Fixed `use_build_context_synchronously` warnings in `level_select.dart` and `level_grid.dart` by refactoring to use `async/await` and robust `mounted` checks.
+
+#### Remaining Minor Issues:
+- **`prefer_const_constructors`**: 16 informational warnings remain, primarily in test files, suggesting performance optimizations by adding `const` to constructors where applicable. These do not affect functionality.
 
 ## [2025-08-14]
 ### Major Refactoring Analysis & Next Steps
@@ -52,7 +93,7 @@ This section contains entries that were previously in the README and have been c
 
 #### Asset Pipeline and Rendering Optimization
 - **Enhanced `AssetManager` Caching**: The `AssetManager` has been significantly refactored to improve performance and flexibility. It now pre-caches SVG assets as `ui.Image` objects, offloading conversion work from the critical render loop. The previous `PictureInfo` caching has been replaced with a more robust system that stores raw SVG strings and the pre-rendered images.
-- **Improved `AssetManager` API**: The service now exposes a more versatile API, allowing assets to be retrieved as a `ui.Image` (for canvas rendering), a raw `String`, or a `Widget`. It also includes new utility methods for querying asset statistics.
+- **Improved `AssetManager` API**: The service now exposes a more versatile API, allowing assets to be retrieved as `ui.Image`, raw `String`, or `Widget`. It also includes new utility methods for querying asset statistics.
 - **Decoupled `CanvasPainter`**: The `CanvasPainter` has been updated to consume the new `ui.Image` objects directly from the `AssetManager`. This decouples the painter from SVG-specific logic, making it more efficient and easier to maintain.
 - **Code Cleanup**: Removed unused imports from `level_select.dart` to improve code hygiene.
 

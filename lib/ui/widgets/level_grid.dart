@@ -4,11 +4,16 @@ import '../../core/providers.dart';
 import '../../models/level_metadata.dart';
 import '../../routes.dart';
 
-class LevelGrid extends ConsumerWidget {
+class LevelGrid extends ConsumerStatefulWidget {
   const LevelGrid({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LevelGrid> createState() => _LevelGridState();
+}
+
+class _LevelGridState extends ConsumerState<LevelGrid> {
+  @override
+  Widget build(BuildContext context) {
     final levels = ref.watch(levelsProvider);
     final completedLevelIds = ref.watch(completedLevelIdsProvider);
 
@@ -37,7 +42,7 @@ class LevelGrid extends ConsumerWidget {
               return _LevelCard(
                 level: level,
                 isCompleted: isCompleted,
-                onTap: level.unlocked ? () => _startLevel(context, ref, index) : null,
+                onTap: level.unlocked ? () => _startLevel(ref, index) : null,
               );
             },
           ),
@@ -46,13 +51,13 @@ class LevelGrid extends ConsumerWidget {
     );
   }
 
-  void _startLevel(BuildContext context, WidgetRef ref, int index) {
-    ref.read(levelManagerProvider.notifier).loadLevelByIndex(index).then((level) {
-      if (level != null) {
-        ref.read(gameEngineProvider.notifier).loadLevel(level);
-        Navigator.of(context).pushNamed(AppRoutes.gameScreen);
-      }
-    });
+  void _startLevel(WidgetRef ref, int index) async {
+    final level = await ref.read(levelManagerProvider.notifier).loadLevelByIndex(index);
+    if (level != null) {
+      if (!mounted) return;
+      ref.read(gameEngineProvider.notifier).loadLevel(level);
+      Navigator.of(context).pushNamed(AppRoutes.gameScreen);
+    }
   }
 }
 

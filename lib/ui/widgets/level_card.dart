@@ -57,7 +57,7 @@ class _LevelCardState extends State<LevelCard>
                   borderRadius: BorderRadius.circular(12),
                   color: widget.isUnlocked 
                       ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                      : Theme.of(context).colorScheme.surface.withAlpha(128),
                   border: widget.isCompleted 
                       ? Border.all(
                           color: Theme.of(context).colorScheme.primary,
@@ -138,7 +138,7 @@ class _LevelCardState extends State<LevelCard>
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: widget.isUnlocked 
                               ? Theme.of(context).colorScheme.onSurfaceVariant
-                              : Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                              : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(153),
                         ),
                         textAlign: TextAlign.center,
                         maxLines: 3,

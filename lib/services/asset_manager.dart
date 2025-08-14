@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../common/logger.dart';
+import '../common/assets.dart';
 
 class AssetManager {
   final Map<String, ui.Image> _imageCache = {};
@@ -23,22 +24,11 @@ class AssetManager {
       // Ensure Flutter is initialized
       WidgetsFlutterBinding.ensureInitialized();
       
-      // Load regular images
-      await _loadImages([
-        'assets/images/grid_bg_level1.png',
-      ]);
+      final imagePaths = AppAssets.all.where((p) => p.endsWith('.png')).toList();
+      await _loadImages(imagePaths);
       
-      // Load and process SVGs
-      await _loadAndProcessSvgs([
-        'assets/images/battery.svg',
-        'assets/images/bulb_off.svg',
-        'assets/images/bulb_on.svg',
-        'assets/images/wire_straight.svg',
-        'assets/images/wire_corner.svg',
-        'assets/images/wire_t.svg',
-        'assets/images/switch_open.svg',
-        'assets/images/switch_closed.svg',
-      ]);
+      final svgPaths = AppAssets.all.where((p) => p.endsWith('.svg')).toList();
+      await _loadAndProcessSvgs(svgPaths);
       
       // Load audio
       await _loadAudio();
@@ -146,7 +136,7 @@ class AssetManager {
       final canvas = Canvas(recorder);
       
       // Simplified rendering
-      final paint = Paint()..color = Colors.blue.withOpacity(0.7);
+      final paint = Paint()..color = Colors.blue.withAlpha(179);
       
       canvas.drawRect(
         Rect.fromLTWH(0, 0, size, size),
@@ -178,9 +168,13 @@ class AssetManager {
       Color color = Colors.grey;
       if (svgString.contains('battery')) {
         color = Colors.red.shade300;
-      } else if (svgString.contains('bulb')) color = Colors.yellow.shade300;
-      else if (svgString.contains('wire')) color = Colors.blue.shade300;
-      else if (svgString.contains('switch')) color = Colors.green.shade300;
+      } else if (svgString.contains('bulb')) {
+        color = Colors.yellow.shade300;
+      } else if (svgString.contains('wire')) {
+        color = Colors.blue.shade300;
+      } else if (svgString.contains('switch')) {
+        color = Colors.green.shade300;
+      }
       
       final paint = Paint()..color = color..style = PaintingStyle.fill;
       
@@ -205,12 +199,7 @@ class AssetManager {
   }
 
   Future<void> _loadAudio() async {
-    final audioFiles = [
-      'assets/audio/place.mp3',
-      'assets/audio/toggle.mp3',
-      'assets/audio/success.mp3',
-      'assets/audio/warning.mp3',
-    ];
+    final audioFiles = AppAssets.all.where((p) => p.endsWith('.wav')).toList();
     
     for (final file in audioFiles) {
       try {
