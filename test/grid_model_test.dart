@@ -6,7 +6,7 @@ import 'package:circuit_stem/engine/game_engine_notifier.dart';
 void main() {
   group('GameEngineNotifier Grid Logic Tests', () {
     late GameEngineNotifier notifier;
-    final initialLevel = LevelDefinition(
+    const initialLevel = LevelDefinition(
       id: 'test_level',
       title: 'Test Level',
       description: '',
