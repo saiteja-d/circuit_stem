@@ -111,6 +111,14 @@ This section outlines potential areas for improving and refactoring the codebase
 
 ## Changelog
 
+### 2025-08-13 9pm
+
+#### Asset Pipeline and Rendering Optimization
+- **Enhanced `AssetManager` Caching**: The `AssetManager` has been significantly refactored to improve performance and flexibility. It now pre-caches SVG assets as `ui.Image` objects, offloading conversion work from the critical render loop. The previous `PictureInfo` caching has been replaced with a more robust system that stores raw SVG strings and the pre-rendered images.
+- **Improved `AssetManager` API**: The service now exposes a more versatile API, allowing assets to be retrieved as a `ui.Image` (for canvas rendering), a raw `String`, or a `Widget`. It also includes new utility methods for querying asset statistics.
+- **Decoupled `CanvasPainter`**: The `CanvasPainter` has been updated to consume the new `ui.Image` objects directly from the `AssetManager`. This decouples the painter from SVG-specific logic, making it more efficient and easier to maintain.
+- **Code Cleanup**: Removed unused imports from `level_select.dart` to improve code hygiene.
+
 ### 2025-08-12 9 pm EST
 
 This is a major stabilization and modernization update that completes a previously unfinished architectural refactoring. The result is a more robust, stable, and maintainable codebase aligned with modern Flutter best practices.

@@ -1,9 +1,10 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../common/constants.dart';
 import '../engine/render_state.dart';
 import '../models/component.dart';
-import '../services/asset_manager.dart'; // Ensure this is the correct AssetManager
+import '../services/asset_manager.dart';
 
 class CanvasPainter extends CustomPainter {
   final RenderState? renderState;
@@ -39,7 +40,6 @@ class CanvasPainter extends CustomPainter {
     // Draw debug overlay if enabled
     if (showDebugOverlay) {
       // _drawDebugOverlay(canvas, size, renderState!.evaluationResult.debugInfo);
-      // Debug overlay drawing logic needs to be updated to match new DebugInfo structure
     }
   }
 
@@ -59,47 +59,46 @@ class CanvasPainter extends CustomPainter {
 
   void _drawComponent(Canvas canvas, ComponentModel comp) {
     final isPowered = renderState!.evaluationResult.poweredComponentIds.contains(comp.id);
-    final paint = Paint();
 
     for (final off in comp.shapeOffsets) {
       final x = (comp.c + off.dc) * cellSize;
       final y = (comp.r + off.dr) * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
-      final svgDrawable = assetManager.getSvg(imagePath); // Get PictureInfo
-
-      if (svgDrawable != null) {
-        // Apply simple powered tint
-        paint.colorFilter = null; // Reset
-        if (isPowered &&
-            (comp.type == ComponentType.wireLong || comp.type.toString().contains('wire'))) {
-          paint.colorFilter =
-              ColorFilter.mode(Colors.orange.withOpacity(0.45), BlendMode.srcATop);
-        } else if (isPowered && comp.type == ComponentType.bulb) {
-          final intensity = renderState!.bulbIntensity.clamp(0.0, 1.5);
-          paint.colorFilter = ColorFilter.mode(
-              Colors.yellow.withOpacity((intensity - 0.6).clamp(0.0, 1.0)),
-              BlendMode.srcATop);
-        }
-
-        const Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
-        canvas.save();
-        canvas.translate(x, y);
-
-        if (paint.colorFilter != null) {
-          canvas.saveLayer(bounds, paint);
-        }
-
-        canvas.drawPicture(svgDrawable.picture);
-
-        if (paint.colorFilter != null) {
-          canvas.restore();
-        }
-        canvas.restore();
+      
+      // Try to get SVG as image first (best for Canvas)
+      final svgImage = assetManager.getSvgAsImage(imagePath);
+      if (svgImage != null) {
+        _drawImageComponent(canvas, x, y, svgImage, isPowered, comp);
       } else {
-        // Fallback drawing
+        // Fallback to manual drawing
         _drawFallbackComponent(canvas, x, y, isPowered, comp.type);
       }
     }
+  }
+
+  void _drawImageComponent(Canvas canvas, double x, double y, ui.Image image, bool isPowered, ComponentModel comp) {
+    final paint = Paint();
+    
+    // Apply power effects
+    if (isPowered) {
+      if (comp.type == ComponentType.wireLong || comp.type.toString().contains('wire')) {
+        paint.colorFilter = ColorFilter.mode(
+          Colors.orange.withValues(alpha: 0.45), 
+          BlendMode.srcATop,
+        );
+      } else if (comp.type == ComponentType.bulb) {
+        final intensity = renderState!.bulbIntensity.clamp(0.0, 1.5);
+        paint.colorFilter = ColorFilter.mode(
+          Colors.yellow.withValues(alpha: (intensity - 0.6).clamp(0.0, 1.0)),
+          BlendMode.srcATop,
+        );
+      }
+    }
+
+    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    final dstRect = Rect.fromLTWH(x, y, cellSize, cellSize);
+    
+    canvas.drawImageRect(image, srcRect, dstRect, paint);
   }
 
   void _drawDraggedComponent(Canvas canvas, ComponentModel comp, Offset position) {
@@ -112,18 +111,20 @@ class CanvasPainter extends CustomPainter {
       final x = anchorX + off.dc * cellSize;
       final y = anchorY + off.dr * cellSize;
       final imagePath = _getImagePathForComponent(comp, off);
-      final svgDrawable = assetManager.getSvg(imagePath);
-
-      if (svgDrawable != null) {
-        final paint = Paint()..color = Colors.white.withOpacity(0.75);
-
-        const Rect bounds = Rect.fromLTWH(0, 0, cellSize, cellSize);
-        canvas.save();
-        canvas.translate(x, y);
-        canvas.saveLayer(bounds, paint);
-        canvas.drawPicture(svgDrawable.picture);
-        canvas.restore();
-        canvas.restore();
+      
+      // Try to get SVG as image
+      final svgImage = assetManager.getSvgAsImage(imagePath);
+      if (svgImage != null) {
+        final paint = Paint()
+          ..colorFilter = ColorFilter.mode(
+            Colors.white.withValues(alpha: 0.75), 
+            BlendMode.srcATop,
+          );
+        
+        final srcRect = Rect.fromLTWH(0, 0, svgImage.width.toDouble(), svgImage.height.toDouble());
+        final dstRect = Rect.fromLTWH(x, y, cellSize, cellSize);
+        
+        canvas.drawImageRect(svgImage, srcRect, dstRect, paint);
       } else {
         _drawFallbackComponent(canvas, x, y, false, comp.type, isDragged: true);
       }
@@ -157,7 +158,7 @@ class CanvasPainter extends CustomPainter {
     }
 
     if (isDragged) {
-      baseColor = baseColor.withOpacity(0.7);
+      baseColor = baseColor.withValues(alpha: 0.7);
     }
 
     canvas.drawRRect(
@@ -167,7 +168,7 @@ class CanvasPainter extends CustomPainter {
     if (isPowered && type != ComponentType.bulb && !isDragged) {
       canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(6)),
-          Paint()..color = Colors.orange.withOpacity(0.25));
+          Paint()..color = Colors.orange.withValues(alpha: 0.25));
     }
 
     _drawComponentIcon(canvas, rect, type, isPowered);
@@ -245,16 +246,16 @@ class CanvasPainter extends CustomPainter {
       case ComponentType.wireT:
         return 'assets/images/wire_t.svg';
       case ComponentType.wireLong:
-        return 'assets/images/wire_long.svg';
+        return 'assets/images/wire_straight.svg'; // Using wire_straight as fallback
       case ComponentType.sw:
         final isOpen = comp.state['closed'] == true ? false : true;
         return isOpen
             ? 'assets/images/switch_open.svg'
             : 'assets/images/switch_closed.svg';
       case ComponentType.timer:
-        return 'assets/images/timer.svg';
+        return 'assets/images/timer.svg'; // Note: not in asset list
       default:
-        return 'assets/images/placeholder.svg';
+        return 'assets/images/wire_straight.svg'; // Default fallback
     }
   }
 

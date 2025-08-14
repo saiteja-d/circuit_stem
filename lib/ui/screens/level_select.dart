@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:circuit_stem/routes.dart';
-import 'package:circuit_stem/services/level_manager.dart';
 import 'package:circuit_stem/ui/widgets/level_card.dart';
 import 'package:circuit_stem/common/theme.dart'; // Import the theme file
 import 'package:circuit_stem/core/providers.dart';
