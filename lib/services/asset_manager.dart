@@ -5,7 +5,7 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:vector_graphics/vector_graphics.dart' as vg;
+import 'package:vector_graphics/vector_graphics.dart';
 
 import '../common/logger.dart';
 
@@ -33,7 +33,7 @@ class AssetManager {
       'assets/audio/place.mp3',
       'assets/audio/toggle.mp3',
       'assets/audio/success.mp3',
-      'assets/audio/short_warning.mp3',
+      'assets/audio/warning.mp3',
     ];
     for (final file in audioFiles) {
       Logger.log('Loading audio file: $file');
@@ -63,7 +63,7 @@ class AssetManager {
       try {
         final rawSvg = await rootBundle.loadString(path);
         final loader = SvgStringLoader(rawSvg);
-        final pictureInfo = await vg.loadPicture(loader, null);
+        final pictureInfo = await loadPicture(loader, null);
         _svgCache[path] = pictureInfo;
       } catch (e) {
         Logger.log('Failed to load SVG: $path, Error: $e');
