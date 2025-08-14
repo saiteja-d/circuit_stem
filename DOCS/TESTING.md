@@ -1,3 +1,80 @@
+# Comprehensive Testing Strategy
+
+**Project:** Circuit STEM
+**Last Updated:** 2025-08-14 EST
+
+---
+
+This document outlines the comprehensive testing strategy for the Circuit STEM project. It includes a master list of test cases for Level 1, which will serve as a template for testing other levels, and a plan for achieving full test coverage.
+
+## 1. Testing Principles
+
+Our testing strategy is based on the following principles:
+
+*   **Comprehensiveness:** We aim to test all aspects of the application, including the functional requirements, the user interface, and the user experience.
+*   **Automation:** We will automate as much of the testing process as possible using Flutter's testing framework.
+*   **Modularity:** We will write modular tests that are easy to read, understand, and maintain.
+*   **Consistency:** We will use a consistent testing strategy across all levels of the application.
+
+## 2. Level 1 – Comprehensive Circuit Test Cases
+
+This table provides a comprehensive list of test cases for Level 1. It covers the core circuit logic, interaction constraints, visual feedback, audio feedback, responsiveness, and user experience.
+
+| **Test Case ID** | **Scenario**                  | **User Action**                                           | **Expected Outcome**                                           |
+| :--- | :--- | :--- | :--- |
+| **TC-L1-01**     | Toggle switch                 | Tap `switch1`                                             | Switch toggles open/closed; visual state changes.              |
+| **TC-L1-02**     | Move bulb                     | Drag `bulb1` to valid grid position                       | Bulb moves; snaps to grid.                                     |
+| **TC-L1-03**     | Move timer                    | Drag `timer1` to valid grid position                      | Timer moves; snaps to grid.                                    |
+| **TC-L1-04**     | Try moving battery            | Drag `bat1`                                               | No movement occurs.                                            |
+| **TC-L1-05**     | Try moving switch             | Drag `switch1`                                            | No movement occurs.                                            |
+| **TC-L1-06**     | Invalid placement             | Drag movable component onto occupied tile or outside grid | Component returns to original position; warning sound plays.   |
+| **TC-L1-07**     | Partial circuit               | Arrange incomplete circuit                                | Bulb remains off; timer inactive.                              |
+| **TC-L1-08**     | Complete circuit (no timer)   | Closed circuit without timer                              | Bulb lights; timer inactive.                                   |
+| **TC-L1-09**     | Complete circuit with timer   | Closed circuit including timer                            | Bulb lights; timer activates.                                  |
+| **TC-L1-10**     | All goals met                 | Closed circuit, switch closed, bulb lit, timer active     | Game enters win state; victory animation/message appears.      |
+| **TC-L1-11**     | Hint visibility               | Start level                                               | Ghost wire visible until circuit complete, then disappears.    |
+| **TC-L1-12**     | Switch break test             | Break circuit after win                                   | Bulb turns off; timer stops; win state canceled if applicable. |
+| **TC-L1-13**     | Grid snap feedback            | Drag component near grid boundary                         | Preview “snap” position shown before release.                  |
+| **TC-L1-14**     | Drag cancel                   | Drag component, release outside grid                      | Component returns to original position with animation.         |
+| **TC-L1-15**     | Overlap highlight             | Drag onto occupied tile                                   | Target tile highlights red; placement rejected.                |
+| **TC-L1-16**     | Switch visual state           | Toggle `switch1`                                          | Switch graphic updates (icon or animation).                    |
+| **TC-L1-17**     | Bulb lit visual               | Complete closed circuit                                   | Bulb glow animation plays.                                     |
+| **TC-L1-18**     | Timer running visual          | Timer in circuit                                          | Timer digits animate and increment.                            |
+| **TC-L1-19**     | Timer stopped visual          | Break circuit with active timer                           | Timer freezes at last value.                                   |
+| **TC-L1-20**     | Hint ghost wire fade          | Complete correct path                                     | Ghost wire fades out smoothly.                                 |
+| **TC-L1-21**     | Component selection highlight | Long press movable component                              | Component highlights/scales to show selection.                 |
+| **TC-L1-22**     | Placement sound               | Place in valid position                                   | Placement sound plays once.                                    |
+| **TC-L1-23**     | Invalid placement sound       | Invalid drop                                              | Error/warning sound plays.                                     |
+| **TC-L1-24**     | Tap accuracy                  | Tap edges of small component                              | Tap still registers if within visible bounds.                  |
+| **TC-L1-25**     | Mobile responsiveness         | Rotate screen during play                                 | Layout repositions correctly; component positions preserved.   |
+| **TC-L1-26**     | Goal tracker update           | Achieve partial goal                                      | Goal checklist updates in real time.                           |
+| **TC-L1-27**     | Win animation                 | Win level                                                 | Victory animation plays; “Next Level” button appears.          |
+| **TC-L1-28**     | Restart level                 | Tap restart mid-game                                      | Level resets to starting positions/states.                     |
+| **TC-L1-29**     | Undo last move                | Tap undo after moving component                           | Component returns to previous position.                        |
+| **TC-L1-30**     | Switch spam prevention        | Rapidly tap `switch1`                                     | Extra taps ignored until animation completes.                  |
+
+## 3. Next Steps to Achieve Full Test Coverage
+
+To achieve full test coverage for Level 1 and beyond, we will follow these steps:
+
+1.  **Create a Test Plan:** For each level, we will create a test plan that is based on the master list of test cases in this document. The test plan will be a markdown file in the `test/plans` directory.
+
+2.  **Add Keys to Widgets:** To make it easier to find widgets in the tests, we will add unique keys to the `CircuitComponentWidget`s and other interactive widgets.
+
+3.  **Implement the Test Suite:** We will create a new test file for each level (e.g., `test/ui/level_01_interaction_test.dart`) and implement the test cases in the test plan.
+
+4.  **Prioritize Bug Fixes:** We will prioritize the implementation of test cases that are most likely to help us find and fix bugs.
+
+5.  **Continuously Integrate:** We will integrate the tests into our CI/CD pipeline to ensure that they are run automatically on every commit.
+
+By following this plan, we can build a comprehensive and robust suite of automated tests that will help us to improve the quality of the Circuit STEM project and to ensure that it provides a great user experience.
+
+---
+
+## Legacy Testing Notes
+
+This section contains the previous version of the testing documentation for historical reference.
+
 # Testing Strategy
 
 **Project:** Circuit STEM

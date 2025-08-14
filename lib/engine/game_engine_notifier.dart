@@ -145,6 +145,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
   void togglePause() => setPaused(!state.isPaused);
 
   void startDrag(String componentId, Offset position) {
+    Logger.log('GameEngineNotifier: startDrag for component $componentId');
     state = state.copyWith(draggedComponentId: componentId, dragPosition: position);
   }
 
@@ -155,6 +156,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
   }
 
   void endDrag(String componentId) {
+    Logger.log('GameEngineNotifier: endDrag for component $componentId');
     if (state.draggedComponentId != componentId || state.dragPosition == null) {
       state = state.copyWith(draggedComponentId: null, dragPosition: null);
       return;
@@ -162,6 +164,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
     final newCol = (state.dragPosition!.dx / cellSize).floor();
     final newRow = (state.dragPosition!.dy / cellSize).floor();
+    Logger.log('GameEngineNotifier: new position ($newRow, $newCol)');
 
     final componentToMove = state.grid.componentsById[componentId];
     if (componentToMove != null) {
@@ -174,8 +177,10 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
       // Basic validation before committing the state
       // A more robust validation would check for collisions
       if (newGrid.validate().isEmpty) {
+          Logger.log('GameEngineNotifier: new position is valid');
           state = state.copyWith(grid: newGrid);
       } else {
+        Logger.log('GameEngineNotifier: new position is invalid');
         _audioService.play(AppAssets.audioWarning);
       }
     }

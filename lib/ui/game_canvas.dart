@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../common/constants.dart';
 import '../core/providers.dart';
 import '../ui/canvas_painter.dart';
+import '../common/logger.dart';
 
 class GameCanvas extends ConsumerStatefulWidget {
   const GameCanvas({Key? key}) : super(key: key);
@@ -45,15 +46,18 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
         final tapPos = details.localPosition;
         final col = (tapPos.dx / cellSize).floor();
         final row = (tapPos.dy / cellSize).floor();
+        Logger.log('GameCanvas: Tap down at ($row, $col)');
         gameNotifier.handleTap(row, col);
       },
       onPanStart: (details) {
         final startPos = details.localPosition;
         final col = (startPos.dx / cellSize).floor();
         final row = (startPos.dy / cellSize).floor();
+        Logger.log('GameCanvas: Pan start at ($row, $col)');
 
         final component = ref.read(gameEngineProvider).grid.componentsAt(row, col).firstOrNull;
         if (component != null && component.isDraggable) {
+          Logger.log('GameCanvas: Starting drag for component ${component.id}');
           gameNotifier.startDrag(component.id, startPos);
         }
       },
@@ -66,6 +70,7 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
       onPanEnd: (details) {
         final draggedId = ref.read(gameEngineProvider).draggedComponentId;
         if (draggedId != null) {
+          Logger.log('GameCanvas: Pan end for component $draggedId');
           gameNotifier.endDrag(draggedId);
         }
       },
