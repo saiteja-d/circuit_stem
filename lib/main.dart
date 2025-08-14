@@ -6,9 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'services/asset_manager.dart';
 import 'common/logger.dart';
-import 'services/level_manager.dart';
 import 'core/providers.dart';
-import 'ui/controllers/debug_overlay_controller.dart';
 
 void main() async {
   Logger.log('main() called');
@@ -20,23 +18,20 @@ void main() async {
   Logger.log('Initializing services...');
   FlameAudio.audioCache.prefix = '';
 
+  // Initialize services that need to be available synchronously.
   final prefs = await SharedPreferences.getInstance();
   final assetManager = AssetManager();
   await assetManager.loadAllAssets();
-  final levelManager = LevelManager(assetManager, prefs);
-  await levelManager.loadManifest();
-  final debugController = DebugOverlayController();
 
-  Logger.log('All services initialized.');
+  Logger.log('Base services initialized.');
 
   runApp(
     ProviderScope(
       overrides: [
-        // Override the providers with the initialized service instances.
-        sharedPreferencesProvider.overrideWith((ref) => prefs),
-        assetManagerProvider.overrideWith((ref) => assetManager),
-        levelManagerProvider.overrideWith((ref) => levelManager),
-        debugOverlayControllerProvider.overrideWith((ref) => debugController),
+        // Override the foundational providers with the initialized service instances.
+        // Notifiers that depend on these will automatically use the correct instance.
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        assetManagerProvider.overrideWithValue(assetManager),
       ],
       child: const App(),
     ),

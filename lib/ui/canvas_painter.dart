@@ -13,7 +13,7 @@ class CanvasPainter extends CustomPainter {
 
   CanvasPainter({
     this.renderState,
-    required this.showDebugOverlay,
+    this.showDebugOverlay = false, // Made optional
     required this.assetManager,
   });
 

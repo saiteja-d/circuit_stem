@@ -47,6 +47,8 @@ abstract class $GameEngineStateCopyWith<$Res> {
       Offset? dragPosition,
       bool isShortCircuit,
       RenderState? renderState});
+
+  $GridCopyWith<$Res> get grid;
 }
 
 /// @nodoc
@@ -108,6 +110,16 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
               as RenderState?,
     ) as $Val);
   }
+
+  /// Create a copy of GameEngineState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GridCopyWith<$Res> get grid {
+    return $GridCopyWith<$Res>(_value.grid, (value) {
+      return _then(_value.copyWith(grid: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -127,6 +139,9 @@ abstract class _$$GameEngineStateImplCopyWith<$Res>
       Offset? dragPosition,
       bool isShortCircuit,
       RenderState? renderState});
+
+  @override
+  $GridCopyWith<$Res> get grid;
 }
 
 /// @nodoc

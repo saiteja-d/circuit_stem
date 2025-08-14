@@ -13,9 +13,7 @@ class GameCanvas extends ConsumerStatefulWidget {
 }
 
 class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStateMixin {
-  String? _draggedComponentId;
   late final Ticker _ticker;
-  Duration _lastElapsed = Duration.zero;
 
   @override
   void initState() {
@@ -24,10 +22,9 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
   }
 
   void _onTick(Duration elapsed) {
-    final gameEngineNotifier = ref.read(gameEngineProvider.notifier);
-    final dt = (elapsed - _lastElapsed).inMilliseconds / 1000.0;
-    _lastElapsed = elapsed;
-    gameEngineNotifier.update(dt);
+    // This ticker can be used to drive animations if needed.
+    // The `elapsed` duration can be used to calculate animation frames.
+    // For example: ref.read(gameEngineProvider.notifier).update(elapsed);
   }
 
   @override
@@ -38,9 +35,8 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final gameEngineNotifier = ref.read(gameEngineProvider.notifier);
-    final gameEngineState = ref.watch(gameEngineProvider);
-    final debugController = ref.watch(debugOverlayControllerProvider);
+    final gameNotifier = ref.read(gameEngineProvider.notifier);
+    final renderState = ref.watch(renderStateProvider);
     final assetManager = ref.watch(assetManagerProvider);
 
     return GestureDetector(
@@ -49,38 +45,33 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
         final tapPos = details.localPosition;
         final col = (tapPos.dx / cellSize).floor();
         final row = (tapPos.dy / cellSize).floor();
-        gameEngineNotifier.handleTap(row, col);
+        gameNotifier.handleTap(row, col);
       },
       onPanStart: (details) {
         final startPos = details.localPosition;
         final col = (startPos.dx / cellSize).floor();
         final row = (startPos.dy / cellSize).floor();
 
-        final component = gameEngineNotifier.findComponentByPosition(row, col);
+        final component = ref.read(gameEngineProvider).grid.componentsAt(row, col).firstOrNull;
         if (component != null && component.isDraggable) {
-          setState(() {
-            _draggedComponentId = component.id;
-          });
-          gameEngineNotifier.startDragging(component.id, startPos);
+          gameNotifier.startDrag(component.id, startPos);
         }
       },
       onPanUpdate: (details) {
-        if (_draggedComponentId != null) {
-          gameEngineNotifier.updateDragPosition(details.localPosition);
+        final draggedId = ref.read(gameEngineProvider).draggedComponentId;
+        if (draggedId != null) {
+          gameNotifier.updateDrag(draggedId, details.localPosition);
         }
       },
       onPanEnd: (details) {
-        if (_draggedComponentId != null) {
-          gameEngineNotifier.endDragging();
-          setState(() {
-            _draggedComponentId = null;
-          });
+        final draggedId = ref.read(gameEngineProvider).draggedComponentId;
+        if (draggedId != null) {
+          gameNotifier.endDrag(draggedId);
         }
       },
       child: CustomPaint(
         painter: CanvasPainter(
-          renderState: gameEngineState.renderState,
-          showDebugOverlay: debugController.isVisible,
+          renderState: renderState,
           assetManager: assetManager,
         ),
         size: Size.infinite,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:circuit_stem/routes.dart';
 import 'package:circuit_stem/ui/widgets/level_card.dart';
-import 'package:circuit_stem/common/theme.dart'; // Import the theme file
+import 'package:circuit_stem/common/theme.dart';
 import 'package:circuit_stem/core/providers.dart';
 
 class LevelSelectScreen extends ConsumerStatefulWidget {
@@ -31,22 +31,29 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
     super.dispose();
   }
 
-  void _navigateToLevel(String levelId) {
-    ref.read(levelManagerProvider.notifier).loadLevelByIndex(
-        ref.read(levelManagerProvider).levels.indexWhere((lvl) => lvl.id == levelId));
-    Navigator.of(context).pushNamed(AppRoutes.gameScreen);
+  void _navigateToLevel(int index) {
+    // Load the level definition and then navigate
+    ref.read(levelManagerProvider.notifier).loadLevelByIndex(index).then((level) {
+      if (level != null) {
+        ref.read(gameEngineProvider.notifier).loadLevel(level);
+        Navigator.of(context).pushNamed(AppRoutes.gameScreen);
+      }
+      // Optionally, handle the case where the level fails to load
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final levelManager = ref.watch(levelManagerProvider);
+    final levelManagerState = ref.watch(levelManagerProvider);
+    final levels = levelManagerState.levels;
+    final completedLevelIds = levelManagerState.completedLevelIds;
 
-    if (levelManager.hasError) {
+    if (levelManagerState.errorMessage != null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Error')),
         body: Center(
           child: Text(
-            levelManager.errorMessage ?? 'An unknown error occurred.',
+            levelManagerState.errorMessage!,
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -54,8 +61,13 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
       );
     }
 
-    final levels = levelManager.levels;
-    final completedLevelsCount = levelManager.completedLevels.length;
+    if (levelManagerState.isLoading && levels.isEmpty) {
+        return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+        );
+    }
+
+    final completedLevelsCount = completedLevelIds.length;
     final totalLevels = levels.length;
 
     return Scaffold(
@@ -147,10 +159,8 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final level = levels[index];
-                  final isUnlocked =
-                      ref.read(levelManagerProvider.notifier).isLevelUnlocked(level.id);
-                  final isCompleted =
-                      ref.read(levelManagerProvider.notifier).isLevelCompleted(level.id);
+                  final isUnlocked = level.unlocked;
+                  final isCompleted = completedLevelIds.contains(level.id);
 
                   return FadeTransition(
                     opacity: _fadeController,
@@ -171,7 +181,7 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
                         isUnlocked: isUnlocked,
                         isCompleted: isCompleted,
                         onTap:
-                            isUnlocked ? () => _navigateToLevel(level.id) : null,
+                            isUnlocked ? () => _navigateToLevel(index) : null,
                       ),
                     ),
                   );

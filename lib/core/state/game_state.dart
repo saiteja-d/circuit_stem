@@ -19,16 +19,16 @@ class GameState with _$GameState {
     @Default(0.0) double wireOffset,
   }) = _GameState;
 
-  factory GameState.initial() => GameState(
+  factory GameState.initial() => const GameState(
         grid: Grid(rows: 0, cols: 0),
         isPaused: false,
         isWin: false,
-        availableComponents: const [],
+        availableComponents: [],
       );
 }
 
 class GameStateNotifier extends StateNotifier<GameState> {
-  GameStateNotifier() : super(GameState.initial());
+  GameStateNotifier() : super(const GameState.initial());
 
   void updateGrid(Grid newGrid) {
     state = state.copyWith(grid: newGrid);

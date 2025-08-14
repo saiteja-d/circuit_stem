@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../models/level_metadata.dart';
-
-import '../game_screen.dart';
+import '../../routes.dart';
 
 class LevelGrid extends ConsumerWidget {
   const LevelGrid({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final levelManager = ref.watch(levelManagerProvider);
-    final levels = levelManager.levels;
+    final levels = ref.watch(levelsProvider);
+    final completedLevelIds = ref.watch(completedLevelIdsProvider);
 
     return Column(
       children: [
@@ -34,8 +33,10 @@ class LevelGrid extends ConsumerWidget {
             itemCount: levels.length,
             itemBuilder: (context, index) {
               final level = levels[index];
+              final isCompleted = completedLevelIds.contains(level.id);
               return _LevelCard(
                 level: level,
+                isCompleted: isCompleted,
                 onTap: level.unlocked ? () => _startLevel(context, ref, index) : null,
               );
             },
@@ -45,30 +46,35 @@ class LevelGrid extends ConsumerWidget {
     );
   }
 
-  void _startLevel(BuildContext context, WidgetRef ref, int index) async {
-    final levelManager = ref.read(levelManagerProvider);
-    await levelManager.loadLevelByIndex(index);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const GameScreen(),
-      ),
-    );
+  void _startLevel(BuildContext context, WidgetRef ref, int index) {
+    ref.read(levelManagerProvider.notifier).loadLevelByIndex(index).then((level) {
+      if (level != null) {
+        ref.read(gameEngineProvider.notifier).loadLevel(level);
+        Navigator.of(context).pushNamed(AppRoutes.gameScreen);
+      }
+    });
   }
 }
 
 class _LevelCard extends StatelessWidget {
   final LevelMetadata level;
+  final bool isCompleted;
   final VoidCallback? onTap;
 
   const _LevelCard({
     required this.level,
+    required this.isCompleted,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final isLocked = !level.unlocked;
+    final color = isLocked 
+        ? Colors.grey 
+        : isCompleted 
+            ? Colors.green 
+            : Theme.of(context).colorScheme.primary;
 
     return Card(
       child: InkWell(
@@ -79,9 +85,9 @@ class _LevelCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                isLocked ? Icons.lock : Icons.lightbulb_outline,
+                isLocked ? Icons.lock : (isCompleted ? Icons.check_circle : Icons.lightbulb_outline),
                 size: 32,
-                color: isLocked ? Colors.grey : Theme.of(context).colorScheme.primary,
+                color: color,
               ),
               const SizedBox(height: 8),
               Text(
