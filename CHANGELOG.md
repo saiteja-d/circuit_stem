@@ -1,5 +1,30 @@
 ## [Unreleased] - 2025-08-14
 
+## [2025-08-14 9PM] - Debugging & Unresolved Test Issues
+
+### Added
+
+-   A new test suite for asset management (`test/common/assets_test.dart`) to ensure all asset paths are valid and prevent broken asset links in the future.
+
+### Fixed
+
+-   Fixed a critical bug in the level parser that caused a crash when loading levels. The parser now correctly handles various direction formats (e.g., "up", "down", "left", "right" in addition to "north", "south", "east", "west"), making the level loading process more robust.
+-   Resolved an audio playback issue on the web by converting all `.mp3` audio files to the more broadly supported `.wav` format.
+
+### Changed
+
+-   Refactored the asset management system to improve maintainability and flexibility. This includes:
+    -   Centralizing all asset paths into a new `AppAssets` class (`lib/common/assets.dart`).
+    -   Simplifying the `AudioService` to be more generic and reusable.
+    -   Updating the `AssetManager` to be driven by the new `AppAssets` manifest.
+
+### Debugging & Unresolved Issues
+
+-   **Persistent Test Compilation Error:** Encountered and repeatedly failed to resolve a `Type 'Component' not found` error during test compilation (both macOS and Chrome platforms). This issue remains unresolved despite extensive debugging, project cleaning, and import verification.
+-   **macOS Build Environment Issue:** Identified that the macOS application build failed due to missing Xcode command-line tools (`xcodebuild`). This is a separate system configuration issue, not directly related to the `Component` type error, but it prevented macOS test execution.
+-   **Outdated Package Dependencies:** Noted that 26 packages have newer versions incompatible with dependency constraints. While not the direct cause of the compilation error, this indicates potential project instability.
+
+
 ### Added
 
 -   A new test suite for asset management (`test/common/assets_test.dart`) to ensure all asset paths are valid and prevent broken asset links in the future.

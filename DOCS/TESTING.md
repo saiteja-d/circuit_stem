@@ -1,7 +1,7 @@
 # Comprehensive Testing Strategy
 
 **Project:** Circuit STEM
-**Last Updated:** 2025-08-14 EST
+**Last Updated:** 2025-08-14 9PM EST
 
 ---
 
@@ -68,6 +68,14 @@ To achieve full test coverage for Level 1 and beyond, we will follow these steps
 5.  **Continuously Integrate:** We will integrate the tests into our CI/CD pipeline to ensure that they are run automatically on every commit.
 
 By following this plan, we can build a comprehensive and robust suite of automated tests that will help us to improve the quality of the Circuit STEM project and to ensure that it provides a great user experience.
+
+## Known Testing Issues (as of 2025-08-14 9PM EST)
+
+During recent debugging efforts, several critical issues impacting test compilation and execution were identified:
+
+*   **Persistent Test Compilation Error:** Tests consistently fail to compile with `Error: Type 'Component' not found` in `test/helpers/level_01_test_helper.dart`. This issue remains unresolved despite extensive debugging, project cleaning (`flutter clean`), and repeated verification of import statements. This indicates a deeper problem with how the test environment resolves package imports.
+*   **macOS Build Environment Issue:** The macOS application build and test execution are blocked by a missing `xcodebuild` utility. This is a system-level configuration issue (missing Xcode command-line tools) that needs to be addressed by running `xcode-select --install`.
+*   **Outdated Package Dependencies:** The project has 26 packages with newer versions incompatible with current dependency constraints. While not directly causing the compilation error, this can lead to instability and should be addressed by running `flutter pub outdated` and updating `pubspec.yaml`.
 
 ---
 

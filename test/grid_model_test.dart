@@ -4,6 +4,7 @@ import 'package:circuit_stem/models/level_definition.dart';
 import 'package:circuit_stem/engine/game_engine_notifier.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('GameEngineNotifier Grid Logic Tests', () {
     late GameEngineNotifier notifier;
     const initialLevel = LevelDefinition(
