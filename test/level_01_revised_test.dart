@@ -31,7 +31,7 @@ void main() {
       expect(switchComponent, isNotNull, reason: "Switch 'switch1' should exist in level 1");
       expect(switchComponent!.type, ComponentType.sw);
 
-      final initialSwitchClosed = Level1TestHelper.getSwitchState(switchComponent!);
+      final initialSwitchClosed = Level1TestHelper.getSwitchState(switchComponent);
       
       await Level1TestHelper.tapComponent(
         tester, 
@@ -42,7 +42,7 @@ void main() {
       final newSwitchComponent = Level1TestHelper.findComponentById(container, 'switch1')!;
       final finalSwitchClosed = Level1TestHelper.getSwitchState(newSwitchComponent);
       
-      expect(finalSwitchClosed, !initialSwitchClosed, reason: "Switch state should toggle after tap.");
+      expect(finalSwitchClosed, !initialSwitchClosed, reason: 'Switch state should toggle after tap.');
     });
 
     testWidgets('TC-L1-02: Move timer component', (WidgetTester tester) async {
@@ -50,18 +50,18 @@ void main() {
       
       final timerComponent = Level1TestHelper.findComponentById(container, 'timer1');
       expect(timerComponent, isNotNull, reason: "Timer 'timer1' should exist in level 1");
-      expect(timerComponent!.isDraggable, isTrue, reason: "Timer should be draggable");
+      expect(timerComponent!.isDraggable, isTrue, reason: 'Timer should be draggable');
 
       final fromPos = Position(r: timerComponent.r, c: timerComponent.c);
       // Define a valid, empty position to move to.
       // Based on level_01.json, (3,2) is empty.
-      final toPos = Position(r: 3, c: 2);
+      const toPos = Position(r: 3, c: 2);
       
       await Level1TestHelper.dragComponent(tester, fromPos, toPos);
       await Level1TestHelper.waitForCircuitUpdate(tester);
 
       final movedComponent = Level1TestHelper.findComponentById(container, 'timer1')!;
-      expect(Level1TestHelper.isComponentAtPosition(movedComponent, toPos), isTrue, reason: "Timer should be at the new position after dragging.");
+      expect(Level1TestHelper.isComponentAtPosition(movedComponent, toPos), isTrue, reason: 'Timer should be at the new position after dragging.');
     });
   });
 }

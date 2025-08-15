@@ -40,29 +40,29 @@ final gameEngineProvider = StateNotifierProvider<GameEngineNotifier, GameEngineS
 /// Provider for the list of all level metadata.
 final levelsProvider = Provider<List<LevelMetadata>>((ref) {
   return ref.watch(levelManagerProvider).levels;
-});
+}, dependencies: [levelManagerProvider]);
 
 /// Provider for the set of completed level IDs.
 final completedLevelIdsProvider = Provider<Set<String>>((ref) {
   return ref.watch(levelManagerProvider).completedLevelIds;
-});
+}, dependencies: [levelManagerProvider]);
 
 /// Provider that returns true if the level manager is busy loading.
 final levelIsLoadingProvider = Provider<bool>((ref) {
   return ref.watch(levelManagerProvider).isLoading;
-});
+}, dependencies: [levelManagerProvider]);
 
 /// Provider for the currently loaded level definition.
 final currentLevelDefinitionProvider = Provider<LevelDefinition?>((ref) {
   return ref.watch(levelManagerProvider).currentLevelDefinition;
-});
+}, dependencies: [levelManagerProvider]);
 
 /// Provider for the game's render state.
 final renderStateProvider = Provider<RenderState?>((ref) {
   return ref.watch(gameEngineProvider.select((state) => state.renderState));
-});
+}, dependencies: [gameEngineProvider]);
 
 /// Provider that returns true if the game has been won.
 final isWinProvider = Provider<bool>((ref) {
   return ref.watch(gameEngineProvider.select((state) => state.isWin));
-});
+}, dependencies: [gameEngineProvider]);

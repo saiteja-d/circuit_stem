@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:meta/meta.dart';
 import '../common/logger.dart';
 import '../models/level_definition.dart';
 import '../models/level_metadata.dart';
 import 'level_manager_state.dart';
+
 
 /// Notifier for managing level state, including loading, progress, and persistence.
 class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
@@ -16,6 +18,10 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
   LevelManagerNotifier(this._sharedPrefs) : super(const LevelManagerState()) {
     _loadManifest();
   }
+
+  /// Exposes the raw state for testing purposes.
+  @visibleForTesting
+  LevelManagerState get debugState => state;
 
   /// Loads the level manifest and user progress from storage.
   Future<void> _loadManifest() async {

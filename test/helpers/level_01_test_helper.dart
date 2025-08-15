@@ -112,7 +112,7 @@ class Level1TestHelper {
     );
 
     final level = await levelManager.loadLevelByIndex(0);
-    expect(level, isNotNull, reason: "Test setup failed: Level 01 could not be loaded.");
+    expect(level, isNotNull, reason: 'Test setup failed: Level 01 could not be loaded.');
 
     final gameEngineNotifier = GameEngineNotifier(initialLevel: level);
 
@@ -165,7 +165,7 @@ class Level1TestHelper {
   }
   
   static bool getSwitchState(ComponentModel component) {
-    assert(component.type == ComponentType.sw, "Component must be a switch");
+    assert(component.type == ComponentType.sw, 'Component must be a switch');
     return component.state['closed'] as bool? ?? false;
   }
 
