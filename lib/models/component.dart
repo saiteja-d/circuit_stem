@@ -212,3 +212,6 @@ class ComponentModel with _$ComponentModel {
 
   bool get isDraggable => type != ComponentType.battery && type != ComponentType.bulb;
 }
+
+// Type alias for backward compatibility with tests
+typedef Component = ComponentModel;

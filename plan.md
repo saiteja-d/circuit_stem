@@ -1,122 +1,48 @@
-Plan for review and robust testing of Level 01
+Plan: Isolate and fix the compile-time error Type 'Component' not found in tests
 
-Overview
-- Objective: Review Level 01 testing implementation, align with DOCS/TESTING.md and DOCS/Architecture.md, identify gaps, and architect a robust testing build for level gameplay. Create concrete, executable steps that can be implemented incrementally.
+Objective
+- Determine why the Component model is not being resolved in the test environment despite existing in lib/models and used by the app.
 
-Goals
-- Align tests with published testing docs
-- Improve reliability and coverage of Level 01 tests
-- Establish a clear testing plan for CI integration
-- Provide visual diagrams of testing workflow to aid understanding
+Actions
+1) Confirm current test imports and generated files
+- Inspect lib/models/component.dart and its generated part files (component.freezed.dart, component.g.dart).
+- Review test/helpers/level_01_test_helper.dart and test/level_01_revised_test.dart imports to identify mismatches.
 
-High-level Architecture of Testing (Mermaid)
-```mermaid
-graph TD
-  A[User Interactions (UI)] --> B[GameEngineNotifier (Riverpod)]
-  B --> C[LogicEngine (Pure Dart)]
-  C --> D[EvaluationResult]
-  D --> E[Grid & Components State]
-  E --> F[UI Canvas & Widgets]
-  F --> G[Test Helpers / Test Harness]
-  subgraph Test Loop
-    H[Widget Test] --> I[Simulated Gestures]
-    I --> J[Provider Overrides]
-    J --> K[State Assertion]
-  end
-```
+2) Create a minimal isolated test scaffold (non-invasive)
+- Add a minimal test that only imports the Component model to verify resolution in the test runner.
+- Ensure this does not alter production code paths.
 
-What we will change (targeted, surgical edits)
-- Improve test helpers to better simulate grid gestures
-- Ensure LevelSelect navigation is robust in tests
-- Add explicit tests for toggling switches, grid snapping, and invalid moves
-- Integrate with DOCS/TESTING.md bypassing non-deterministic cues
-- Add or refine mocks/overrides for Riverpod providers to stabilize tests
+3) Verify export/import structure
+- Ensure lib/models exports index (if present) or that tests import via package:circuit_stem/models/component.dart directly.
+- Check pubspec.yaml for test dependencies and any path overrides affecting test resolution.
 
-Planned Tasks mapped to TODO items
-- T1: Review current level01 testing implementation and related helpers
-- T2: Read and align with DOCS/TESTING.md and DOCS/Architecture.md
-- T3: Identify failing or flaky test scenarios and map to root causes
-- T4: Propose robust testing strategy for level01 and overall level game testing
-- T5: Design improvement plan for test harness, including level_01_test_helpers.dart and interaction tests
-- T6: Create initial testing build plan and high-level architecture diagram (Mermaid)
-- T7: Implement scaffolding changes to enable robust testing build
-- T8: Validate changes by running test suite locally
-- T9: Create plan.md documenting testing plan, Mermaid diagram, and CI steps
-- T10: Add initial Mermaid diagram illustrating Level 1 testing workflow and data flow
+4) Inspect test runner and code generation
+- Look for references to generated code (freezed/json_serializable) in test context.
+- Validate that test environment runs code generation as part of the build (flutter pub run build_runner test or equivalent, if used).
 
-Risks and assumptions
-- Tests rely on a deterministic UI state; where randomness exists, we will mock or seed inputs
-- Level 01 is ultimately driven by Riverpod state; tests will override providers to isolate logic
-- The CustomPainter grid interactions will be simulated by precise pixel coordinates derived from grid mapping
+5) Check for common resolution issues
+- Confirm that test Dart sdk constraints align with freezed/json_serializable versions.
+- Ensure the generated .g.dart/.freezed.dart files exist on disk and are included in the test compilation.
 
-Acceptance criteria
-- plan.md exists with a clear, actionable plan and Mermaid diagram
-- Updated test scaffolding improves stability of Level 01 tests
-- Documentation reflects the current testing strategy and next steps
-- CI can be wired to run Level 01 tests reliably
+6) Reproduce and narrow down
+- Run a clean test build locally (flutter clean; flutter pub get; flutter test) focusing on the failing test path to capture exact errors.
 
-Next actions
-- Implement the plan.md content into the repository
-- Create/adjust tests in test/ui/ to exercise the listed TC-L1 test cases with coordinate-based gestures
-- Add or adjust Mermaid diagrams in plan.md to reflect Level 01 testing workflow
+7) Propose targeted fixes
+- If imports are incorrect, adjust test files to use consistent package paths.
+- If generated parts are missing, ensure part directives exist and are included in test scope.
+- If necessary, add a centralized export in lib/models to simplify imports in tests.
+
+8) Update documentation / changelog
+- Note the root cause, proposed fix, and test plan in CHANGELOG.md and DOCS/TESTING.md.
+
+9) Validate fix
+- Execute a clean test run to confirm compilation passes and tests begin to execute.
+
+10) Report results
+- Provide a concise summary of findings, exact code changes if any, and next steps for the team.
 
 Notes
-- I will proceed to create plan.md as described above and then update the TODO list accordingly after confirmation.
-## 3. TC-L1-01a Plan: Level 1 Toggle Switch double-tap interaction
+- All changes should be scoped to tests or model exports without impacting runtime app behavior.
+- Maintain existing coding standards and test conventions.
 
-- Objective: verify that tapping the toggle switch twice returns to the original state, ensuring idempotent behavior across rapid user interactions.
-
-- Patch overview:
-  - Update test/ui/level_01_interaction_test.dart to add a new test TC-L1-01a that:
-    - Locates switch1 via Level1TestHelper.findComponentById.
-    - Reads the initial switchOpen state.
-    - Taps the switch once using Level1TestHelper.tapComponent at the switch's grid position.
-    - Waits for the circuit/state to settle (Level1TestHelper.waitForCircuitUpdate).
-    - Taps the switch a second time at the same position.
-    - Waits for state stabilization again.
-    - Asserts that the final switchOpen state equals the initial state.
-
-  - Add a minimal companion helper or helper usage in test/ui/level_01_test_helpers.dart if needed to ensure waitForCircuitUpdate is invoked between taps and to expose a stable grid position for the switch.
-
-- Validation:
-  - Run flutter test test/ui/level_01_interaction_test.dart to verify TC-L1-01a passes in isolation.
-  - Ensure test does not introduce flakiness by picking deterministic delays via waitForCircuitUpdate.
-
-- Scope: This is a focused, surgical step to validate double-tap behavior. If successful, extend the same pattern to additional TC-L1 test cases as planned.
-
-- Dependencies and notes:
-  - Assumes TC-L1-01 (single tap toggle) remains in place and functional.
-  - If the component state is stored in a non-serializable map, ensure proper casting for the boolean value retrieval.
-
-- Next actions after applying:
-  - Run the test suite for Level 1 interaction tests and iterate on any failures.
-  - Document results in plan.md and update the TODO state accordingly.
-## 3. TC-L1-01a Plan: Level 1 Toggle Switch double-tap interaction
-
-- Objective: verify that tapping the toggle switch twice returns to the original state, ensuring idempotent behavior across rapid user interactions.
-
-- Patch overview:
-  - Update test/ui/level_01_interaction_test.dart to add a new test TC-L1-01a that:
-    - Locates switch1 via Level1TestHelper.findComponentById.
-    - Reads the initial switchOpen state.
-    - Taps the switch once using Level1TestHelper.tapComponent at the switch's grid position.
-    - Waits for the circuit/state to settle (Level1TestHelper.waitForCircuitUpdate).
-    - Taps the switch a second time at the same position.
-    - Waits for state stabilization again.
-    - Asserts that the final switchOpen state equals the initial state.
-
-  - Add a minimal companion helper or helper usage in test/ui/level_01_test_helpers.dart if needed to ensure waitForCircuitUpdate is invoked between taps and to expose a stable grid position for the switch.
-
-- Validation:
-  - Run flutter test test/ui/level_01_interaction_test.dart to verify TC-L1-01a passes in isolation.
-  - Ensure test does not introduce flakiness by picking deterministic delays via waitForCircuitUpdate.
-
-- Scope: This is a focused, surgical step to validate double-tap behavior. If successful, extend the same pattern to additional TC-L1 test cases as planned.
-
-- Dependencies and notes:
-  - Assumes TC-L1-01 (single tap toggle) remains in place and functional.
-  - If the component state is stored in a non-serializable map, ensure proper casting for the boolean value retrieval.
-
-- Next actions after applying:
-  - Run the test suite for Level 1 interaction tests and iterate on any failures.
-  - Document results in plan.md and update the TODO state accordingly.
+End of plan
