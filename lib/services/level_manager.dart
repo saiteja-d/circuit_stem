@@ -19,6 +19,7 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
 
   /// Loads the level manifest and user progress from storage.
   Future<void> _loadManifest() async {
+    print('LevelManagerNotifier: _loadManifest START');
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final manifestString = await rootBundle.loadString('assets/levels/level_manifest.json');
@@ -46,6 +47,7 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
         isLoading: false,
       );
     } catch (e, stackTrace) {
+      print('LevelManagerNotifier: _loadManifest ERROR: $e\n$stackTrace');
       Logger.log('Failed to load level manifest: $e\n$stackTrace');
       state = state.copyWith(
         isLoading: false,
@@ -56,10 +58,17 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
 
   /// Loads the full definition for a specific level by its index.
   Future<LevelDefinition?> loadLevelByIndex(int index) async {
-    if (index < 0 || index >= state.levels.length) return null;
+    print('LevelManagerNotifier: loadLevelByIndex START for index $index');
+    print('LevelManagerNotifier: state.levels.length: ${state.levels.length}');
+    if (index < 0 || index >= state.levels.length) {
+      print('LevelManagerNotifier: loadLevelByIndex - Invalid index $index or state.levels is empty. Length: ${state.levels.length}');
+      return null;
+    }
 
     final levelMeta = state.levels[index];
+    print('LevelManagerNotifier: levelMeta.id: ${levelMeta.id}, unlocked: ${levelMeta.unlocked}');
     if (!levelMeta.unlocked) {
+      print('LevelManagerNotifier: loadLevelByIndex - Level ${levelMeta.id} is locked.');
       Logger.log('Attempted to load a locked level: ${levelMeta.id}');
       return null;
     }
@@ -67,11 +76,17 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final path = 'assets/levels/${levelMeta.id}.json';
+      print('LevelManagerNotifier: loadLevelByIndex - Loading level from path: $path');
       final jsonString = await rootBundle.loadString(path);
-      final levelDef = LevelDefinition.fromJson(json.decode(jsonString));
+      print('LevelManagerNotifier: loadLevelByIndex - jsonString length: ${jsonString.length}');
+      final decodedJson = json.decode(jsonString);
+      print('LevelManagerNotifier: loadLevelByIndex - decodedJson type: ${decodedJson.runtimeType}');
+      final levelDef = LevelDefinition.fromJson(decodedJson);
       state = state.copyWith(currentLevelDefinition: levelDef, isLoading: false);
+      print('LevelManagerNotifier: loadLevelByIndex END (Success) for level ${levelMeta.id}');
       return levelDef;
     } catch (e, stackTrace) {
+      print('LevelManagerNotifier: loadLevelByIndex ERROR for level ${levelMeta.id}: $e\n$stackTrace');
       Logger.log('Failed to load level ${levelMeta.id}: $e\n$stackTrace');
       state = state.copyWith(
         isLoading: false,

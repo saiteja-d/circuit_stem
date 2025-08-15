@@ -1,5 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
-
+import 'package:flutter/services.dart';
 import 'package:circuit_stem/core/providers.dart';
 import 'package:circuit_stem/engine/game_engine_notifier.dart';
 import 'package:circuit_stem/models/component.dart';
@@ -13,7 +15,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 // Mocks
 class MockSharedPreferences extends Mock implements SharedPreferences {}
@@ -38,6 +39,59 @@ class Level1TestHelper {
   static const Size testCanvasSize = Size(384, 384); // 6x6 grid * 64px
 
   static Future<ProviderContainer> setupTestEnvironment(WidgetTester tester) async {
+    final Map<String, ByteData> assetData = {
+      'assets/levels/level_manifest.json': ByteData.sublistView(utf8.encode('''
+{
+  "levels": [
+    { "id": "level_01", "title": "First Spark", "description": "A simple circuit to get you started.", "levelNumber": 1 }
+  ]
+}
+''')),
+      'assets/levels/level_01.json': ByteData.sublistView(utf8.encode('''
+{
+  "id": "level_01",
+  "title": "Introduction to Circuits",
+  "description": "Learn the basics of connecting components.",
+  "levelNumber": 1,
+  "author": "SA",
+  "version": 1,
+  "rows": 8,
+  "cols": 8,
+  "blockedCells": [],
+  "components": [
+    {
+      "id": "bat1",
+      "type": "battery",
+      "position": { "r": 1, "c": 1 },
+      "rotation": 0
+    },
+    {
+      "id": "bulb1",
+      "type": "bulb",
+      "position": { "r": 4, "c": 2 },
+      "rotation": 0
+    }
+  ],
+  "goals": [
+    { "type": "power_bulb", "targetId": "bulb1" }
+  ],
+  "hints": []
+}
+''')),
+    };
+
+    // Set the mock asset handler
+    tester.binding.defaultBinaryMessenger.setMockMessageHandler(
+      'flutter/assets',
+      (ByteData? message) async {
+        if (message == null) {
+          return null;
+        }
+        final String key = utf8.decode(message.buffer.asUint8List());
+        return assetData[key];
+      },
+    );
+
     final mockPrefs = MockSharedPreferences();
     final mockAssetManager = MockAssetManager();
 
@@ -45,28 +99,27 @@ class Level1TestHelper {
     when(() => mockPrefs.getInt(any())).thenReturn(0);
     when(() => mockPrefs.setInt(any(), any())).thenAnswer((_) async => true);
 
+    // Create the notifier and wait for it to load
+    final levelManager = LevelManagerNotifier(mockPrefs);
+    await tester.pump(); // Allow the constructor to run
+
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         assetManagerProvider.overrideWithValue(mockAssetManager),
+        levelManagerProvider.overrideWith((ref) => levelManager),
       ],
     );
 
-    // Pre-load the level into the LevelManager
-    final levelManager = container.read(levelManagerProvider.notifier);
-    // Manifest is loaded automatically by the notifier constructor
     final level = await levelManager.loadLevelByIndex(0);
-    
     expect(level, isNotNull, reason: "Test setup failed: Level 01 could not be loaded.");
 
-    // Now, create the GameEngineNotifier with the pre-loaded level
     final gameEngineNotifier = GameEngineNotifier(initialLevel: level);
 
     await tester.pumpWidget(
       ProviderScope(
         parent: container,
         overrides: [
-          // Override the gameEngineProvider with our pre-initialized instance
           gameEngineProvider.overrideWith((ref) => gameEngineNotifier),
         ],
         child: MaterialApp(
@@ -83,7 +136,6 @@ class Level1TestHelper {
       ),
     );
     
-    // Wait for any initial frame rendering to complete
     await tester.pumpAndSettle();
 
     return container;
@@ -103,16 +155,16 @@ class Level1TestHelper {
     );
   }
 
-  static Component? findComponentById(ProviderContainer container, String id) {
+  static ComponentModel? findComponentById(ProviderContainer container, String id) {
     final state = container.read(gameEngineProvider);
     return state.grid.componentsById.values.where((c) => c.id == id).firstOrNull;
   }
 
-  static bool isComponentAtPosition(Component component, Position pos) {
+  static bool isComponentAtPosition(ComponentModel component, Position pos) {
     return component.r == pos.r && component.c == pos.c;
   }
   
-  static bool getSwitchState(Component component) {
+  static bool getSwitchState(ComponentModel component) {
     assert(component.type == ComponentType.sw, "Component must be a switch");
     return component.state['closed'] as bool? ?? false;
   }
@@ -128,7 +180,6 @@ class Level1TestHelper {
   }
   
   static Future<void> waitForCircuitUpdate(WidgetTester tester) async {
-    // pumpAndSettle is usually sufficient to wait for state changes and animations
     await tester.pumpAndSettle();
   }
 }

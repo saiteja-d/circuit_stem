@@ -15,7 +15,7 @@ void main() {
 
       // Verify that the game engine has loaded the correct level
       final level = container.read(gameEngineProvider).currentLevel!;
-      expect(level.title, 'Level 1');
+      expect(level.title, 'Introduction to Circuits');
       expect(level.levelNumber, 1);
 
       // Verify a known component from level 1 exists
@@ -31,7 +31,7 @@ void main() {
       expect(switchComponent, isNotNull, reason: "Switch 'switch1' should exist in level 1");
       expect(switchComponent!.type, ComponentType.sw);
 
-      final initialSwitchClosed = Level1TestHelper.getSwitchState(switchComponent);
+      final initialSwitchClosed = Level1TestHelper.getSwitchState(switchComponent!);
       
       await Level1TestHelper.tapComponent(
         tester, 
