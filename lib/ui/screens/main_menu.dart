@@ -182,6 +182,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton.icon(
+                          key: const Key('start_playing_button'),
                           onPressed: _navigateToLevelSelection,
                           icon: Icon(
                             Icons.play_arrow,

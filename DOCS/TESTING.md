@@ -59,7 +59,7 @@ To achieve full test coverage for Level 1 and beyond, we will follow these steps
 
 1.  **Create a Test Plan:** For each level, we will create a test plan that is based on the master list of test cases in this document. The test plan will be a markdown file in the `test/plans` directory.
 
-2.  **Add Keys to Widgets:** To make it easier to find widgets in the tests, we will add unique keys to the `CircuitComponentWidget`s and other interactive widgets.
+2.  **Simulate Gestures by Coordinate:** The game grid is rendered by a `CustomPainter`, not by individual widgets. Therefore, tests must simulate user interactions by calculating the pixel coordinates of a grid cell and using the `WidgetTester`'s gesture methods (e.g., `tester.tapAt(position)`). Other interactive UI elements outside the canvas (like buttons) should have `Key`s added to them for easy discovery.
 
 3.  **Implement the Test Suite:** We will create a new test file for each level (e.g., `test/ui/level_01_interaction_test.dart`) and implement the test cases in the test plan.
 
