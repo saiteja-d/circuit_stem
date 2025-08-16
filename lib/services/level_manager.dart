@@ -15,8 +15,10 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
 
   static const String _prefsKeyCompletedLevels = 'completed_levels';
 
-  LevelManagerNotifier(this._sharedPrefs) : super(const LevelManagerState()) {
-    _loadManifest();
+  LevelManagerNotifier(this._sharedPrefs) : super(const LevelManagerState());
+
+  Future<void> init() async {
+    await _loadManifest();
   }
 
   /// Exposes the raw state for testing purposes.
