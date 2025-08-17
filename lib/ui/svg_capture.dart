@@ -1,3 +1,4 @@
+// lib/ui/svg_capture.dart
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -5,13 +6,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SvgCapture extends StatefulWidget {
-  final List<String> svgStrings;
+  /// Map: assetPath -> svgString
+  final Map<String, String> svgMap;
   final Function(Map<String, ui.Image>) onImagesCaptured;
+  final double captureSize; // logical size to render each svg (width & height)
 
   const SvgCapture({
     Key? key,
-    required this.svgStrings,
+    required this.svgMap,
     required this.onImagesCaptured,
+    this.captureSize = 64.0,
   }) : super(key: key);
 
   @override
@@ -25,46 +29,64 @@ class _SvgCaptureState extends State<SvgCapture> {
   @override
   void initState() {
     super.initState();
-    for (final svgString in widget.svgStrings) {
-      _keys[svgString] = GlobalKey();
+    for (final key in widget.svgMap.keys) {
+      _keys[key] = GlobalKey();
     }
+    // Wait one frame for layout then capture
     WidgetsBinding.instance.addPostFrameCallback((_) => _captureWidgets());
   }
 
   Future<void> _captureWidgets() async {
-    for (final svgString in widget.svgStrings) {
-      final image = await _captureWidget(svgString);
+    final pixelRatio = MediaQuery.of(context).devicePixelRatio;
+    for (final entry in widget.svgMap.entries) {
+      final path = entry.key;
+      final image = await _captureWidget(path, pixelRatio: pixelRatio);
       if (image != null) {
-        _images[svgString] = image;
+        _images[path] = image;
+      } else {
+        debugPrint('SvgCapture: failed to capture $path');
       }
+      // Allow a frame to breathe between heavy captures (reduces jank)
+      await Future.delayed(Duration(milliseconds: 8));
     }
     widget.onImagesCaptured(_images);
   }
 
-  Future<ui.Image?> _captureWidget(String svgString) async {
+  Future<ui.Image?> _captureWidget(String key, {required double pixelRatio}) async {
     try {
-      final key = _keys[svgString]!;
-      final boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 1.0);
+      final gKey = _keys[key]!;
+      final context = gKey.currentContext;
+      if (context == null) return null;
+      final boundary = context.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
       return image;
     } catch (e) {
-      print('Error capturing widget: $e');
+      debugPrint('Error capturing widget for $key: $e');
       return null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Use Opacity(0.0) (visible to layout but invisible to user)
     return Opacity(
       opacity: 0.0,
-      child: Stack(
-        children: widget.svgStrings.map((svgString) {
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: widget.svgMap.entries.map((entry) {
+          final path = entry.key;
+          final svgString = entry.value;
           return RepaintBoundary(
-            key: _keys[svgString],
-            child: SvgPicture.string(
-              svgString,
-              width: 64,
-              height: 64,
+            key: _keys[path],
+            child: SizedBox(
+              width: widget.captureSize,
+              height: widget.captureSize,
+              child: SvgPicture.string(
+                svgString,
+                width: widget.captureSize,
+                height: widget.captureSize,
+                fit: BoxFit.contain,
+              ),
             ),
           );
         }).toList(),

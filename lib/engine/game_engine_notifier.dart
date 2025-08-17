@@ -18,7 +18,8 @@ import '../common/assets.dart';
 class GameEngineNotifier extends StateNotifier<GameEngineState> {
   final LogicEngine _logicEngine;
   final AudioService _audioService;
-  final AnimationScheduler _animationScheduler;
+  @visibleForTesting
+  final AnimationScheduler animationScheduler;
   final void Function(EvaluationResult)? onEvaluate;
   final VoidCallback? onWin;
 
@@ -31,7 +32,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     AnimationScheduler? animationScheduler,
   }) : _logicEngine = logicEngine ?? LogicEngine(),
        _audioService = audioService ?? AudioService(),
-       _animationScheduler = animationScheduler ?? AnimationScheduler(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
        super(GameEngineState.initial(initialLevel)) {
     _initializeEngine(initialLevel);
   }
@@ -44,11 +45,11 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     AnimationScheduler? animationScheduler,
   }) : _logicEngine = logicEngine ?? LogicEngine(),
        _audioService = audioService ?? AudioService(),
-       _animationScheduler = animationScheduler ?? AnimationScheduler(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
        super(GameEngineState.initial(null));
 
   void _initializeEngine(LevelDefinition? initialLevel) {
-    _animationScheduler.addCallback((dt) {
+    animationScheduler.addCallback((dt) {
       if (!state.isPaused) {
         _evaluateAndUpdateRenderState();
       }
@@ -60,7 +61,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   void loadLevel(LevelDefinition level) {
     Logger.log('GameEngine: Loading new level ${level.id}');
-    _animationScheduler.reset();
+    animationScheduler.reset();
 
     final components = <String, ComponentModel>{};
     for (final comp in level.components) {
@@ -85,8 +86,8 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     final newRenderState = RenderState.fromEvaluation(
       grid: state.grid,
       eval: evalResult,
-      bulbIntensity: _animationScheduler.bulbIntensity,
-      wireOffset: _animationScheduler.wireOffset,
+      bulbIntensity: animationScheduler.bulbIntensity,
+      wireOffset: animationScheduler.wireOffset,
       draggedComponentId: state.draggedComponentId,
       dragPosition: state.dragPosition,
     );
@@ -135,9 +136,9 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     if (state.isPaused == paused) return;
     state = state.copyWith(isPaused: paused);
     if (paused) {
-      _animationScheduler.pause();
+      animationScheduler.pause();
     } else {
-      _animationScheduler.resume();
+      animationScheduler.resume();
     }
   }
 
@@ -251,7 +252,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   @override
   void dispose() {
-    _animationScheduler.dispose();
+    animationScheduler.dispose();
     super.dispose();
   }
 }

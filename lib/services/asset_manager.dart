@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
 import '../common/logger.dart';
@@ -14,9 +11,7 @@ import '../common/assets.dart';
 
 class AssetManager {
   final Map<String, ui.Image> _imageCache = {};
-  final Map<String, String> _svgStrings = {};
   final Map<String, ui.Image> _svgImageCache = {};
-  final WidgetsToImageController _widgetsToImageController = WidgetsToImageController();
   
   // Configuration
   static const double defaultSvgSize = 64.0;
@@ -25,19 +20,19 @@ class AssetManager {
     Logger.log('AssetManager: Starting robust asset loading...');
     
     try {
-      // Ensure Flutter is initialized
+      // This call is no longer strictly necessary here since main() also calls it,
+      // but it's harmless to leave for now.
       WidgetsFlutterBinding.ensureInitialized();
       
       final imagePaths = AppAssets.all.where((p) => p.endsWith('.png')).toList();
       await _loadImages(imagePaths);
       
-      final svgPaths = AppAssets.all.where((p) => p.endsWith('.svg')).toList();
-      // await _loadAndProcessSvgs(svgPaths);
+      // SVG processing is now handled by the Initializer widget.
       
       // Load audio
       await _loadAudio();
       
-      Logger.log('AssetManager: All assets loaded successfully');
+      Logger.log('AssetManager: All non-SVG assets loaded successfully');
     } catch (e) {
       Logger.log('AssetManager: Error during loading: $e');
     }
@@ -73,42 +68,17 @@ class AssetManager {
     }
   }
 
+  Future<String> loadString(String path) async {
+    return await rootBundle.loadString(path);
+  }
+
   // === Public API ===
 
   ui.Image? getImage(String path) => _imageCache[path];
   ui.Image? getSvgAsImage(String path) => _svgImageCache[path];
-  String? getSvgString(String path) => _svgStrings[path];
-  
-  Widget? getSvgWidget(String path, {
-    double? width, 
-    double? height, 
-    ColorFilter? colorFilter,
-    BoxFit fit = BoxFit.contain,
-  }) {
-    final svgString = _svgStrings[path];
-    if (svgString == null) return null;
-    
-    return SvgPicture.string(
-      svgString,
-      width: width ?? defaultSvgSize,
-      height: height ?? defaultSvgSize,
-      colorFilter: colorFilter,
-      fit: fit,
-    );
-  }
-
-  Widget? getSvgWidgetColored(String path, Color color, {double? width, double? height}) {
-    return getSvgWidget(
-      path,
-      width: width,
-      height: height,
-      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-    );
-  }
 
   bool hasAsset(String path) {
     return _imageCache.containsKey(path) || 
-           _svgStrings.containsKey(path) || 
            _svgImageCache.containsKey(path);
   }
 
@@ -121,9 +91,8 @@ class AssetManager {
   Map<String, int> getStats() {
     return {
       'regular_images': _imageCache.length,
-      'svg_strings': _svgStrings.length,
       'svg_images': _svgImageCache.length,
-      'total_assets': _imageCache.length + _svgStrings.length,
+      'total_assets': _imageCache.length + _svgImageCache.length,
     };
   }
 
@@ -136,7 +105,6 @@ class AssetManager {
     }
     _imageCache.clear();
     _svgImageCache.clear();
-    _svgStrings.clear();
     Logger.log('AssetManager: All assets disposed');
   }
 }
