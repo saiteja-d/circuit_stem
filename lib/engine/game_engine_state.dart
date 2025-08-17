@@ -16,6 +16,7 @@ class GameEngineState with _$GameEngineState {
     required bool isWin,
     LevelDefinition? currentLevel,
     String? draggedComponentId,
+    String? selectedComponentId,
     Offset? dragPosition,
     @Default(false) bool isShortCircuit,
     RenderState? renderState,
@@ -32,6 +33,7 @@ class GameEngineState with _$GameEngineState {
     currentLevel: level,
     isShortCircuit: false,
     draggedComponentId: null,
+    selectedComponentId: null,
     dragPosition: null,
     renderState: null,
   );
@@ -44,6 +46,7 @@ class GameEngineState with _$GameEngineState {
     currentLevel: null,
     isShortCircuit: false,
     draggedComponentId: null,
+    selectedComponentId: null,
     dragPosition: null,
     renderState: null,
   );

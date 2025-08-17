@@ -1,3 +1,4 @@
+import 'package:circuit_stem/common/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:circuit_stem/routes.dart';
@@ -19,10 +20,16 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
   @override
   void initState() {
     super.initState();
+    Logger.log("LevelSelectScreen: initState");
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     )..forward();
+    // Initialize the level manager when the screen is first created.
+    // We use a post-frame callback to ensure that the provider is available.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(levelManagerProvider.notifier).init();
+    });
   }
 
   @override
@@ -32,15 +39,8 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
   }
 
   void _navigateToLevel(int index) {
-    // Load the level definition and then navigate
-    ref.read(levelManagerProvider.notifier).loadLevelByIndex(index).then((level) {
-      if (level != null) {
-        if (!mounted) return;
-        ref.read(gameEngineProvider.notifier).loadLevel(level);
-        Navigator.of(context).pushNamed(AppRoutes.gameScreen);
-      }
-      // Optionally, handle the case where the level fails to load
-    });
+    ref.read(levelManagerProvider.notifier).loadLevelByIndex(index);
+    Navigator.of(context).pushNamed(AppRoutes.gameScreen);
   }
 
   @override

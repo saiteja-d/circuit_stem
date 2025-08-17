@@ -10,11 +10,11 @@ class MockAssetManager implements AssetManager {
   }
 
   @override
-  Future<String> loadString(String path) async {
+  Future<String> loadString(String path) {
     if (_files.containsKey(path)) {
-      return _files[path]!;
+      return Future.value(_files[path]!);
     }
-    throw Exception('MockAssetManager: File not primed: $path');
+    return Future.error(Exception('MockAssetManager: File not primed: $path'));
   }
 
   @override

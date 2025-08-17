@@ -18,6 +18,7 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
   LevelManagerNotifier(this._sharedPrefs) : super(const LevelManagerState());
 
   Future<void> init() async {
+    Logger.log("LevelManagerNotifier: init");
     await _loadManifest();
   }
 
@@ -66,6 +67,7 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
 
   /// Loads the full definition for a specific level by its index.
   Future<LevelDefinition?> loadLevelByIndex(int index) async {
+    Logger.log("LevelManagerNotifier: loadLevelByIndex for index $index");
     print('LevelManagerNotifier: loadLevelByIndex START for index $index');
     print('LevelManagerNotifier: state.levels.length: ${state.levels.length}');
     if (index < 0 || index >= state.levels.length) {

@@ -56,7 +56,6 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     if (initialLevel != null) {
       loadLevel(initialLevel);
     }
-    _animationScheduler.start();
   }
 
   void loadLevel(LevelDefinition level) {
@@ -145,7 +144,8 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
   void togglePause() => setPaused(!state.isPaused);
 
   void startDrag(String componentId, Offset position) {
-    Logger.log('GameEngineNotifier: startDrag for component $componentId');
+    final component = state.grid.componentsById[componentId];
+    Logger.log('GameEngineNotifier: startDrag for component $componentId of type ${component?.type}');
     state = state.copyWith(draggedComponentId: componentId, dragPosition: position);
   }
 
@@ -178,14 +178,20 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
       // A more robust validation would check for collisions
       if (newGrid.validate().isEmpty) {
           Logger.log('GameEngineNotifier: new position is valid');
-          state = state.copyWith(grid: newGrid);
+          state = state.copyWith(
+            grid: newGrid,
+            draggedComponentId: null,
+            dragPosition: null,
+          );
       } else {
         Logger.log('GameEngineNotifier: new position is invalid');
         _audioService.play(AppAssets.audioWarning);
+        state = state.copyWith(draggedComponentId: null, dragPosition: null);
       }
+    } else {
+      state = state.copyWith(draggedComponentId: null, dragPosition: null);
     }
 
-    state = state.copyWith(draggedComponentId: null, dragPosition: null);
     _evaluateAndUpdateRenderState();
   }
 
@@ -210,6 +216,30 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     final component = state.grid.componentsAt(r, c).firstOrNull;
     if (component != null && component.type == ComponentType.sw) {
       toggleSwitch(component.id);
+    }
+  }
+
+  void addComponent(ComponentModel component, int r, int c) {
+    Logger.log('GameEngineNotifier: addComponent ${component.id} of type ${component.type} at ($r, $c)');
+    final newComponent = component.copyWith(r: r, c: c);
+    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+    newComponents[newComponent.id] = newComponent;
+    
+    final newGrid = state.grid.copyWith(componentsById: newComponents);
+    
+    if (newGrid.validate().isEmpty) {
+        state = state.copyWith(grid: newGrid);
+    } else {
+      _audioService.play(AppAssets.audioWarning);
+    }
+    _evaluateAndUpdateRenderState();
+  }
+
+  void selectComponent(ComponentModel component) {
+    if (state.selectedComponentId == component.id) {
+      state = state.copyWith(selectedComponentId: null);
+    } else {
+      state = state.copyWith(selectedComponentId: component.id);
     }
   }
 

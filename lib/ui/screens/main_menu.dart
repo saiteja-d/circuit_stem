@@ -1,3 +1,4 @@
+import 'package:circuit_stem/common/logger.dart';
 import 'package:flutter/material.dart';
 
 import 'package:circuit_stem/common/theme.dart'; // Import the theme file
@@ -74,6 +75,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   }
   
   void _navigateToLevelSelection() {
+    Logger.log("MainMenuScreen: Navigating to LevelSelectScreen...");
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
