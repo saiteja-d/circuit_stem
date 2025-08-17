@@ -120,22 +120,59 @@ static void assertSwitchToggled(ComponentModel before, ComponentModel after) {
 ```
 
 ### 5. **Robust Asset Mocking**
+
+A critical part of the revised architecture is the ability to mock assets reliably. This is achieved using a `MockAssetManager` and Riverpod's provider overrides.
+
+**`test/helpers/mock_asset_manager.dart`**
 ```dart
-class MockAssetManager extends Mock implements AssetManager {
+class MockAssetManager implements AssetManager {
+  final Map<String, String> _files = {};
+
+  void primeFile(String path, String content) {
+    _files[path] = content;
+  }
+
   @override
-  ui.Image? getSvgAsImage(String path) {
-    // Return a simple 1x1 test image for all SVG requests
-    return _createTestImage();
+  Future<String> loadString(String path) async {
+    if (_files.containsKey(path)) {
+      return _files[path]!;
+    }
+    throw Exception('MockAssetManager: File not primed: $path');
   }
-  
-  static ui.Image _createTestImage() {
-    // Create minimal test image programmatically
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    canvas.drawRect(Rect.fromLTWH(0, 0, 64, 64), Paint()..color = Colors.grey);
-    final picture = recorder.endRecording();
-    return picture.toImageSync(64, 64);
-  }
+}
+```
+
+**Test Setup (`level_01_revised_test.dart`)**
+```dart
+void main() {
+  late ProviderContainer container;
+  late MockAssetManager mockAssetManager;
+
+  setUpAll(() async {
+    // 1. Create the mock
+    mockAssetManager = MockAssetManager();
+
+    // 2. Read the REAL asset files into the mock
+    final manifestContent =
+        await File('assets/levels/level_manifest.json').readAsString();
+    final level1Content =
+        await File('assets/levels/level_01.json').readAsString();
+    mockAssetManager.primeFile(
+        'assets/levels/level_manifest.json', manifestContent);
+    mockAssetManager.primeFile('assets/levels/level_01.json', level1Content);
+
+    // 3. Create a container that OVERRIDES the real provider with the mock
+    container = ProviderContainer(
+      overrides: [
+        assetManagerProvider.overrideWithValue(mockAssetManager),
+      ],
+    );
+
+    // 4. Pre-load the manifest
+    await container.read(levelManagerProvider.notifier).loadManifest();
+  });
+
+  // ... tests
 }
 ```
 

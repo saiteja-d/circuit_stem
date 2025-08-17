@@ -28,7 +28,18 @@ final levelManagerProvider = StateNotifierProvider<LevelManagerNotifier, LevelMa
 });
 
 final gameEngineProvider = StateNotifierProvider<GameEngineNotifier, GameEngineState>((ref) {
-  return GameEngineNotifier.forNoLevel(
+  final currentLevel = ref.watch(currentLevelDefinitionProvider);
+
+  if (currentLevel == null) {
+    return GameEngineNotifier.forNoLevel(
+      onWin: () {
+        ref.read(levelManagerProvider.notifier).markCurrentLevelComplete();
+      },
+    );
+  }
+
+  return GameEngineNotifier(
+    initialLevel: currentLevel,
     onWin: () {
       ref.read(levelManagerProvider.notifier).markCurrentLevelComplete();
     },

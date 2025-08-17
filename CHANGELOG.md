@@ -1,6 +1,7 @@
 ## [Unreleased] - 2025-08-15
 
 ### Fixed
+- **Test Environment:** Fixed a critical issue where tests would fail because the `LevelManager` could not load level data. Implemented a `MockAssetManager` to allow tests to be primed with asset data, and refactored the test setup to use Riverpod provider overrides. This makes the test environment robust and reliable.
 - **Test Compilation Issue**: Resolved "Type 'Component' not found" error in test environment by adding type alias `typedef Component = ComponentModel` in `lib/models/component.dart`. This maintains backward compatibility for tests while preserving the existing `ComponentModel` class structure.
 - Tests can now compile and reference the `Component` type as expected by the test helper functions in `test/helpers/level_01_test_helper.dart` and `test/level_01_revised_test.dart`.
 
