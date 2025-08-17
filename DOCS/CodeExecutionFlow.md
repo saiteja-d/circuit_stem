@@ -37,7 +37,7 @@ _(This flow remains largely the same.)_
 
 2.  **`ui/screens/main_menu.dart`**: The user sees the main menu. When they tap "Start Playing", the app navigates to the level selection screen.
 
-3.  **`ui/screens/level_select.dart`**: The user taps on an unlocked level. The app calls `levelManager.loadLevelByIndex(index)` and then navigates to the `GameScreen`.
+3.  **`ui/screens/level_select.dart`**: When this screen is first loaded, it now explicitly calls an initialization method on the `levelManagerProvider` to ensure all level data is loaded from the asset manifest *before* the user can interact with the screen. This was a critical bug fix. When the user taps on an unlocked level, the app then navigates to the `GameScreen`.
 
 ## 3. Initializing the Game Screen
 

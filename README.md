@@ -39,6 +39,7 @@ The project follows a clean, modular architecture that separates logic, state ma
 *   **Engine (`/lib/engine`):** The `GameEngine` orchestrates the state and rules for an active game session.
 *   **Models (`/lib/models`):** Plain Dart objects representing the game's data, such as `Grid`, `Component`, and `LevelDefinition`.
 *   **UI (`/lib/ui`):** Flutter widgets, screens, and `CustomPainter`s responsible for rendering the game state.
+*   **Key Dependencies:** The project leverages powerful community packages, including `flutter_riverpod` for state management, `freezed` for immutable models, and `widgets_to_image` for rendering widgets to images on the canvas.
 
 For a complete overview of the technical design, please see the **[Technical Requirements Document (TRD)](./DOCS/TRD.md)**.
 

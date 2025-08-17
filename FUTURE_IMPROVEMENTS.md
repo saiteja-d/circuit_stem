@@ -6,25 +6,17 @@ This document outlines the recommended next steps and potential future improveme
 
 ## 1. Testing & Quality Assurance
 
-**Status:** **CRITICAL**. This is the highest priority area for improvement. The existing test suite is minimal and does not adequately cover the UI and state management logic, which was recently refactored.
+**Status:** **IN PROGRESS**. A major effort to stabilize the test suite has been completed, but a final `TimeoutException` issue persists in the main level 1 test.
 
-### 1.1. Implement the Existing Test Plan
+### 1.1. Resolve Final Test Timeout
 
--   **Action:** Execute the detailed plan laid out in `DOCS/TESTING.md`.
-    1.  **Add Keys to Widgets:** Add `GlobalKey` or `ValueKey` to all interactive widgets (e.g., `CircuitComponentWidget`, buttons in the `ComponentPalette`, level selection cards) to make them easily findable in widget tests.
-    2.  **Implement Level 1 Test Suite:** Create the file `test/ui/level_01_interaction_test.dart` and implement the 30 test cases defined in the "Level 1 – Comprehensive Circuit Test Cases" table. This will serve as a robust template for all other levels.
+-   **Action:** The immediate priority is to resolve the final `TimeoutException` in `test/level_01_revised_test.dart`. The new testing architecture is documented in `REVISED_TESTING_ARCHITECTURE.md`.
+-   **Next Steps:** Follow the recommendations outlined in `DOCS/LEVEL_01_DEBUG_REPORT.md`, which include creating a minimal, reproducible example to isolate the root cause of the timeout.
 
-### 1.2. Increase Unit & Widget Test Coverage
+### 1.2. Expand Test Coverage
 
--   **Rationale:** As stated in the `CHANGELOG.md` ("Next Priorities"), the refactored `StateNotifier` classes and UI components need comprehensive tests.
--   **Action: Test StateNotifiers:**
-    -   Create unit test files for each `StateNotifier` (e.g., `test/engine/game_engine_notifier_test.dart`).
-    -   Use a mocking framework like `mocktail` to mock dependencies (`LogicEngine`, `LevelManager`).
-    -   Write tests that verify each public method on the notifier correctly updates the state to a new, expected immutable state.
--   **Action: Test UI Widgets:**
-    -   Create widget test files for all major UI components (`GameCanvas`, `ComponentPalette`, `LevelCard`, etc.).
-    -   Leverage Riverpod's testing features to override providers with mock notifiers.
-    -   Verify that the widgets correctly render all possible states (e.g., loading, data, error, win-state, short-circuit).
+-   **Rationale:** Once the testing foundation is stable, coverage must be expanded.
+-   **Action: Test StateNotifiers & UI Widgets:** Following the patterns in `REVISED_TESTING_ARCHITECTURE.md`, create new tests for all major `StateNotifier` classes and UI widgets to ensure they render all possible states correctly (e.g., loading, error, win-state).
 
 ## 2. Code Refactoring & Architecture
 
