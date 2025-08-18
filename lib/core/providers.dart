@@ -24,7 +24,10 @@ final assetManagerProvider = Provider<AssetManager>((ref) {
 // 2. Core Notifier Providers
 
 final levelManagerProvider = StateNotifierProvider<LevelManagerNotifier, LevelManagerState>((ref) {
-  return LevelManagerNotifier(ref.watch(sharedPreferencesProvider));
+  return LevelManagerNotifier(
+    ref.watch(sharedPreferencesProvider),
+    ref.watch(assetManagerProvider),
+  );
 });
 
 final gameEngineProvider = StateNotifierProvider<GameEngineNotifier, GameEngineState>((ref) {

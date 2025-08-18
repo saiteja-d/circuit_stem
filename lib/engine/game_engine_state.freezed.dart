@@ -21,6 +21,7 @@ mixin _$GameEngineState {
   bool get isWin => throw _privateConstructorUsedError;
   LevelDefinition? get currentLevel => throw _privateConstructorUsedError;
   String? get draggedComponentId => throw _privateConstructorUsedError;
+  String? get selectedComponentId => throw _privateConstructorUsedError;
   Offset? get dragPosition => throw _privateConstructorUsedError;
   bool get isShortCircuit => throw _privateConstructorUsedError;
   RenderState? get renderState => throw _privateConstructorUsedError;
@@ -44,6 +45,7 @@ abstract class $GameEngineStateCopyWith<$Res> {
       bool isWin,
       LevelDefinition? currentLevel,
       String? draggedComponentId,
+      String? selectedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
       RenderState? renderState});
@@ -72,6 +74,7 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
     Object? isWin = null,
     Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
+    Object? selectedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
     Object? renderState = freezed,
@@ -96,6 +99,10 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
       draggedComponentId: freezed == draggedComponentId
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      selectedComponentId: freezed == selectedComponentId
+          ? _value.selectedComponentId
+          : selectedComponentId // ignore: cast_nullable_to_non_nullable
               as String?,
       dragPosition: freezed == dragPosition
           ? _value.dragPosition
@@ -151,6 +158,7 @@ abstract class _$$GameEngineStateImplCopyWith<$Res>
       bool isWin,
       LevelDefinition? currentLevel,
       String? draggedComponentId,
+      String? selectedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
       RenderState? renderState});
@@ -179,6 +187,7 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
     Object? isWin = null,
     Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
+    Object? selectedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
     Object? renderState = freezed,
@@ -203,6 +212,10 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
       draggedComponentId: freezed == draggedComponentId
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      selectedComponentId: freezed == selectedComponentId
+          ? _value.selectedComponentId
+          : selectedComponentId // ignore: cast_nullable_to_non_nullable
               as String?,
       dragPosition: freezed == dragPosition
           ? _value.dragPosition
@@ -229,6 +242,7 @@ class _$GameEngineStateImpl implements _GameEngineState {
       required this.isWin,
       this.currentLevel,
       this.draggedComponentId,
+      this.selectedComponentId,
       this.dragPosition,
       this.isShortCircuit = false,
       this.renderState});
@@ -244,6 +258,8 @@ class _$GameEngineStateImpl implements _GameEngineState {
   @override
   final String? draggedComponentId;
   @override
+  final String? selectedComponentId;
+  @override
   final Offset? dragPosition;
   @override
   @JsonKey()
@@ -253,7 +269,7 @@ class _$GameEngineStateImpl implements _GameEngineState {
 
   @override
   String toString() {
-    return 'GameEngineState(grid: $grid, isPaused: $isPaused, isWin: $isWin, currentLevel: $currentLevel, draggedComponentId: $draggedComponentId, dragPosition: $dragPosition, isShortCircuit: $isShortCircuit, renderState: $renderState)';
+    return 'GameEngineState(grid: $grid, isPaused: $isPaused, isWin: $isWin, currentLevel: $currentLevel, draggedComponentId: $draggedComponentId, selectedComponentId: $selectedComponentId, dragPosition: $dragPosition, isShortCircuit: $isShortCircuit, renderState: $renderState)';
   }
 
   @override
@@ -269,6 +285,8 @@ class _$GameEngineStateImpl implements _GameEngineState {
                 other.currentLevel == currentLevel) &&
             (identical(other.draggedComponentId, draggedComponentId) ||
                 other.draggedComponentId == draggedComponentId) &&
+            (identical(other.selectedComponentId, selectedComponentId) ||
+                other.selectedComponentId == selectedComponentId) &&
             (identical(other.dragPosition, dragPosition) ||
                 other.dragPosition == dragPosition) &&
             (identical(other.isShortCircuit, isShortCircuit) ||
@@ -285,6 +303,7 @@ class _$GameEngineStateImpl implements _GameEngineState {
       isWin,
       currentLevel,
       draggedComponentId,
+      selectedComponentId,
       dragPosition,
       isShortCircuit,
       renderState);
@@ -306,6 +325,7 @@ abstract class _GameEngineState implements GameEngineState {
       required final bool isWin,
       final LevelDefinition? currentLevel,
       final String? draggedComponentId,
+      final String? selectedComponentId,
       final Offset? dragPosition,
       final bool isShortCircuit,
       final RenderState? renderState}) = _$GameEngineStateImpl;
@@ -320,6 +340,8 @@ abstract class _GameEngineState implements GameEngineState {
   LevelDefinition? get currentLevel;
   @override
   String? get draggedComponentId;
+  @override
+  String? get selectedComponentId;
   @override
   Offset? get dragPosition;
   @override

@@ -30,6 +30,7 @@ dependencies:
   hooks_riverpod: 2.6.1
   riverpod: 2.6.1
   collection: ^1.18.0
+  widgets_to_image: ^2.0.1
 
 dev_dependencies:
   flutter_test:

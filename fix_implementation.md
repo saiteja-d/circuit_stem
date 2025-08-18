@@ -6,6 +6,88 @@ This document details the series of issues encountered and the comprehensive fix
 
 ### Problem
 Tests were failing immediately during setup, reporting that game levels could not be loaded. This prevented any actual game logic from being tested.
+## Diagnostic Plan: Flutter Test Failure Analysis
+
+### Root Cause Hypothesis #1: Asset Loading Race Condition
+
+**Problem**: The test is using [`rootBundle.loadString()`](lib/services/level_manager.dart:33) in [`LevelManagerNotifier._loadManifest()`](lib/services/level_manager.dart:29) while simultaneously using a [`MockAssetManager`](test/helpers/mock_asset_manager.dart) that doesn't override the rootBundle behavior. This creates a race condition where:
+
+1. Test setup primes the mock with asset content via [`mockAssetManager.primeFile()`](test/level_01_revised_test.dart:37-39)
+2. But [`LevelManagerNotifier.init()`](test/level_01_revised_test.dart:56) calls [`_loadManifest()`](lib/services/level_manager.dart:29) which uses `rootBundle` directly
+3. The real `rootBundle` tries to load actual files, causing async conflicts
+
+**Evidence**: The error shows "LevelManagerNotifier: _loadManifest START" followed by immediate SIGINT termination, suggesting the asset loading process is hanging or conflicting.
+
+**Proposed Fix**:
+```dart
+// In LevelManagerNotifier, inject AssetManager dependency
+class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
+  final SharedPreferences _sharedPrefs;
+  final AssetManager _assetManager; // Add this
+
+  LevelManagerNotifier(this._sharedPrefs, this._assetManager) : super(const LevelManagerState());
+
+  Future<void> _loadManifest() async {
+    // Replace rootBundle.loadString with _assetManager.loadString
+    final manifestString = await _assetManager.loadString('assets/levels/level_manifest.json');
+    // ... rest of method
+  }
+}
+```
+
+### Root Cause Hypothesis #2: Provider Dependency Cycle & Premature Disposal
+
+**Problem**: The [`gameEngineProvider`](lib/core/providers.dart:30) depends on [`currentLevelDefinitionProvider`](lib/core/providers.dart:67), which depends on [`levelManagerProvider`](lib/core/providers.dart:26). When the test calls [`container.dispose()`](test/level_01_revised_test.dart:60) in tearDown, it creates a disposal race condition where:
+
+1. GameEngine's animation scheduler is still running callbacks
+2. LevelManager is being disposed while manifest loading is in progress
+3. Provider dependency chain breaks during async operations
+
+**Evidence**: The error shows Dart compiler exit and temp file deletion failures, indicating premature cleanup during active async operations.
+
+**Proposed Fix**:
+```dart
+// In test tearDown, ensure proper async cleanup
+tearDown(() async {
+  // Stop animation scheduler before disposal
+  final gameNotifier = container.read(gameEngineProvider.notifier);
+  gameNotifier.setPaused(true);
+  
+  // Wait for any pending async operations
+  await Future.delayed(Duration(milliseconds: 100));
+  
+  container.dispose();
+});
+```
+
+### Implementation Priority
+
+1. **Fix #1 (Asset Loading)** - Higher priority as it directly addresses the manifest loading failure
+2. **Fix #2 (Provider Cleanup)** - Secondary fix to prevent disposal race conditions
+
+Both fixes target the core issue: **uncontrolled async operations during test execution and cleanup**, which causes the Flutter test framework to terminate with SIGINT when it can't properly finalize the test environment.
+I will proceed with applying the asset-loading fix by injecting AssetManager into LevelManagerNotifier and updating call sites to use the injected asset manager.
+
+Key things I will implement:
+- Update LevelManagerNotifier constructor to accept AssetManager and store it as _assetManager.
+- Replace rootBundle.loadString(...) usages in _loadManifest and loadLevelByIndex with _assetManager.loadString(...).
+- Update the provider wiring so LevelManagerNotifier is instantiated with an AssetManager (tests can inject a mockAssetManager).
+
+References to review while implementing:
+- lib/services/level_manager.dart
+- lib/core/providers.dart
+- test/helpers/mock_asset_manager.dart
+- assets/levels/level_manifest.json and level_01.json (for expectations)
+
+Proposed next steps:
+- [ ] Modify LevelManagerNotifier signature: LevelManagerNotifier(this._sharedPrefs, this._assetManager)
+- [ ] Inject AssetManager usage in _loadManifest and loadLevelByIndex
+- [ ] Update any internal imports (add import '../services/asset_manager.dart';) and ensure no circular imports
+- [ ] Update lib/core/providers.dart to pass assetManagerProvider into LevelManagerNotifier
+- [ ] Adjust tests to provide a MockAssetManager via overrides (if necessary)
+- [ ] Run flutter test test/level_01_revised_test.dart -v to validate
+
+Would you like me to apply these changes now? If yes, I will execute the surgical edits step-by-step and report back with diffs and test results.
 
 ### Root Cause
 In a Flutter test environment, asset loading (like JSON level definitions) does not work automatically as it does in a running application. The `AssetManager` was unable to find and load the `level_manifest.json` and individual level JSON files.

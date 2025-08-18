@@ -18,7 +18,8 @@ import '../common/assets.dart';
 class GameEngineNotifier extends StateNotifier<GameEngineState> {
   final LogicEngine _logicEngine;
   final AudioService _audioService;
-  final AnimationScheduler _animationScheduler;
+  @visibleForTesting
+  final AnimationScheduler animationScheduler;
   final void Function(EvaluationResult)? onEvaluate;
   final VoidCallback? onWin;
 
@@ -31,7 +32,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     AnimationScheduler? animationScheduler,
   }) : _logicEngine = logicEngine ?? LogicEngine(),
        _audioService = audioService ?? AudioService(),
-       _animationScheduler = animationScheduler ?? AnimationScheduler(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
        super(GameEngineState.initial(initialLevel)) {
     _initializeEngine(initialLevel);
   }
@@ -44,11 +45,11 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     AnimationScheduler? animationScheduler,
   }) : _logicEngine = logicEngine ?? LogicEngine(),
        _audioService = audioService ?? AudioService(),
-       _animationScheduler = animationScheduler ?? AnimationScheduler(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
        super(GameEngineState.initial(null));
 
   void _initializeEngine(LevelDefinition? initialLevel) {
-    _animationScheduler.addCallback((dt) {
+    animationScheduler.addCallback((dt) {
       if (!state.isPaused) {
         _evaluateAndUpdateRenderState();
       }
@@ -56,12 +57,11 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     if (initialLevel != null) {
       loadLevel(initialLevel);
     }
-    _animationScheduler.start();
   }
 
   void loadLevel(LevelDefinition level) {
     Logger.log('GameEngine: Loading new level ${level.id}');
-    _animationScheduler.reset();
+    animationScheduler.reset();
 
     final components = <String, ComponentModel>{};
     for (final comp in level.components) {
@@ -86,8 +86,8 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     final newRenderState = RenderState.fromEvaluation(
       grid: state.grid,
       eval: evalResult,
-      bulbIntensity: _animationScheduler.bulbIntensity,
-      wireOffset: _animationScheduler.wireOffset,
+      bulbIntensity: animationScheduler.bulbIntensity,
+      wireOffset: animationScheduler.wireOffset,
       draggedComponentId: state.draggedComponentId,
       dragPosition: state.dragPosition,
     );
@@ -136,16 +136,17 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     if (state.isPaused == paused) return;
     state = state.copyWith(isPaused: paused);
     if (paused) {
-      _animationScheduler.pause();
+      animationScheduler.pause();
     } else {
-      _animationScheduler.resume();
+      animationScheduler.resume();
     }
   }
 
   void togglePause() => setPaused(!state.isPaused);
 
   void startDrag(String componentId, Offset position) {
-    Logger.log('GameEngineNotifier: startDrag for component $componentId');
+    final component = state.grid.componentsById[componentId];
+    Logger.log('GameEngineNotifier: startDrag for component $componentId of type ${component?.type}');
     state = state.copyWith(draggedComponentId: componentId, dragPosition: position);
   }
 
@@ -178,14 +179,20 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
       // A more robust validation would check for collisions
       if (newGrid.validate().isEmpty) {
           Logger.log('GameEngineNotifier: new position is valid');
-          state = state.copyWith(grid: newGrid);
+          state = state.copyWith(
+            grid: newGrid,
+            draggedComponentId: null,
+            dragPosition: null,
+          );
       } else {
         Logger.log('GameEngineNotifier: new position is invalid');
         _audioService.play(AppAssets.audioWarning);
+        state = state.copyWith(draggedComponentId: null, dragPosition: null);
       }
+    } else {
+      state = state.copyWith(draggedComponentId: null, dragPosition: null);
     }
 
-    state = state.copyWith(draggedComponentId: null, dragPosition: null);
     _evaluateAndUpdateRenderState();
   }
 
@@ -213,6 +220,30 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     }
   }
 
+  void addComponent(ComponentModel component, int r, int c) {
+    Logger.log('GameEngineNotifier: addComponent ${component.id} of type ${component.type} at ($r, $c)');
+    final newComponent = component.copyWith(r: r, c: c);
+    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+    newComponents[newComponent.id] = newComponent;
+    
+    final newGrid = state.grid.copyWith(componentsById: newComponents);
+    
+    if (newGrid.validate().isEmpty) {
+        state = state.copyWith(grid: newGrid);
+    } else {
+      _audioService.play(AppAssets.audioWarning);
+    }
+    _evaluateAndUpdateRenderState();
+  }
+
+  void selectComponent(ComponentModel component) {
+    if (state.selectedComponentId == component.id) {
+      state = state.copyWith(selectedComponentId: null);
+    } else {
+      state = state.copyWith(selectedComponentId: component.id);
+    }
+  }
+
   void reset() {
     if (state.currentLevel != null) {
       loadLevel(state.currentLevel!);
@@ -221,7 +252,7 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   @override
   void dispose() {
-    _animationScheduler.dispose();
+    animationScheduler.dispose();
     super.dispose();
   }
 }

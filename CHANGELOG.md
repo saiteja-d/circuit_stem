@@ -1,3 +1,24 @@
+## [Unreleased] - 2025-08-17
+
+### Fixed
+- **CRITICAL: Fixed Invisible Components & Startup Crash.** A major, incomplete refactoring was fixed, resolving a bug where game components were invisible. This involved:
+  - Implementing a new `Initializer` widget to handle SVG-to-Image processing at startup, ensuring assets are ready before the game loads. (Files: `lib/main.dart`, `lib/ui/svg_capture.dart`).
+  - Correcting the `AssetManager` to act as a simple cache and re-introducing a `loadString` method for text-based assets. (File: `lib/services/asset_manager.dart`).
+  - Fixing a dependency injection issue in `LevelManagerNotifier` that caused a startup crash. (Files: `lib/services/level_manager.dart`, `lib/core/providers.dart`).
+- **CRITICAL: Resolved All Test Compilation Errors.** Fixed multiple errors that prevented the test suite from running.
+  - Updated `MockAssetManager` to be consistent with the real `AssetManager` interface. (File: `test/helpers/mock_asset_manager.dart`).
+  - Made the `GameEngineNotifier` more testable by exposing its `animationScheduler`. (File: `lib/engine/game_engine_notifier.dart`).
+  - Corrected the provider setup in the main test file. (File: `test/level_01_revised_test.dart`).
+
+### Changed
+- **Docs: Overhauled Project Documentation.** Performed a full audit of all project documentation to ensure it is up-to-date with the current architecture.
+  - Updated `DOCS/Architecture.md` to reflect the new `AssetManager` design.
+  - Updated `DOCS/CodeExecutionFlow.md` and `README.md` with recent changes.
+  - Appended a new, prioritized roadmap to `FUTURE_IMPROVEMENTS.md`.
+  - Deleted the obsolete `DOCS/TESTING.md`.
+
+---
+
 ## [Unreleased] - 2025-08-15
 
 ### Fixed
@@ -119,7 +140,7 @@ This entry summarizes the result of a major architectural refactoring and clarif
 ### UI/UX Overhaul
 - **Revamped Main Menu**: New animated logo and slide transitions for buttons.
 - **Dynamic Level Selection**: Rebuilt with a `CustomScrollView` and `SliverAppBar`.
-- **Interactive Game Screen**: Enhanced with a `ComponentPalette` for dragging and dropping components.
+- **Interactive Game Screen**: Enhanced with a `ComponentPalette` for dragging and dropping components, and improved component rendering with a `CustomPainter`.
 
 ---
 ## Historical Changes (from README)

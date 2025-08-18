@@ -64,7 +64,7 @@ The application's state is managed using a combination of `StateNotifier` and `f
 The application is divided into several services, each with a specific responsibility.
 
 *   **`LogicEngine`:** This is a pure Dart service that is responsible for evaluating the circuit. It takes a `Grid` object as input and returns an `EvaluationResult` object, which contains information about the powered components, short circuits, and open endpoints.
-*   **`AssetManager`:** This service is responsible for loading and caching all the assets used in the application, including images, SVGs, and audio files. It provides a simple API to access the assets.
+*   **`AssetManager`:** This service acts as a centralized cache for all game assets. It holds pointers to standard images (`.png`) and pre-rendered `ui.Image` objects created from SVGs. It is no longer responsible for loading and processing SVG files directly. Instead, another service is expected to perform the SVG-to-Image conversion and provide the results to the `AssetManager` via the `setSvgImages()` method. This decouples the complex rendering logic from the asset caching.
 *   **`AudioService`:** This service is responsible for playing audio files. It provides a simple API to play sounds by their asset path.
 *   **`LevelManager`:** This service is responsible for loading the level definitions from the JSON files in the `assets/levels` directory. It also keeps track of the player's progress.
 

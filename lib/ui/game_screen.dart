@@ -51,8 +51,9 @@ class GameScreen extends ConsumerWidget {
                   child: ComponentPalette(
                     availableComponents: currentLevel.components,
                     onComponentSelected: (component) {
-                      // Handle component selection logic if needed
+                      gameNotifier.selectComponent(component);
                     },
+                    selectedComponent: gameEngineState.selectedComponentId == null ? null : currentLevel.components.firstWhere((c) => c.id == gameEngineState.selectedComponentId),
                   ),
                 ),
               ],
