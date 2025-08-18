@@ -169,21 +169,21 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
     final componentToMove = state.grid.componentsById[componentId];
     if (componentToMove != null) {
-      final newComponent = componentToMove.copyWith(r: newRow, c: newCol);
-      final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
-      newComponents[componentId] = newComponent;
-      
-      final newGrid = state.grid.copyWith(componentsById: newComponents);
-      
-      // Basic validation before committing the state
-      // A more robust validation would check for collisions
-      if (newGrid.validate().isEmpty) {
-          Logger.log('GameEngineNotifier: new position is valid');
-          state = state.copyWith(
-            grid: newGrid,
-            draggedComponentId: null,
-            dragPosition: null,
-          );
+      // Create a temporary grid without the component being moved to check for collisions
+      final tempComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+      tempComponents.remove(componentId);
+      final tempGrid = state.grid.copyWith(componentsById: tempComponents);
+
+      if (tempGrid.canPlaceComponent(componentToMove, newRow, newCol)) {
+        Logger.log('GameEngineNotifier: new position is valid');
+        final newComponent = componentToMove.copyWith(r: newRow, c: newCol);
+        final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+        newComponents[componentId] = newComponent;
+        state = state.copyWith(
+          grid: state.grid.copyWith(componentsById: newComponents),
+          draggedComponentId: null,
+          dragPosition: null,
+        );
       } else {
         Logger.log('GameEngineNotifier: new position is invalid');
         _audioService.play(AppAssets.audioWarning);
@@ -222,14 +222,11 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   void addComponent(ComponentModel component, int r, int c) {
     Logger.log('GameEngineNotifier: addComponent ${component.id} of type ${component.type} at ($r, $c)');
-    final newComponent = component.copyWith(r: r, c: c);
-    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
-    newComponents[newComponent.id] = newComponent;
-    
-    final newGrid = state.grid.copyWith(componentsById: newComponents);
-    
-    if (newGrid.validate().isEmpty) {
-        state = state.copyWith(grid: newGrid);
+    if (state.grid.canPlaceComponent(component, r, c)) {
+      final newComponent = component.copyWith(r: r, c: c);
+      final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+      newComponents[newComponent.id] = newComponent;
+      state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
     } else {
       _audioService.play(AppAssets.audioWarning);
     }

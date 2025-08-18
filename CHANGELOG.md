@@ -1,3 +1,24 @@
+## [Unreleased] - 2025-08-18
+
+### Changed
+
+- **Architectural Refactor: SVG Rendering Pipeline.** Replaced the old, inefficient `SvgCapture` widget with a new, robust `SvgProcessor` service. The new implementation uses the recommended `DrawableRoot -> toImage()` method from the `flutter_svg` package, providing significant performance and maintainability improvements. The refactor was designed to be extensible by using an abstract base class (`SvgProcessorBase`) for the new service.
+
+### Added
+
+- **New SVG Processing Service:** Created `lib/services/svg_processor.dart` and `lib/services/svg_processor_base.dart` to handle SVG-to-image conversion directly, outside of the widget tree.
+- **Unit Tests for SVG Processor:** Added `test/services/svg_processor_test.dart` to ensure the new service is reliable and handles errors gracefully.
+- **New Documentation:**
+    - Created `DOCS/ADR-SVG-RENDERING-REFACTOR.md` to document the architectural decisions and the phased implementation plan for the refactor.
+    - Created `DOCS/LOGIC_ENGINE_BUG.md` to document a pre-existing, unrelated bug discovered in the `LogicEngine` during testing.
+
+### Known Issues (Pending)
+
+- **`LogicEngine` Bug:** The core game logic fails several unit tests related to power flow. This is a pre-existing, high-priority bug that needs to be addressed.
+- **Test Suite Timeouts:** The UI tests in `test/level_01_revised_test.dart` continue to time out. This is a known blocker for UI-level testing.
+
+---
+
 ## [Unreleased] - 2025-08-17
 
 ### Fixed
