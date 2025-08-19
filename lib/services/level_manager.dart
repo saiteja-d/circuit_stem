@@ -11,7 +11,7 @@ import 'asset_manager.dart';
 /// Notifier for managing level state, including loading, progress, and persistence.
 class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
   final SharedPreferences _sharedPrefs;
-  final AssetManager _assetManager;
+  final AssetManagerNotifier _assetManager;
 
   static const String _prefsKeyCompletedLevels = 'completed_levels';
 
@@ -19,12 +19,13 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
       : super(const LevelManagerState());
 
   Future<void> init() async {
-    Logger.log("LevelManagerNotifier: init");
+    Logger.log('LevelManagerNotifier: init');
     await _loadManifest();
   }
 
   /// Exposes the raw state for testing purposes.
   @visibleForTesting
+  @override
   LevelManagerState get debugState => state;
 
   /// Loads the level manifest and user progress from storage.
@@ -72,7 +73,7 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
 
   /// Loads the full definition for a specific level by its index.
   Future<LevelDefinition?> loadLevelByIndex(int index) async {
-    Logger.log("LevelManagerNotifier: loadLevelByIndex for index $index");
+    Logger.log('LevelManagerNotifier: loadLevelByIndex for index $index');
     if (index < 0 || index >= state.levels.length) {
       Logger.log(
           'LevelManagerNotifier: loadLevelByIndex - Invalid index $index or state.levels is empty. Length: ${state.levels.length}');
@@ -89,8 +90,10 @@ class LevelManagerNotifier extends StateNotifier<LevelManagerState> {
     try {
       final path = 'assets/levels/${levelMeta.id}.json';
       final jsonString = await _assetManager.loadString(path);
+      Logger.log('LevelManager: Loaded level JSON for ${levelMeta.id}: $jsonString');
       final decodedJson = json.decode(jsonString);
       final levelDef = LevelDefinition.fromJson(decodedJson);
+      Logger.log('LevelManager: Parsed LevelDefinition: $levelDef');
       state = state.copyWith(currentLevelDefinition: levelDef, isLoading: false);
       Logger.log(
           'LevelManagerNotifier: loadLevelByIndex END (Success) for level ${levelMeta.id}');

@@ -8,6 +8,7 @@ import '../services/level_manager.dart';
 import '../engine/game_engine_notifier.dart';
 import '../engine/game_engine_state.dart';
 import '../services/level_manager_state.dart';
+import '../services/asset_manager_state.dart';
 
 // This file is the single source of truth for all core providers.
 
@@ -17,8 +18,8 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences provider was not overridden');
 });
 
-final assetManagerProvider = Provider<AssetManager>((ref) {
-  throw UnimplementedError('AssetManager provider was not overridden');
+final assetManagerProvider = StateNotifierProvider<AssetManagerNotifier, AssetState>((ref) {
+  return AssetManagerNotifier();
 });
 
 // 2. Core Notifier Providers
@@ -26,7 +27,7 @@ final assetManagerProvider = Provider<AssetManager>((ref) {
 final levelManagerProvider = StateNotifierProvider<LevelManagerNotifier, LevelManagerState>((ref) {
   return LevelManagerNotifier(
     ref.watch(sharedPreferencesProvider),
-    ref.watch(assetManagerProvider),
+    ref.watch(assetManagerProvider.notifier),
   );
 });
 

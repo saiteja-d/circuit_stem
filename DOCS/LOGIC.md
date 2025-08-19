@@ -27,8 +27,10 @@ This document describes the core pure-Dart logic used by the game engine. Keep t
 | bulb                | W, E                        |
 | wire_straight       | N, S                        |
 | wire_corner         | N, E                        |
-| wire_t               | N, E, W                     |
+| wire_t              | N, E, W                     |
 | switch              | N, S (acts like straight)   |
+| crossWire           | N, E, S, W                  |
+| buzzer              | W, E                        |
 
 ### Rotation rules
 - Rotating 90° clockwise moves N→E, E→S, S→W, W→N. Rotation steps are integer multiples of 90.

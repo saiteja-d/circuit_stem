@@ -1,37 +1,23 @@
 import 'dart:async';
-import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flame_audio/flame_audio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:widgets_to_image/widgets_to_image.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../common/logger.dart';
 import '../common/assets.dart';
+import 'asset_manager_state.dart';
 
-class AssetManager {
-  final Map<String, ui.Image> _imageCache = {};
-  final Map<String, ui.Image> _svgImageCache = {};
-  
-  // Configuration
-  static const double defaultSvgSize = 64.0;
+class AssetManagerNotifier extends StateNotifier<AssetState> {
+  AssetManagerNotifier() : super(const AssetState());
 
   Future<void> loadAllAssets() async {
     Logger.log('AssetManager: Starting robust asset loading...');
-    
     try {
-      // This call is no longer strictly necessary here since main() also calls it,
-      // but it's harmless to leave for now.
-      WidgetsFlutterBinding.ensureInitialized();
-      
       final imagePaths = AppAssets.all.where((p) => p.endsWith('.png')).toList();
       await _loadImages(imagePaths);
-      
-      // SVG processing is now handled by the Initializer widget.
-      
-      // Load audio
       await _loadAudio();
-      
       Logger.log('AssetManager: All non-SVG assets loaded successfully');
     } catch (e) {
       Logger.log('AssetManager: Error during loading: $e');
@@ -39,25 +25,27 @@ class AssetManager {
   }
 
   Future<void> _loadImages(List<String> paths) async {
+    final newImages = Map<String, Image>.from(state.imageCache);
     for (final path in paths) {
       try {
         final byteData = await rootBundle.load(path);
-        final image = await decodeImageFromList(byteData.buffer.asUint8List());
-        _imageCache[path] = image;
+        final codec = await instantiateImageCodec(byteData.buffer.asUint8List());
+        final frameInfo = await codec.getNextFrame();
+        newImages[path] = frameInfo.image;
         Logger.log('✓ Loaded image: $path');
       } catch (e) {
         Logger.log('✗ Failed to load image: $path - $e');
       }
     }
+    state = state.copyWith(imageCache: newImages);
   }
 
-  void setSvgImages(Map<String, ui.Image> images) {
-    _svgImageCache.addAll(images);
+  void setSvgImages(Map<String, Image> images) {
+    state = state.copyWith(svgImageCache: images);
   }
 
   Future<void> _loadAudio() async {
     final audioFiles = AppAssets.all.where((p) => p.endsWith('.wav')).toList();
-    
     for (final file in audioFiles) {
       try {
         await FlameAudio.audioCache.load(file);
@@ -74,37 +62,37 @@ class AssetManager {
 
   // === Public API ===
 
-  ui.Image? getImage(String path) => _imageCache[path];
-  ui.Image? getSvgAsImage(String path) => _svgImageCache[path];
+  Image? getImage(String path) => state.imageCache[path];
+  Image? getSvgAsImage(String path) => state.svgImageCache[path];
 
   bool hasAsset(String path) {
-    return _imageCache.containsKey(path) || 
-           _svgImageCache.containsKey(path);
+    return state.imageCache.containsKey(path) || state.svgImageCache.containsKey(path);
   }
 
-  ui.Image? getBestImageForCanvas(String path) {
-    if (_svgImageCache.containsKey(path)) return _svgImageCache[path];
-    if (_imageCache.containsKey(path)) return _imageCache[path];
+  Image? getBestImageForCanvas(String path) {
+    if (state.svgImageCache.containsKey(path)) return state.svgImageCache[path];
+    if (state.imageCache.containsKey(path)) return state.imageCache[path];
     return null;
   }
 
   Map<String, int> getStats() {
     return {
-      'regular_images': _imageCache.length,
-      'svg_images': _svgImageCache.length,
-      'total_assets': _imageCache.length + _svgImageCache.length,
+      'regular_images': state.imageCache.length,
+      'svg_images': state.svgImageCache.length,
+      'total_assets': state.imageCache.length + state.svgImageCache.length,
     };
   }
 
+  @override
   void dispose() {
-    for (final image in _imageCache.values) {
+    for (final image in state.imageCache.values) {
       image.dispose();
     }
-    for (final image in _svgImageCache.values) {
+    for (final image in state.svgImageCache.values) {
       image.dispose();
     }
-    _imageCache.clear();
-    _svgImageCache.clear();
+    state = const AssetState(); // Reset state
     Logger.log('AssetManager: All assets disposed');
+    super.dispose();
   }
 }

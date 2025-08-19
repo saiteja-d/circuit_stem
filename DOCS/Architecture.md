@@ -96,6 +96,7 @@ The application features three primary screens, each designed for intuitive inte
 *   **Touch Targets:** The logical size of each cell is designed to be large enough (e.g., `64x64` logical pixels) to be easily tappable on mobile devices.
 *   **Drag & Drop:** Users can drag movable components. A semi-transparent preview of the component follows the user's finger. When the gesture ends, the component snaps to the nearest valid grid cell.
 *   **Tapping:** Tapping on an interactive component like a switch toggles its state instantly.
+*   **Component Rotation**: Draggable components can now be rotated by the player. When a draggable component is selected (by tapping it), a rotate button appears next to it. Tapping this button rotates the component by 90 degrees clockwise. This feature is introduced in Level 2.
 
 ### Visual States
 

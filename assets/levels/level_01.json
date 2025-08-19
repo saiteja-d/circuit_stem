@@ -11,7 +11,7 @@
     { "r": 0, "c": 3 },
     { "r": 5, "c": 5 }
   ],
-  "components": [
+  "initialComponents": [
     {
       "id": "bat1",
       "type": "battery",
@@ -54,7 +54,7 @@
         { "id": "bulb1_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
         { "id": "bulb1_b", "label": "B", "offset": { "r": 0, "c": 1 }, "dir": "right" }
       ],
-      "state": {}
+      "state": {} 
     },
     {
       "id": "timer1",
@@ -69,6 +69,60 @@
         { "id": "t1_out", "label": "out", "offset": { "r": 0, "c": 0 }, "dir": "right" }
       ],
       "state": { "timeRemaining": 5 }
+    }
+  ],
+  "paletteComponents": [
+    {
+      "id": "wire_straight_palette",
+      "type": "wire_straight",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "wsp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "wsp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "wire_corner_palette",
+      "type": "wire_corner",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "wcp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "wcp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "wire_t_palette",
+      "type": "wire_t",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "wtp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "wtp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" },
+        { "id": "wtp_c", "label": "C", "offset": { "r": 0, "c": 0 }, "dir": "down" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "bulb_palette",
+      "type": "bulb",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 },
+        { "r": 0, "c": 1 }
+      ],
+      "terminals": [
+        { "id": "bp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "bp_b", "label": "B", "offset": { "r": 0, "c": 1 }, "dir": "right" }
+      ],
+      "state": {}
     }
   ],
   "goals": [

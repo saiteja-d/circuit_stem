@@ -52,6 +52,7 @@ This table provides a comprehensive list of test cases for Level 1. It covers th
 | **TC-L1-28**     | Restart level                 | Tap restart mid-game                                      | Level resets to starting positions/states.                     |
 | **TC-L1-29**     | Undo last move                | Tap undo after moving component                           | Component returns to previous position.                        |
 | **TC-L1-30**     | Switch spam prevention        | Rapidly tap `switch1`                                     | Extra taps ignored until animation completes.                  |
+| **TC-L2-01**     | Rotate wire                   | Tap `wire_rotatable`, then tap rotate button              | Wire rotates by 90 degrees; visual state changes.              |
 
 ## 3. Next Steps to Achieve Full Test Coverage
 

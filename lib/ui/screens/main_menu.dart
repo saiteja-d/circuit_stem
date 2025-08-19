@@ -75,7 +75,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   }
   
   void _navigateToLevelSelection() {
-    Logger.log("MainMenuScreen: Navigating to LevelSelectScreen...");
+    Logger.log('MainMenuScreen: Navigating to LevelSelectScreen...');
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>

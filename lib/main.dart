@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
-import 'services/asset_manager.dart';
 import 'core/providers.dart';
 import 'common/logger.dart';
 import 'common/assets.dart';
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'services/svg_processor.dart';
 import 'services/svg_processor_base.dart';
 
@@ -18,9 +16,6 @@ void main() async {
 
   // Basic synchronous service setup
   final prefs = await SharedPreferences.getInstance();
-  final assetManager = AssetManager();
-  // Load non-svg assets (images .png, audio etc.)
-  await assetManager.loadAllAssets();
 
   // Instantiate the SvgProcessor
   final SvgProcessorBase svgProcessor = SvgProcessor();
@@ -29,7 +24,6 @@ void main() async {
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
-        assetManagerProvider.overrideWithValue(assetManager),
       ],
       child: Initializer(svgProcessor: svgProcessor), // Pass processor to Initializer
     ),
@@ -42,21 +36,23 @@ class Initializer extends ConsumerStatefulWidget {
   const Initializer({Key? key, required this.svgProcessor}) : super(key: key);
 
   @override
-  _InitializerState createState() => _InitializerState();
+  InitializerState createState() => InitializerState();
 }
 
-class _InitializerState extends ConsumerState<Initializer> {
+class InitializerState extends ConsumerState<Initializer> {
   bool _ready = false;
   String _status = 'Preparing assets...';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _processSvgs());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initializeAssets());
   }
 
-  Future<void> _processSvgs() async {
-    final assetManager = ref.read(assetManagerProvider);
+  Future<void> _initializeAssets() async {
+    final assetManager = ref.read(assetManagerProvider.notifier);
+    await assetManager.loadAllAssets(); // Load non-svg assets
+
     final svgPaths = AppAssets.all.where((p) => p.endsWith('.svg')).toList();
 
     try {
@@ -82,8 +78,8 @@ class _InitializerState extends ConsumerState<Initializer> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 12),
                 Text(_status),
               ],
             ),

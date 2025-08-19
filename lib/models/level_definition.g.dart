@@ -20,7 +20,10 @@ _$LevelDefinitionImpl _$$LevelDefinitionImplFromJson(
       blockedCells: (json['blockedCells'] as List<dynamic>)
           .map((e) => Position.fromJson(e as Map<String, dynamic>))
           .toList(),
-      components: (json['components'] as List<dynamic>)
+      initialComponents: (json['initialComponents'] as List<dynamic>)
+          .map((e) => ComponentModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      paletteComponents: (json['paletteComponents'] as List<dynamic>)
           .map((e) => ComponentModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       goals: (json['goals'] as List<dynamic>)
@@ -43,7 +46,8 @@ Map<String, dynamic> _$$LevelDefinitionImplToJson(
       'rows': instance.rows,
       'cols': instance.cols,
       'blockedCells': instance.blockedCells,
-      'components': instance.components,
+      'initialComponents': instance.initialComponents,
+      'paletteComponents': instance.paletteComponents,
       'goals': instance.goals,
       'hints': instance.hints,
     };

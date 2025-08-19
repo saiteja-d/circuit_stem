@@ -33,6 +33,11 @@ class GameScreen extends ConsumerWidget {
       );
     }
 
+    final gridComponentIds = gameEngineState.grid.componentsById.keys.toSet();
+    final paletteComponents =
+        gameEngineState.paletteComponents.where((c) => !gridComponentIds.contains(c.id)).toList();
+
+
     return Scaffold(
       body: Stack(
         children: [
@@ -49,11 +54,11 @@ class GameScreen extends ConsumerWidget {
                 SizedBox(
                   width: 200,
                   child: ComponentPalette(
-                    availableComponents: currentLevel.components,
+                    availableComponents: paletteComponents,
                     onComponentSelected: (component) {
                       gameNotifier.selectComponent(component);
                     },
-                    selectedComponent: gameEngineState.selectedComponentId == null ? null : currentLevel.components.firstWhere((c) => c.id == gameEngineState.selectedComponentId),
+                    selectedComponent: gameEngineState.selectedComponentId == null ? null : paletteComponents.firstWhere((c) => c.id == gameEngineState.selectedComponentId, orElse: () => throw Exception('Selected component not found in palette')),
                   ),
                 ),
               ],

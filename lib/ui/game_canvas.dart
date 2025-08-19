@@ -39,10 +39,16 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
   Widget build(BuildContext context) {
     final gameNotifier = ref.read(gameEngineProvider.notifier);
     final renderState = ref.watch(renderStateProvider);
-    final assetManager = ref.watch(assetManagerProvider);
+    final assetState = ref.watch(assetManagerProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final gridColor = theme.dividerColor;
+    final draggedComponentBackgroundColor = theme.scaffoldBackgroundColor.withAlpha(179);
+    final selectedComponentId = ref.watch(gameEngineProvider.select((state) => state.selectedComponentId));
+    final selectedComponent = selectedComponentId != null ? ref.watch(gameEngineProvider.select((state) => state.grid.componentsById[selectedComponentId])) : null;
+    Logger.log('GameCanvas: Building with ${renderState?.grid.componentsById.length ?? "null renderState"} components in renderState');
 
     return DragTarget<ComponentModel>(
-      onWillAccept: (data) => true,
       onAcceptWithDetails: (details) {
         final component = details.data;
         final offset = details.offset;
@@ -63,20 +69,20 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
             gameNotifier.handleTap(row, col);
           },
           onPanStart: (details) {
-        final startPos = details.localPosition;
-        final col = (startPos.dx / cellSize).floor();
-        final row = (startPos.dy / cellSize).floor();
-        Logger.log('GameCanvas: Pan start at ($row, $col)');
+            final startPos = details.localPosition;
+            final col = (startPos.dx / cellSize).floor();
+            final row = (startPos.dy / cellSize).floor();
+            Logger.log('GameCanvas: Pan start at ($row, $col)');
 
-        final component = ref.read(gameEngineProvider).grid.componentsAt(row, col).firstOrNull;
-        if (component != null) {
-          Logger.log('GameCanvas: Tapped on component ${component.id} of type ${component.type}, isDraggable: ${component.isDraggable}');
-          if (component.isDraggable) {
-            Logger.log('GameCanvas: Starting drag for component ${component.id}');
-            gameNotifier.startDrag(component.id, startPos);
-          }
-        }
-      },
+            final component = ref.read(gameEngineProvider).grid.componentsAt(row, col).firstOrNull;
+            if (component != null) {
+              Logger.log('GameCanvas: Tapped on component ${component.id} of type ${component.type}, isDraggable: ${component.isDraggable}');
+              if (component.isDraggable) {
+                Logger.log('GameCanvas: Starting drag for component ${component.id}');
+                gameNotifier.startDrag(component.id, startPos);
+              }
+            }
+          },
           onPanUpdate: (details) {
             final draggedId = ref.read(gameEngineProvider).draggedComponentId;
             if (draggedId != null) {
@@ -90,12 +96,30 @@ class _GameCanvasState extends ConsumerState<GameCanvas> with TickerProviderStat
               gameNotifier.endDrag(draggedId);
             }
           },
-          child: CustomPaint(
-            painter: CanvasPainter(
-              renderState: renderState,
-              assetManager: assetManager,
-            ),
-            size: Size.infinite,
+          child: Stack(
+            children: [
+              CustomPaint(
+                painter: CanvasPainter(
+                  renderState: renderState,
+                  assetState: assetState,
+                  isDark: isDark,
+                  gridColor: gridColor,
+                  draggedComponentBackgroundColor: draggedComponentBackgroundColor,
+                ),
+                size: Size.infinite,
+              ),
+              if (selectedComponent != null && selectedComponent.isDraggable)
+                Positioned(
+                  left: (selectedComponent.c + 1) * cellSize,
+                  top: selectedComponent.r * cellSize,
+                  child: IconButton(
+                    icon: const Icon(Icons.rotate_right),
+                    onPressed: () {
+                      gameNotifier.rotateComponent(selectedComponent.id);
+                    },
+                  ),
+                ),
+            ],
           ),
         );
       },

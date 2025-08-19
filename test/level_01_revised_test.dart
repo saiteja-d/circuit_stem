@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:circuit_stem/services/asset_manager_state.dart';
 
 import 'helpers/level_01_test_helper.dart';
 import 'helpers/mock_asset_manager.dart';
@@ -18,7 +19,7 @@ import 'helpers/mock_audio_service.dart';
 void main() {
   group('Level 01 Revised Tests - Foundation', () {
     Future<void> pumpGameScreenWithOverrides(WidgetTester tester) async {
-      final mockAssetManager = MockAssetManager();
+      final mockAssetManager = MockAssetManager(const AssetState());
       final mockAnimationScheduler = MockAnimationScheduler();
       final mockAudioService = MockAudioService();
       SharedPreferences.setMockInitialValues({});
@@ -35,7 +36,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            assetManagerProvider.overrideWithValue(mockAssetManager),
+            assetManagerProvider.overrideWith((_) => mockAssetManager),
             sharedPreferencesProvider.overrideWithValue(mockPrefs),
             // Explicitly override the level manager to ensure it uses the mock asset manager.
             levelManagerProvider.overrideWith((ref) {

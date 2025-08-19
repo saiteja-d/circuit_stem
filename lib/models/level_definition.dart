@@ -19,7 +19,8 @@ class LevelDefinition with _$LevelDefinition {
     required int rows,
     required int cols,
     required List<Position> blockedCells,
-    required List<ComponentModel> components,
+    required List<ComponentModel> initialComponents,
+    required List<ComponentModel> paletteComponents,
     required List<Goal> goals,
     required List<Hint> hints,
   }) = _LevelDefinition;

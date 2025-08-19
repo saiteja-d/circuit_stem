@@ -60,11 +60,13 @@ This flow is now much simpler and more robust due to the centralized Riverpod ar
 Once the `GameScreen` is built, the gameplay loop is driven by state changes.
 
 1.  **User Input (`ui/game_canvas.dart`)**:
-    -   The user interacts with the `GameCanvas` (e.g., taps a component).
+    -   The user interacts with the `GameCanvas` (e.g., taps a component, drags a component, taps a rotate button).
     -   The UI widget calls a method on the **notifier** of the game engine provider.
         ```dart
         ref.read(gameEngineProvider.notifier).handleTap(x, y);
         ```
+    -   If a component is tapped, the `handleTap` method in `GameEngineNotifier` is called. This method now also handles selecting components.
+    -   If a rotate button is tapped, the `rotateComponent` method in `GameEngineNotifier` is called.
 
 2.  **State Update (`engine/game_engine_notifier.dart`)**:
     -   The `handleTap` method inside `GameEngineNotifier` contains the business logic.

@@ -1,4 +1,119 @@
 {
-  "id": "lvl_02",
-  "title": "Circuit 2 - Parallel"
+  "id": "level_02",
+  "title": "Parallel Circuits",
+  "description": "Power two bulbs and a buzzer in a parallel circuit.",
+  "levelNumber": 2,
+  "author": "Gemini",
+  "version": 1,
+  "rows": 8,
+  "cols": 8,
+  "blockedCells": [],
+  "initialComponents": [
+    {
+      "id": "bat1",
+      "type": "battery",
+      "position": { "r": 1, "c": 1 },
+      "rotation": 0,
+      "isDraggable": false,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ],
+      "terminals": [
+        { "id": "bat1_pos", "label": "+", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "bat1_neg", "label": "-", "offset": { "r": 0, "c": 0 }, "dir": "down" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "bulb1",
+      "type": "bulb",
+      "position": { "r": 1, "c": 4 },
+      "rotation": 0,
+      "isDraggable": false,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ]
+    },
+    {
+      "id": "bulb2",
+      "type": "bulb",
+      "position": { "r": 4, "c": 4 },
+      "rotation": 0,
+      "isDraggable": false,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ]
+    },
+    {
+      "id": "buzzer1",
+      "type": "buzzer",
+      "position": { "r": 4, "c": 1 },
+      "rotation": 0,
+      "isDraggable": false,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ]
+    },
+    {
+      "id": "wire_rotatable",
+      "type": "wire_straight",
+      "position": { "r": 2, "c": 2 },
+      "rotation": 0,
+      "isDraggable": true,
+      "shapeOffsets": [
+        { "r": 0, "c": 0 }
+      ],
+      "terminals": [
+        { "id": "wsr_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "wsr_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    }
+  ],
+  "paletteComponents": [
+    {
+      "id": "wire_straight_palette",
+      "type": "wire_straight",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "wsp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "wsp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "wire_corner_palette",
+      "type": "wire_corner",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "wcp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "wcp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    },
+    {
+      "id": "cross_wire_palette",
+      "type": "crossWire",
+      "position": { "r": 0, "c": 0 },
+      "rotation": 0,
+      "shapeOffsets": [ { "r": 0, "c": 0 } ],
+      "terminals": [
+        { "id": "cwp_a", "label": "A", "offset": { "r": 0, "c": 0 }, "dir": "up" },
+        { "id": "cwp_b", "label": "B", "offset": { "r": 0, "c": 0 }, "dir": "down" },
+        { "id": "cwp_c", "label": "C", "offset": { "r": 0, "c": 0 }, "dir": "left" },
+        { "id": "cwp_d", "label": "D", "offset": { "r": 0, "c": 0 }, "dir": "right" }
+      ],
+      "state": {}
+    }
+  ],
+  "goals": [
+    { "type": "power_bulb", "targetId": "bulb1" },
+    { "type": "power_bulb", "targetId": "bulb2" },
+    { "type": "activate_component", "targetId": "buzzer1" }
+  ],
+  "hints": []
 }

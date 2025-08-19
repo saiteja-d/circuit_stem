@@ -29,7 +29,10 @@ mixin _$LevelDefinition {
   int get rows => throw _privateConstructorUsedError;
   int get cols => throw _privateConstructorUsedError;
   List<Position> get blockedCells => throw _privateConstructorUsedError;
-  List<ComponentModel> get components => throw _privateConstructorUsedError;
+  List<ComponentModel> get initialComponents =>
+      throw _privateConstructorUsedError;
+  List<ComponentModel> get paletteComponents =>
+      throw _privateConstructorUsedError;
   List<Goal> get goals => throw _privateConstructorUsedError;
   List<Hint> get hints => throw _privateConstructorUsedError;
 
@@ -59,7 +62,8 @@ abstract class $LevelDefinitionCopyWith<$Res> {
       int rows,
       int cols,
       List<Position> blockedCells,
-      List<ComponentModel> components,
+      List<ComponentModel> initialComponents,
+      List<ComponentModel> paletteComponents,
       List<Goal> goals,
       List<Hint> hints});
 }
@@ -88,7 +92,8 @@ class _$LevelDefinitionCopyWithImpl<$Res, $Val extends LevelDefinition>
     Object? rows = null,
     Object? cols = null,
     Object? blockedCells = null,
-    Object? components = null,
+    Object? initialComponents = null,
+    Object? paletteComponents = null,
     Object? goals = null,
     Object? hints = null,
   }) {
@@ -129,9 +134,13 @@ class _$LevelDefinitionCopyWithImpl<$Res, $Val extends LevelDefinition>
           ? _value.blockedCells
           : blockedCells // ignore: cast_nullable_to_non_nullable
               as List<Position>,
-      components: null == components
-          ? _value.components
-          : components // ignore: cast_nullable_to_non_nullable
+      initialComponents: null == initialComponents
+          ? _value.initialComponents
+          : initialComponents // ignore: cast_nullable_to_non_nullable
+              as List<ComponentModel>,
+      paletteComponents: null == paletteComponents
+          ? _value.paletteComponents
+          : paletteComponents // ignore: cast_nullable_to_non_nullable
               as List<ComponentModel>,
       goals: null == goals
           ? _value.goals
@@ -163,7 +172,8 @@ abstract class _$$LevelDefinitionImplCopyWith<$Res>
       int rows,
       int cols,
       List<Position> blockedCells,
-      List<ComponentModel> components,
+      List<ComponentModel> initialComponents,
+      List<ComponentModel> paletteComponents,
       List<Goal> goals,
       List<Hint> hints});
 }
@@ -190,7 +200,8 @@ class __$$LevelDefinitionImplCopyWithImpl<$Res>
     Object? rows = null,
     Object? cols = null,
     Object? blockedCells = null,
-    Object? components = null,
+    Object? initialComponents = null,
+    Object? paletteComponents = null,
     Object? goals = null,
     Object? hints = null,
   }) {
@@ -231,9 +242,13 @@ class __$$LevelDefinitionImplCopyWithImpl<$Res>
           ? _value._blockedCells
           : blockedCells // ignore: cast_nullable_to_non_nullable
               as List<Position>,
-      components: null == components
-          ? _value._components
-          : components // ignore: cast_nullable_to_non_nullable
+      initialComponents: null == initialComponents
+          ? _value._initialComponents
+          : initialComponents // ignore: cast_nullable_to_non_nullable
+              as List<ComponentModel>,
+      paletteComponents: null == paletteComponents
+          ? _value._paletteComponents
+          : paletteComponents // ignore: cast_nullable_to_non_nullable
               as List<ComponentModel>,
       goals: null == goals
           ? _value._goals
@@ -260,11 +275,13 @@ class _$LevelDefinitionImpl implements _LevelDefinition {
       required this.rows,
       required this.cols,
       required final List<Position> blockedCells,
-      required final List<ComponentModel> components,
+      required final List<ComponentModel> initialComponents,
+      required final List<ComponentModel> paletteComponents,
       required final List<Goal> goals,
       required final List<Hint> hints})
       : _blockedCells = blockedCells,
-        _components = components,
+        _initialComponents = initialComponents,
+        _paletteComponents = paletteComponents,
         _goals = goals,
         _hints = hints;
 
@@ -295,12 +312,22 @@ class _$LevelDefinitionImpl implements _LevelDefinition {
     return EqualUnmodifiableListView(_blockedCells);
   }
 
-  final List<ComponentModel> _components;
+  final List<ComponentModel> _initialComponents;
   @override
-  List<ComponentModel> get components {
-    if (_components is EqualUnmodifiableListView) return _components;
+  List<ComponentModel> get initialComponents {
+    if (_initialComponents is EqualUnmodifiableListView)
+      return _initialComponents;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_components);
+    return EqualUnmodifiableListView(_initialComponents);
+  }
+
+  final List<ComponentModel> _paletteComponents;
+  @override
+  List<ComponentModel> get paletteComponents {
+    if (_paletteComponents is EqualUnmodifiableListView)
+      return _paletteComponents;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_paletteComponents);
   }
 
   final List<Goal> _goals;
@@ -321,7 +348,7 @@ class _$LevelDefinitionImpl implements _LevelDefinition {
 
   @override
   String toString() {
-    return 'LevelDefinition(id: $id, title: $title, description: $description, levelNumber: $levelNumber, author: $author, version: $version, rows: $rows, cols: $cols, blockedCells: $blockedCells, components: $components, goals: $goals, hints: $hints)';
+    return 'LevelDefinition(id: $id, title: $title, description: $description, levelNumber: $levelNumber, author: $author, version: $version, rows: $rows, cols: $cols, blockedCells: $blockedCells, initialComponents: $initialComponents, paletteComponents: $paletteComponents, goals: $goals, hints: $hints)';
   }
 
   @override
@@ -342,7 +369,9 @@ class _$LevelDefinitionImpl implements _LevelDefinition {
             const DeepCollectionEquality()
                 .equals(other._blockedCells, _blockedCells) &&
             const DeepCollectionEquality()
-                .equals(other._components, _components) &&
+                .equals(other._initialComponents, _initialComponents) &&
+            const DeepCollectionEquality()
+                .equals(other._paletteComponents, _paletteComponents) &&
             const DeepCollectionEquality().equals(other._goals, _goals) &&
             const DeepCollectionEquality().equals(other._hints, _hints));
   }
@@ -360,7 +389,8 @@ class _$LevelDefinitionImpl implements _LevelDefinition {
       rows,
       cols,
       const DeepCollectionEquality().hash(_blockedCells),
-      const DeepCollectionEquality().hash(_components),
+      const DeepCollectionEquality().hash(_initialComponents),
+      const DeepCollectionEquality().hash(_paletteComponents),
       const DeepCollectionEquality().hash(_goals),
       const DeepCollectionEquality().hash(_hints));
 
@@ -392,7 +422,8 @@ abstract class _LevelDefinition implements LevelDefinition {
       required final int rows,
       required final int cols,
       required final List<Position> blockedCells,
-      required final List<ComponentModel> components,
+      required final List<ComponentModel> initialComponents,
+      required final List<ComponentModel> paletteComponents,
       required final List<Goal> goals,
       required final List<Hint> hints}) = _$LevelDefinitionImpl;
 
@@ -418,7 +449,9 @@ abstract class _LevelDefinition implements LevelDefinition {
   @override
   List<Position> get blockedCells;
   @override
-  List<ComponentModel> get components;
+  List<ComponentModel> get initialComponents;
+  @override
+  List<ComponentModel> get paletteComponents;
   @override
   List<Goal> get goals;
   @override

@@ -78,7 +78,7 @@ class Grid with _$Grid {
     }
 
     // Check 2: Does it collide with any *existing* components?
-    final currentOccupancy = this.occupancy; // Use existing occupancy map
+    final currentOccupancy = occupancy; // Use existing occupancy map
     for (final off in tempComponent.shapeOffsets) {
       final key = '${tempComponent.r + off.dr}:${tempComponent.c + off.dc}';
       if (currentOccupancy.containsKey(key)) {

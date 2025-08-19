@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../models/level_definition.dart';
 import '../models/grid.dart';
+import '../models/component.dart';
 import 'render_state.dart';
 
 part 'game_engine_state.freezed.dart';
@@ -20,6 +21,8 @@ class GameEngineState with _$GameEngineState {
     Offset? dragPosition,
     @Default(false) bool isShortCircuit,
     RenderState? renderState,
+    @Default([]) List<ComponentModel> paletteComponents,
+  @Default({}) Set<String> poweredBuzzerIds,
   }) = _GameEngineState;
 
   /// Factory constructor for initial state

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:circuit_stem/services/svg_processor.dart';
 import 'dart:ui' as ui;

@@ -61,18 +61,20 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   void loadLevel(LevelDefinition level) {
     Logger.log('GameEngine: Loading new level ${level.id}');
+    Logger.log('GameEngine: Initial components from LevelDefinition: ${level.initialComponents}');
     animationScheduler.reset();
 
-    final components = <String, ComponentModel>{};
-    for (final comp in level.components) {
-      components[comp.id] = comp;
+    final initialComponentsMap = <String, ComponentModel>{};
+    for (final comp in level.initialComponents) {
+      initialComponentsMap[comp.id] = comp;
     }
 
     state = GameEngineState(
       currentLevel: level,
-      grid: Grid(rows: level.rows, cols: level.cols, componentsById: components),
+      grid: Grid(rows: level.rows, cols: level.cols, componentsById: initialComponentsMap),
       isPaused: false,
       isWin: false,
+      paletteComponents: level.paletteComponents,
     );
 
     _evaluateAndUpdateRenderState();
@@ -92,9 +94,23 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
       dragPosition: state.dragPosition,
     );
 
+    final currentPoweredBuzzers = state.grid.componentsById.values
+        .where((c) =>
+            c.type == ComponentType.buzzer &&
+            evalResult.poweredComponentIds.contains(c.id))
+        .map((c) => c.id)
+        .toSet();
+
+    final newlyPoweredBuzzers = currentPoweredBuzzers.difference(state.poweredBuzzerIds);
+
+    for (final _ in newlyPoweredBuzzers) {
+      _audioService.play(AppAssets.audioToggle);
+    }
+
     state = state.copyWith(
       renderState: newRenderState,
       isShortCircuit: evalResult.isShortCircuit,
+      poweredBuzzerIds: currentPoweredBuzzers,
     );
 
     onEvaluate?.call(evalResult);
@@ -215,8 +231,12 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
   void handleTap(int r, int c) {
     final component = state.grid.componentsAt(r, c).firstOrNull;
-    if (component != null && component.type == ComponentType.sw) {
-      toggleSwitch(component.id);
+    if (component != null) {
+      if (component.type == ComponentType.sw) {
+        toggleSwitch(component.id);
+      } else {
+        selectComponent(component);
+      }
     }
   }
 
@@ -230,6 +250,19 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     } else {
       _audioService.play(AppAssets.audioWarning);
     }
+    _evaluateAndUpdateRenderState();
+  }
+
+  void rotateComponent(String componentId) {
+    final component = state.grid.componentsById[componentId];
+    if (component == null || !component.isDraggable) return;
+
+    final newRotation = (component.rotation + 90) % 360;
+    final updatedComponent = component.copyWith(rotation: newRotation);
+    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+    newComponents[componentId] = updatedComponent;
+
+    state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
     _evaluateAndUpdateRenderState();
   }
 

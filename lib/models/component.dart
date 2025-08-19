@@ -49,11 +49,16 @@ enum ComponentType {
   timer,
   resistor,
   blocked,
-  custom
+  custom,
+  crossWire,
+  buzzer
 }
 
 ComponentType _componentTypeFromString(String type) {
   if (type == 'circuit_switch') type = 'sw';
+  if (type == 'wire_straight') type = 'wireStraight';
+  if (type == 'wire_corner') type = 'wireCorner';
+  if (type == 'wire_t') type = 'wireT';
   return ComponentType.values.firstWhere(
     (e) => e.name == type,
     orElse: () => ComponentType.custom,
@@ -210,7 +215,7 @@ class ComponentModel with _$ComponentModel {
     };
   }
 
-  bool get isDraggable => type != ComponentType.battery && type != ComponentType.bulb;
+  bool get isDraggable => type != ComponentType.battery && type != ComponentType.bulb && type != ComponentType.buzzer;
 }
 
 // Type alias for backward compatibility with tests

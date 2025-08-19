@@ -81,6 +81,12 @@ class CircuitComponentPainter extends CustomPainter {
         // Draw a placeholder for unknown or custom components
         _paintBlocked(canvas, size, paint, fillPaint, Colors.grey, center, radius);
         break;
+      case ComponentType.crossWire:
+        _paintCrossWire(canvas, size, paint, wireColor);
+        break;
+      case ComponentType.buzzer:
+        _paintBuzzer(canvas, size, paint, fillPaint, componentColor, center, radius);
+        break;
     }
     canvas.restore();
   }
@@ -115,6 +121,50 @@ class CircuitComponentPainter extends CustomPainter {
     // Draw T-junction
     canvas.drawLine(Offset(center.dx, 0), Offset(center.dx, size.height), paint);
     canvas.drawLine(center, Offset(size.width, center.dy), paint);
+  }
+
+  void _paintCrossWire(Canvas canvas, Size size, Paint paint, Color color) {
+    paint.color = color;
+    paint.strokeWidth = 3.0;
+
+    // Horizontal line
+    canvas.drawLine(
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
+      paint,
+    );
+
+    // Vertical line with a gap
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height / 2 - 5),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width / 2, size.height / 2 + 5),
+      Offset(size.width / 2, size.height),
+      paint,
+    );
+  }
+
+  void _paintBuzzer(Canvas canvas, Size size, Paint paint, Paint fillPaint,
+      Color color, Offset center, double radius) {
+    paint.color = color;
+    fillPaint.color = color;
+
+    // Draw buzzer body
+    final buzzerRect =
+        Rect.fromCenter(center: center, width: size.width * 0.6, height: size.height * 0.6);
+    canvas.drawRRect(RRect.fromRectAndRadius(buzzerRect, const Radius.circular(4)), fillPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(buzzerRect, const Radius.circular(4)), paint);
+
+    // Draw sound waves when powered
+    if (isPowered) {
+      paint.strokeWidth = 1.0;
+      for (int i = 1; i < 4; i++) {
+        canvas.drawCircle(center, radius + i * 3, paint..style = PaintingStyle.stroke);
+      }
+    }
   }
 
   void _paintBattery(Canvas canvas, Size size, Paint paint, Paint fillPaint,

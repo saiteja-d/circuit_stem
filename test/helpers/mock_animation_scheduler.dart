@@ -1,5 +1,4 @@
 import 'package:circuit_stem/engine/animation_scheduler.dart';
-import 'package:flutter/material.dart';
 
 class MockAnimationScheduler implements AnimationScheduler {
   final List<AnimationCallback> _callbacks = [];

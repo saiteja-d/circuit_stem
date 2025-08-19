@@ -20,7 +20,7 @@ class _LevelSelectScreenState extends ConsumerState<LevelSelectScreen>
   @override
   void initState() {
     super.initState();
-    Logger.log("LevelSelectScreen: initState");
+    Logger.log('LevelSelectScreen: initState');
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,

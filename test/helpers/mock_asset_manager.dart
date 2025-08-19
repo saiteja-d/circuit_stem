@@ -1,21 +1,17 @@
 import 'dart:ui' as ui;
-import 'package:circuit_stem/services/asset_manager.dart';
-import 'package:flutter/material.dart';
-import 'package:widgets_to_image/widgets_to_image.dart';
 
-class MockAssetManager implements AssetManager {
-  final Map<String, ui.Image> _imageCache = {};
-  final Map<String, ui.Image> _svgImageCache = {};
+import 'package:circuit_stem/services/asset_manager.dart';
+import 'package:circuit_stem/services/asset_manager_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class MockAssetManager extends StateNotifier<AssetState> implements AssetManagerNotifier {
   final Map<String, String> _files = {};
 
-  // Helper for tests to prime the text file cache
+  MockAssetManager(AssetState state) : super(state);
+
   void primeFile(String path, String content) {
     _files[path] = content;
   }
-
-  // Not part of the interface, but needed to satisfy the implementation.
-  @override
-  final WidgetsToImageController _widgetsToImageController = WidgetsToImageController();
 
   @override
   Future<void> loadAllAssets() async {
@@ -24,7 +20,7 @@ class MockAssetManager implements AssetManager {
 
   @override
   void setSvgImages(Map<String, ui.Image> images) {
-    _svgImageCache.addAll(images);
+    state = state.copyWith(svgImageCache: images);
   }
 
   @override
@@ -36,34 +32,29 @@ class MockAssetManager implements AssetManager {
   }
 
   @override
-  ui.Image? getImage(String path) => _imageCache[path];
+  ui.Image? getImage(String path) => state.imageCache[path];
 
   @override
-  ui.Image? getSvgAsImage(String path) => _svgImageCache[path];
+  ui.Image? getSvgAsImage(String path) => state.svgImageCache[path];
 
   @override
   bool hasAsset(String path) {
-    return _imageCache.containsKey(path) || _svgImageCache.containsKey(path) || _files.containsKey(path);
+    return state.imageCache.containsKey(path) ||
+        state.svgImageCache.containsKey(path) ||
+        _files.containsKey(path);
   }
 
   @override
   ui.Image? getBestImageForCanvas(String path) {
-    return _svgImageCache[path] ?? _imageCache[path];
+    return state.svgImageCache[path] ?? state.imageCache[path];
   }
 
   @override
   Map<String, int> getStats() {
     return {
-      'regular_images': _imageCache.length,
-      'svg_images': _svgImageCache.length,
-      'total_assets': _imageCache.length + _svgImageCache.length + _files.length,
+      'regular_images': state.imageCache.length,
+      'svg_images': state.svgImageCache.length,
+      'total_assets': state.imageCache.length + state.svgImageCache.length + _files.length,
     };
-  }
-
-  @override
-  void dispose() {
-    _imageCache.clear();
-    _svgImageCache.clear();
-    _files.clear();
   }
 }

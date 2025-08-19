@@ -14,12 +14,13 @@ void main() {
       levelNumber: 1,
       rows: 3,
       cols: 3,
-      components: [
+      initialComponents: [
         ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1),
       ],
+      paletteComponents: [], // Add an empty list for palette components
       goals: [],
       author: 'test',
-      version: 1, // Corrected to int
+      version: 1,
       hints: [],
       blockedCells: [],
     );
