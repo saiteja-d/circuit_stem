@@ -103,3 +103,13 @@ The application features three primary screens, each designed for intuitive inte
 *   **Bulb:** Has distinct visual states for `off` and `on`. The `on` state includes a subtle pulsing glow driven by the `AnimationScheduler`.
 *   **Wires:** Have distinct visual states for `powered` and `unpowered`. The `powered` state includes an animated "flow" effect, also driven by the `AnimationScheduler`.
 *   **Switch:** Has two distinct visuals for its `open` and `closed` states.
+
+## 4. Architectural Evolution: The Component-Behavior Model
+
+To enhance extensibility and align with modern game development best practices, the project is undergoing a significant architectural refactoring. The original architecture is being evolved into a **Component-Behavior model**, inspired by Entity-Component-System (ECS) patterns.
+
+This new architecture decouples data from behavior, allowing new component types and game rules to be added as "plug-ins" without modifying the core engine.
+
+For a complete breakdown of the new architecture, the motivation behind it, and the detailed, phased implementation plan, please see the full refactoring document:
+
+- **[Architectural Refactor Plan: The Component-Behavior Model](./REFACTOR_PLAN.md)**
