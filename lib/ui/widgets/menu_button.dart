@@ -20,7 +20,7 @@ class MenuButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+          backgroundColor: Theme.of(context).colorScheme.surface.withAlpha(230),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -49,6 +49,8 @@ abstract class $GameStateCopyWith<$Res> {
       Map<String, bool> poweredComponents,
       double bulbIntensity,
       double wireOffset});
+
+  $GridCopyWith<$Res> get grid;
 }
 
 /// @nodoc
@@ -115,6 +117,16 @@ class _$GameStateCopyWithImpl<$Res, $Val extends GameState>
               as double,
     ) as $Val);
   }
+
+  /// Create a copy of GameState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GridCopyWith<$Res> get grid {
+    return $GridCopyWith<$Res>(_value.grid, (value) {
+      return _then(_value.copyWith(grid: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -135,6 +147,9 @@ abstract class _$$GameStateImplCopyWith<$Res>
       Map<String, bool> poweredComponents,
       double bulbIntensity,
       double wireOffset});
+
+  @override
+  $GridCopyWith<$Res> get grid;
 }
 
 /// @nodoc

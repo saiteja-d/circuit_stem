@@ -1,76 +1,29 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'component.dart';
 import 'goal.dart';
 import 'hint.dart';
-import './position.dart';
+import 'position.dart';
 
-class LevelDefinition {
-  final String id;
-  final String title;
-  final String description;
-  final int levelNumber;
-  final String author;
-  final int version;
-  final int rows;
-  final int cols;
-  final List<Position> blockedCells;
-  final List<ComponentModel> components;
-  final List<Goal> goals;
-  final List<Hint> hints;
+part 'level_definition.freezed.dart';
+part 'level_definition.g.dart';
 
-  LevelDefinition({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.levelNumber,
-    required this.author,
-    required this.version,
-    required this.rows,
-    required this.cols,
-    required this.blockedCells,
-    required this.components,
-    required this.goals,
-    required this.hints,
-  });
+@freezed
+class LevelDefinition with _$LevelDefinition {
+  const factory LevelDefinition({
+    required String id,
+    required String title,
+    required String description,
+    required int levelNumber,
+    required String author,
+    required int version,
+    required int rows,
+    required int cols,
+    required List<Position> blockedCells,
+    required List<ComponentModel> initialComponents,
+    required List<ComponentModel> paletteComponents,
+    required List<Goal> goals,
+    required List<Hint> hints,
+  }) = _LevelDefinition;
 
-  factory LevelDefinition.fromJson(Map<String, dynamic> json) {
-    return LevelDefinition(
-      id: json['id'] as String,
-      title: json['title'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      levelNumber: json['levelNumber'] as int? ?? 0,
-      author: json['author'] as String? ?? '',
-      version: json['version'] as int? ?? 1,
-      rows: json['rows'] as int,
-      cols: json['cols'] as int,
-      blockedCells: (json['blockedCells'] as List<dynamic>?)
-              ?.map((e) => Position.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      components: (json['components'] as List<dynamic>)
-          .map((e) => ComponentModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      goals: (json['goals'] as List<dynamic>)
-          .map((e) => Goal.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      hints: (json['hints'] as List<dynamic>?)
-              ?.map((e) => Hint.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'author': author,
-      'version': version,
-      'rows': rows,
-      'cols': cols,
-      'blockedCells': blockedCells.map((b) => b.toJson()).toList(),
-      'components': components.map((c) => c.toJson()).toList(),
-      'goals': goals.map((g) => g.toJson()).toList(),
-      'hints': hints.map((h) => h.toJson()).toList(),
-    };
-  }
+  factory LevelDefinition.fromJson(Map<String, dynamic> json) => _$LevelDefinitionFromJson(json);
 }

@@ -1,8 +1,8 @@
-
 # Technical Requirements Document (TRD)
 
 **Project:** Circuit STEM
-**Version:** 2.0 (Post-Refactor)
+**Version:** 3.0 (Post-Riverpod Refactor)
+**Last Updated:** 2025-08-12 EST
 
 ---
 
@@ -12,24 +12,24 @@ This document provides a deep dive into the technical architecture, components, 
 
 ## 2. High-Level Design Principles
 
-- **Modularity & Separation of Concerns:** The architecture strictly separates core logic (`LogicEngine`), game state management (`GameEngine`), level/asset management (`LevelManager`, `AssetManager`), and UI rendering (`GameScreen`, `CanvasPainter`). This ensures components are independently testable and maintainable.
-- **Provider-Based State Management:** The `provider` package is the backbone of the state management system, distributing state from services and controllers down to the UI layer.
+- **Modularity & Separation of Concerns:** The architecture strictly separates core logic (`LogicEngine`), game state management (`GameEngineNotifier`), level/asset management (`LevelManager`, `AssetManager`), and UI rendering (`GameScreen`, `CanvasPainter`). This ensures components are independently testable and maintainable.
+- **Reactive State Management (Riverpod):** The `flutter_riverpod` package is the backbone of the state management system. It provides a robust, compile-safe, and scalable way to manage state and inject dependencies throughout the application.
 - **Data-Driven Design:** Levels, components, and game goals are defined in external JSON files (`assets/levels/`), allowing for content updates without requiring a new application build.
-- **Performance:** The core logic is pure Dart for maximum performance. UI rendering is optimized using `CustomPainter` and minimizing widget rebuilds through `ChangeNotifier` and `Consumer` widgets.
+- **Performance:** The core logic is pure Dart for maximum performance. UI rendering is optimized using `CustomPainter` and minimizing widget rebuilds through the granular and efficient nature of Riverpod providers.
 
 ## 3. Architecture & Data Flow
 
-The application follows a reactive, service-oriented architecture. For visual diagrams, please see the **[Architecture & UI Design Document](./Architecture.md)**.
+The application follows a reactive, service-oriented architecture. For visual diagrams and a high-level overview, please see the **[Architecture & UI Design Document](./Architecture.md)**.
 
 **Typical Data Flow (User Taps a Switch):**
 
 1.  **Input:** `GameCanvas` captures the tap via a `GestureDetector`.
-2.  **Action:** It calls `gameEngine.handleTap(row, col)`.
-3.  **State Change:** `GameEngine` identifies the component and updates its state (e.g., `closed: true`).
-4.  **Evaluation:** `GameEngine` calls `logicEngine.evaluate(grid)`.
+2.  **Action:** It calls a method on the notifier, e.g., `ref.read(gameEngineProvider.notifier).toggleSwitch(componentId)`.
+3.  **State Change:** `GameEngineNotifier` computes a new, immutable `GameEngineState` based on the action.
+4.  **Evaluation:** As part of computing the new state, it calls `logicEngine.evaluate(grid)`.
 5.  **Result:** `LogicEngine` returns a new `EvaluationResult`.
-6.  **Notification:** `GameEngine` updates its `RenderState` and calls `notifyListeners()`.
-7.  **Re-render:** The UI rebuilds, and `CanvasPainter` redraws the screen with the new state.
+6.  **State Emission:** `GameEngineNotifier` finalizes the new `GameEngineState` and updates its state via `state = newState;`.
+7.  **Re-render:** Riverpod detects the state change and automatically rebuilds any widget that was `watch`ing the `gameEngineProvider`. The `CanvasPainter` receives the new state and redraws the frame.
 
 ## 4. Project Structure (`lib` directory)
 
@@ -39,14 +39,15 @@ lib/
 ├── main.dart
 ├── routes.dart
 ├── common/             # Shared constants, themes, utils
-├── engine/             # Core stateful game logic and controllers
-├── models/             # Plain data models for game objects
+├── core/
+│   ├── providers.dart  # Centralized Riverpod provider definitions
+│   └── state/          # State definitions (not yet used)
+├── engine/             # Core stateful game logic (StateNotifiers)
+├── models/             # Immutable data models (using Freezed)
 ├── services/           # App-wide singleton services (logic, levels)
 └── ui/                 # All UI-related code
-    ├── controllers/    # UI-specific state controllers
     ├── screens/        # Top-level screen widgets
-    ├── widgets/        # Reusable UI components
-    └── canvas_painter.dart
+    └── widgets/        # Reusable UI components
 ```
 
 ## 5. File-by-File Breakdown
@@ -56,6 +57,8 @@ lib/
 ---
 
 ## 6. Core Logic & Algorithms
+
+_(This section remains accurate as the pure logic of the circuit evaluation has not changed.)_
 
 This section details the fundamental algorithms used by the `LogicEngine`.
 
@@ -75,7 +78,7 @@ The engine builds a graph where terminals are nodes and connections are edges. A
 
 ### 6.3. Power Evaluation (Breadth-First Search)
 
--   The BFS starts from all positive battery terminals (`role: 'pos'`).
+-   The BFS starts from all positive battery terminals (`role: 'pos').
 -   It traverses the graph, respecting any blocked terminals (e.g., an open switch), and adds every component it visits to a `poweredComponentIds` set.
 -   This provides an efficient way to determine the power state of the entire circuit in a single pass.
 
@@ -93,16 +96,18 @@ The engine builds a graph where terminals are nodes and connections are edges. A
 -   **`RepaintBoundary`:** The `GameCanvas` should be wrapped in a `RepaintBoundary` to isolate its frequent repaints from the rest of the UI tree.
 -   **Asset Preloading:** All critical image and audio assets are preloaded at startup via the `AssetManager` to prevent loading-related hitches during gameplay.
 
-### 7.2. State Management
+### 7.2. State Management (Riverpod & StateNotifier)
 
--   The choice of `provider` with `ChangeNotifier` is deliberate for its simplicity and performance in this context. State is managed in a granular way:
-    -   `LevelManager`: Manages state that persists across levels.
-    -   `GameEngine`: Manages state for only the current level.
-    -   `DebugOverlayController`: Manages ephemeral UI state.
--   This separation prevents unnecessary rebuilds. For example, dragging a component only notifies listeners of the `GameEngine`, not the `LevelManager`.
+-   **Rationale for Migration:** The project was migrated from a `ChangeNotifier` and `provider` based approach to `flutter_riverpod` with `StateNotifier`. This was a deliberate architectural decision to improve the robustness and maintainability of the application.
+-   **Benefits of the New Architecture:**
+    1.  **Compile-Time Safety:** Riverpod providers are type-safe, eliminating a class of runtime errors that can occur with traditional dependency injection.
+    2.  **Immutable State:** `StateNotifier` works with immutable state objects (e.g., `GameEngineState`, managed with `freezed`). This prevents state from being modified accidentally and makes state changes predictable and easy to trace.
+    3.  **Declarative and Efficient UI:** Widgets `watch` providers and are rebuilt automatically and efficiently by Riverpod when the state they depend on changes. This removes the need for manual `notifyListeners()` calls and complex `Consumer` nesting.
+    4.  **Testability:** Riverpod's architecture makes testing significantly easier. Providers can be easily overridden with mock implementations in a test environment, allowing for true unit testing of widgets and services.
+-   **Provider Structure:** All core application providers are defined in `lib/core/providers.dart`. Services that need to be initialized at startup (like `AssetManager`) have their providers overridden in the `ProviderScope` in `main.dart`.
 
 ### 7.3. Testing Strategy
 
 -   **Unit Tests:** The `LogicEngine` is the primary target for unit tests due to its pure and stateless nature. Tests should cover all edge cases for series, parallel, short circuits, and complex component interactions.
--   **Widget Tests:** The UI widgets, especially the `GameCanvas`, should have widget tests to verify that user interactions (taps, drags) correctly trigger the `GameEngine` methods.
--   **Integration Tests:** An integration test can be used to play through a simple level automatically to ensure all the services (`LevelManager`, `GameEngine`, `LogicEngine`) work together correctly.
+-   **Widget Tests:** The UI widgets, especially the `GameCanvas`, should have widget tests to verify that user interactions (taps, drags) correctly trigger methods on the `GameEngineNotifier`.
+-   **Integration Tests:** An integration test can be used to play through a simple level automatically to ensure all the services (`LevelManager`, `GameEngineNotifier`, `LogicEngine`) work together correctly.

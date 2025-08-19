@@ -21,9 +21,13 @@ mixin _$GameEngineState {
   bool get isWin => throw _privateConstructorUsedError;
   LevelDefinition? get currentLevel => throw _privateConstructorUsedError;
   String? get draggedComponentId => throw _privateConstructorUsedError;
+  String? get selectedComponentId => throw _privateConstructorUsedError;
   Offset? get dragPosition => throw _privateConstructorUsedError;
   bool get isShortCircuit => throw _privateConstructorUsedError;
   RenderState? get renderState => throw _privateConstructorUsedError;
+  List<ComponentModel> get paletteComponents =>
+      throw _privateConstructorUsedError;
+  Set<String> get poweredBuzzerIds => throw _privateConstructorUsedError;
 
   /// Create a copy of GameEngineState
   /// with the given fields replaced by the non-null parameter values.
@@ -44,9 +48,15 @@ abstract class $GameEngineStateCopyWith<$Res> {
       bool isWin,
       LevelDefinition? currentLevel,
       String? draggedComponentId,
+      String? selectedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
-      RenderState? renderState});
+      RenderState? renderState,
+      List<ComponentModel> paletteComponents,
+      Set<String> poweredBuzzerIds});
+
+  $GridCopyWith<$Res> get grid;
+  $LevelDefinitionCopyWith<$Res>? get currentLevel;
 }
 
 /// @nodoc
@@ -69,9 +79,12 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
     Object? isWin = null,
     Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
+    Object? selectedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
     Object? renderState = freezed,
+    Object? paletteComponents = null,
+    Object? poweredBuzzerIds = null,
   }) {
     return _then(_value.copyWith(
       grid: null == grid
@@ -94,6 +107,10 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
               as String?,
+      selectedComponentId: freezed == selectedComponentId
+          ? _value.selectedComponentId
+          : selectedComponentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       dragPosition: freezed == dragPosition
           ? _value.dragPosition
           : dragPosition // ignore: cast_nullable_to_non_nullable
@@ -106,7 +123,39 @@ class _$GameEngineStateCopyWithImpl<$Res, $Val extends GameEngineState>
           ? _value.renderState
           : renderState // ignore: cast_nullable_to_non_nullable
               as RenderState?,
+      paletteComponents: null == paletteComponents
+          ? _value.paletteComponents
+          : paletteComponents // ignore: cast_nullable_to_non_nullable
+              as List<ComponentModel>,
+      poweredBuzzerIds: null == poweredBuzzerIds
+          ? _value.poweredBuzzerIds
+          : poweredBuzzerIds // ignore: cast_nullable_to_non_nullable
+              as Set<String>,
     ) as $Val);
+  }
+
+  /// Create a copy of GameEngineState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GridCopyWith<$Res> get grid {
+    return $GridCopyWith<$Res>(_value.grid, (value) {
+      return _then(_value.copyWith(grid: value) as $Val);
+    });
+  }
+
+  /// Create a copy of GameEngineState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $LevelDefinitionCopyWith<$Res>? get currentLevel {
+    if (_value.currentLevel == null) {
+      return null;
+    }
+
+    return $LevelDefinitionCopyWith<$Res>(_value.currentLevel!, (value) {
+      return _then(_value.copyWith(currentLevel: value) as $Val);
+    });
   }
 }
 
@@ -124,9 +173,17 @@ abstract class _$$GameEngineStateImplCopyWith<$Res>
       bool isWin,
       LevelDefinition? currentLevel,
       String? draggedComponentId,
+      String? selectedComponentId,
       Offset? dragPosition,
       bool isShortCircuit,
-      RenderState? renderState});
+      RenderState? renderState,
+      List<ComponentModel> paletteComponents,
+      Set<String> poweredBuzzerIds});
+
+  @override
+  $GridCopyWith<$Res> get grid;
+  @override
+  $LevelDefinitionCopyWith<$Res>? get currentLevel;
 }
 
 /// @nodoc
@@ -147,9 +204,12 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
     Object? isWin = null,
     Object? currentLevel = freezed,
     Object? draggedComponentId = freezed,
+    Object? selectedComponentId = freezed,
     Object? dragPosition = freezed,
     Object? isShortCircuit = null,
     Object? renderState = freezed,
+    Object? paletteComponents = null,
+    Object? poweredBuzzerIds = null,
   }) {
     return _then(_$GameEngineStateImpl(
       grid: null == grid
@@ -172,6 +232,10 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
           ? _value.draggedComponentId
           : draggedComponentId // ignore: cast_nullable_to_non_nullable
               as String?,
+      selectedComponentId: freezed == selectedComponentId
+          ? _value.selectedComponentId
+          : selectedComponentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       dragPosition: freezed == dragPosition
           ? _value.dragPosition
           : dragPosition // ignore: cast_nullable_to_non_nullable
@@ -184,6 +248,14 @@ class __$$GameEngineStateImplCopyWithImpl<$Res>
           ? _value.renderState
           : renderState // ignore: cast_nullable_to_non_nullable
               as RenderState?,
+      paletteComponents: null == paletteComponents
+          ? _value._paletteComponents
+          : paletteComponents // ignore: cast_nullable_to_non_nullable
+              as List<ComponentModel>,
+      poweredBuzzerIds: null == poweredBuzzerIds
+          ? _value._poweredBuzzerIds
+          : poweredBuzzerIds // ignore: cast_nullable_to_non_nullable
+              as Set<String>,
     ));
   }
 }
@@ -197,9 +269,14 @@ class _$GameEngineStateImpl implements _GameEngineState {
       required this.isWin,
       this.currentLevel,
       this.draggedComponentId,
+      this.selectedComponentId,
       this.dragPosition,
       this.isShortCircuit = false,
-      this.renderState});
+      this.renderState,
+      final List<ComponentModel> paletteComponents = const [],
+      final Set<String> poweredBuzzerIds = const {}})
+      : _paletteComponents = paletteComponents,
+        _poweredBuzzerIds = poweredBuzzerIds;
 
   @override
   final Grid grid;
@@ -212,16 +289,36 @@ class _$GameEngineStateImpl implements _GameEngineState {
   @override
   final String? draggedComponentId;
   @override
+  final String? selectedComponentId;
+  @override
   final Offset? dragPosition;
   @override
   @JsonKey()
   final bool isShortCircuit;
   @override
   final RenderState? renderState;
+  final List<ComponentModel> _paletteComponents;
+  @override
+  @JsonKey()
+  List<ComponentModel> get paletteComponents {
+    if (_paletteComponents is EqualUnmodifiableListView)
+      return _paletteComponents;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_paletteComponents);
+  }
+
+  final Set<String> _poweredBuzzerIds;
+  @override
+  @JsonKey()
+  Set<String> get poweredBuzzerIds {
+    if (_poweredBuzzerIds is EqualUnmodifiableSetView) return _poweredBuzzerIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_poweredBuzzerIds);
+  }
 
   @override
   String toString() {
-    return 'GameEngineState(grid: $grid, isPaused: $isPaused, isWin: $isWin, currentLevel: $currentLevel, draggedComponentId: $draggedComponentId, dragPosition: $dragPosition, isShortCircuit: $isShortCircuit, renderState: $renderState)';
+    return 'GameEngineState(grid: $grid, isPaused: $isPaused, isWin: $isWin, currentLevel: $currentLevel, draggedComponentId: $draggedComponentId, selectedComponentId: $selectedComponentId, dragPosition: $dragPosition, isShortCircuit: $isShortCircuit, renderState: $renderState, paletteComponents: $paletteComponents, poweredBuzzerIds: $poweredBuzzerIds)';
   }
 
   @override
@@ -237,12 +334,18 @@ class _$GameEngineStateImpl implements _GameEngineState {
                 other.currentLevel == currentLevel) &&
             (identical(other.draggedComponentId, draggedComponentId) ||
                 other.draggedComponentId == draggedComponentId) &&
+            (identical(other.selectedComponentId, selectedComponentId) ||
+                other.selectedComponentId == selectedComponentId) &&
             (identical(other.dragPosition, dragPosition) ||
                 other.dragPosition == dragPosition) &&
             (identical(other.isShortCircuit, isShortCircuit) ||
                 other.isShortCircuit == isShortCircuit) &&
             (identical(other.renderState, renderState) ||
-                other.renderState == renderState));
+                other.renderState == renderState) &&
+            const DeepCollectionEquality()
+                .equals(other._paletteComponents, _paletteComponents) &&
+            const DeepCollectionEquality()
+                .equals(other._poweredBuzzerIds, _poweredBuzzerIds));
   }
 
   @override
@@ -253,9 +356,12 @@ class _$GameEngineStateImpl implements _GameEngineState {
       isWin,
       currentLevel,
       draggedComponentId,
+      selectedComponentId,
       dragPosition,
       isShortCircuit,
-      renderState);
+      renderState,
+      const DeepCollectionEquality().hash(_paletteComponents),
+      const DeepCollectionEquality().hash(_poweredBuzzerIds));
 
   /// Create a copy of GameEngineState
   /// with the given fields replaced by the non-null parameter values.
@@ -274,9 +380,12 @@ abstract class _GameEngineState implements GameEngineState {
       required final bool isWin,
       final LevelDefinition? currentLevel,
       final String? draggedComponentId,
+      final String? selectedComponentId,
       final Offset? dragPosition,
       final bool isShortCircuit,
-      final RenderState? renderState}) = _$GameEngineStateImpl;
+      final RenderState? renderState,
+      final List<ComponentModel> paletteComponents,
+      final Set<String> poweredBuzzerIds}) = _$GameEngineStateImpl;
 
   @override
   Grid get grid;
@@ -289,11 +398,17 @@ abstract class _GameEngineState implements GameEngineState {
   @override
   String? get draggedComponentId;
   @override
+  String? get selectedComponentId;
+  @override
   Offset? get dragPosition;
   @override
   bool get isShortCircuit;
   @override
   RenderState? get renderState;
+  @override
+  List<ComponentModel> get paletteComponents;
+  @override
+  Set<String> get poweredBuzzerIds;
 
   /// Create a copy of GameEngineState
   /// with the given fields replaced by the non-null parameter values.

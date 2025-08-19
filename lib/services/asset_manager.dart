@@ -1,74 +1,98 @@
-import 'dart:ui' as ui;
-import 'dart:math';
-import 'package:flame_audio/flame_audio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart' as flutter_svg;
-import 'package:flame/flame.dart'; // Import Flame
-import '../common/logger.dart';
+import 'dart:async';
+import 'dart:ui';
 
-class AssetManager {
-  final Map<String, ui.Image> _imageCache = {};
-  final Map<String, DrawableRoot> _svgCache = {};
+import 'package:flame_audio/flame_audio.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../common/logger.dart';
+import '../common/assets.dart';
+import 'asset_manager_state.dart';
+
+class AssetManagerNotifier extends StateNotifier<AssetState> {
+  AssetManagerNotifier() : super(const AssetState());
 
   Future<void> loadAllAssets() async {
-    Logger.log('AssetManager: Preloading all assets...');
-    // Preload images, SVGs, and audio files
-    await _loadImages([
-      'assets/images/grid_bg_level1.png',
-    ]);
-    await _loadSvgs([
-      'assets/images/battery.svg',
-      'assets/images/bulb_off.svg',
-      'assets/images/bulb_on.svg',
-      'assets/images/wire_straight.svg',
-      'assets/images/wire_corner.svg',
-      'assets/images/wire_t.svg',
-      'assets/images/switch_open.svg',
-      'assets/images/switch_closed.svg',
-    ]);
-    await Flame.audio.audioCache.loadAll([
-      'place.wav',
-      'toggle.wav',
-      'success.wav',
-      'short_warning.wav',
-    ]);
-    Logger.log('AssetManager: Preloading complete.');
+    Logger.log('AssetManager: Starting robust asset loading...');
+    try {
+      final imagePaths = AppAssets.all.where((p) => p.endsWith('.png')).toList();
+      await _loadImages(imagePaths);
+      await _loadAudio();
+      Logger.log('AssetManager: All non-SVG assets loaded successfully');
+    } catch (e) {
+      Logger.log('AssetManager: Error during loading: $e');
+    }
   }
 
   Future<void> _loadImages(List<String> paths) async {
+    final newImages = Map<String, Image>.from(state.imageCache);
     for (final path in paths) {
       try {
         final byteData = await rootBundle.load(path);
-        final image = await decodeImageFromList(byteData.buffer.asUint8List());
-        _imageCache[path] = image;
+        final codec = await instantiateImageCodec(byteData.buffer.asUint8List());
+        final frameInfo = await codec.getNextFrame();
+        newImages[path] = frameInfo.image;
+        Logger.log('✓ Loaded image: $path');
       } catch (e) {
-        Logger.log('Failed to load image: $path, Error: $e');
+        Logger.log('✗ Failed to load image: $path - $e');
       }
     }
+    state = state.copyWith(imageCache: newImages);
   }
 
-  Future<void> _loadSvgs(List<String> paths) async {
-    for (final path in paths) {
+  void setSvgImages(Map<String, Image> images) {
+    state = state.copyWith(svgImageCache: images);
+  }
+
+  Future<void> _loadAudio() async {
+    final audioFiles = AppAssets.all.where((p) => p.endsWith('.wav')).toList();
+    for (final file in audioFiles) {
       try {
-        final rawSvg = await rootBundle.loadString(path);
-        final drawable = await flutter_svg.SvgPicture.fromSvgString(rawSvg, rawSvg);
-        _svgCache[path] = drawable;
+        await FlameAudio.audioCache.load(file);
+        Logger.log('✓ Loaded audio: $file');
       } catch (e) {
-        Logger.log('Failed to load SVG: $path, Error: $e');
+        Logger.log('✗ Failed to load audio: $file - $e');
       }
     }
   }
 
-  ui.Image? getImage(String path) => _imageCache[path];
+  Future<String> loadString(String path) async {
+    return await rootBundle.loadString(path);
+  }
 
-  DrawableRoot? getSvg(String path) => _svgCache[path];
+  // === Public API ===
 
+  Image? getImage(String path) => state.imageCache[path];
+  Image? getSvgAsImage(String path) => state.svgImageCache[path];
+
+  bool hasAsset(String path) {
+    return state.imageCache.containsKey(path) || state.svgImageCache.containsKey(path);
+  }
+
+  Image? getBestImageForCanvas(String path) {
+    if (state.svgImageCache.containsKey(path)) return state.svgImageCache[path];
+    if (state.imageCache.containsKey(path)) return state.imageCache[path];
+    return null;
+  }
+
+  Map<String, int> getStats() {
+    return {
+      'regular_images': state.imageCache.length,
+      'svg_images': state.svgImageCache.length,
+      'total_assets': state.imageCache.length + state.svgImageCache.length,
+    };
+  }
+
+  @override
   void dispose() {
-    for (final image in _imageCache.values) {
+    for (final image in state.imageCache.values) {
       image.dispose();
     }
-    _imageCache.clear();
-    _svgCache.clear();
+    for (final image in state.svgImageCache.values) {
+      image.dispose();
+    }
+    state = const AssetState(); // Reset state
+    Logger.log('AssetManager: All assets disposed');
+    super.dispose();
   }
 }

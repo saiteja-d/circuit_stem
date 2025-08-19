@@ -1,6 +1,8 @@
+import 'package:circuit_stem/common/logger.dart';
 import 'package:flutter/material.dart';
-import 'package:circuit_stem/routes.dart';
+
 import 'package:circuit_stem/common/theme.dart'; // Import the theme file
+import 'level_select.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({Key? key}) : super(key: key);
@@ -73,6 +75,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
   }
   
   void _navigateToLevelSelection() {
+    Logger.log('MainMenuScreen: Navigating to LevelSelectScreen...');
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -125,7 +128,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.primary.withAlpha(77),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -156,7 +159,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                 Text(
                   'Circuit Simulation Game',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(204),
                   ),
                 ),
                 
@@ -181,6 +184,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton.icon(
+                          key: const Key('start_playing_button'),
                           onPressed: _navigateToLevelSelection,
                           icon: Icon(
                             Icons.play_arrow,
@@ -283,7 +287,7 @@ class _MainMenuScreenState extends State<MainMenuScreen>
               height: 4,
               margin: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(77),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

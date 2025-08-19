@@ -1,15 +1,14 @@
-class Position {
-  final int r;
-  final int c;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  Position({required this.r, required this.c});
+part 'position.freezed.dart';
+part 'position.g.dart';
 
-  factory Position.fromJson(Map<String, dynamic> json) {
-    return Position(
-      r: json['r'] as int,
-      c: json['c'] as int,
-    );
-  }
+@freezed
+class Position with _$Position {
+  const factory Position({
+    required int r,
+    required int c,
+  }) = _Position;
 
-  Map<String, dynamic> toJson() => {'r': r, 'c': c};
+  factory Position.fromJson(Map<String, dynamic> json) => _$PositionFromJson(json);
 }

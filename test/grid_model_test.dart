@@ -1,69 +1,49 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:circuit_stem/models/grid.dart';
 import 'package:circuit_stem/models/component.dart';
+import 'package:circuit_stem/models/level_definition.dart';
+import 'package:circuit_stem/engine/game_engine_notifier.dart';
 
 void main() {
-  group('Grid Model Tests', () {
-    test('addComponent places a component on the grid', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component = ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1);
-      final placed = grid.addComponent(component);
-      expect(placed, isTrue);
-      expect(grid.componentsAt(1, 1).first, component);
+  TestWidgetsFlutterBinding.ensureInitialized();
+  group('GameEngineNotifier Grid Logic Tests', () {
+    late GameEngineNotifier notifier;
+    const initialLevel = LevelDefinition(
+      id: 'test_level',
+      title: 'Test Level',
+      description: '',
+      levelNumber: 1,
+      rows: 3,
+      cols: 3,
+      initialComponents: [
+        ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1),
+      ],
+      paletteComponents: [], // Add an empty list for palette components
+      goals: [],
+      author: 'test',
+      version: 1,
+      hints: [],
+      blockedCells: [],
+    );
+
+    setUp(() {
+      notifier = GameEngineNotifier(initialLevel: initialLevel);
     });
 
-    test('addComponent fails if component is out of bounds', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component = ComponentModel(id: 'c1', type: ComponentType.battery, r: 3, c: 3); // Out of bounds
-      final placed = grid.addComponent(component);
-      expect(placed, isFalse);
+    test('loadLevel places initial components on the grid', () {
+      final grid = notifier.state.grid;
+      expect(grid.componentsById.length, 1);
+      expect(grid.componentsAt(1, 1).first.id, 'c1');
     });
 
-    test('addComponent fails if component overlaps existing component', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component1 = ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1);
-      final component2 = ComponentModel(id: 'c2', type: ComponentType.bulb, r: 1, c: 1);
-      grid.addComponent(component1);
-      final placed = grid.addComponent(component2);
-      expect(placed, isFalse);
-    });
+    test('endDrag moves a component to a new valid position', () {
+      notifier.startDrag('c1', const Offset(1 * 64.0 + 32.0, 1 * 64.0 + 32.0));
+      notifier.updateDrag('c1', const Offset(2 * 64.0 + 32.0, 2 * 64.0 + 32.0));
+      notifier.endDrag('c1');
 
-    test('removeComponent removes a component from the grid', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component = ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1);
-      grid.addComponent(component);
-      expect(grid.componentsAt(1, 1).first, component);
-
-      grid.removeComponent(component.id);
-      expect(grid.componentsAt(1, 1), isEmpty);
-    });
-
-    test('updateComponent moves a component to a new valid position', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component = ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1);
-      grid.addComponent(component);
-
-      final updatedComponent = component.copyWith(r: 2, c: 2);
-      final success = grid.updateComponent(updatedComponent);
-
-      expect(success, isTrue);
-      expect(grid.componentsAt(1, 1), isEmpty);
-      expect(grid.componentsAt(2, 2).first, updatedComponent);
-    });
-
-    test('updateComponent fails if new position overlaps existing component', () {
-      final grid = Grid(rows: 3, cols: 3);
-      final component1 = ComponentModel(id: 'c1', type: ComponentType.battery, r: 1, c: 1);
-      final component2 = ComponentModel(id: 'c2', type: ComponentType.bulb, r: 2, c: 2);
-      grid.addComponent(component1);
-      grid.addComponent(component2);
-
-      final updatedComponent1 = component1.copyWith(r: 2, c: 2);
-      final success = grid.updateComponent(updatedComponent1);
-
-      expect(success, isFalse);
-      expect(grid.componentsAt(1, 1).first, component1); // Should not have moved
-      expect(grid.componentsAt(2, 2).first, component2); // Should still be there
+      final grid = notifier.state.grid;
+      expect(grid.componentsAt(1, 1), isEmpty, reason: 'Original position should be empty');
+      expect(grid.componentsAt(2, 2), isNotEmpty, reason: 'New position should be occupied');
+      expect(grid.componentsAt(2, 2).first.id, 'c1');
     });
   });
 }

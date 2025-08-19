@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:circuit_stem/models/component.dart';
 import 'package:circuit_stem/common/theme.dart';
-import 'package:circuit_stem/common/constants.dart';
+
 
 class CircuitComponentPainter extends CustomPainter {
   final ComponentModel component;
@@ -24,18 +24,18 @@ class CircuitComponentPainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
-      
+
     final fillPaint = Paint()..style = PaintingStyle.fill;
-    
+
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 3;
-    
+
     // Get colors based on theme and power state
-    final wireColor = isPowered 
+    final wireColor = isPowered
         ? (isDark ? DarkModeColors.wirePowered : LightModeColors.wirePowered)
         : (isDark ? DarkModeColors.wireUnpowered : LightModeColors.wireUnpowered);
-    
-    final componentColor = isPowered 
+
+    final componentColor = isPowered
         ? (isDark ? DarkModeColors.componentActive : LightModeColors.componentActive)
         : (isDark ? DarkModeColors.componentInactive : LightModeColors.componentInactive);
 
@@ -57,9 +57,6 @@ class CircuitComponentPainter extends CustomPainter {
         _paintWireTJunction(canvas, size, paint, wireColor);
         break;
       case ComponentType.wireLong:
-        // For wireLong, we need to determine if this part is a straight or corner segment
-        // This is a simplification; a more robust solution would involve analyzing shapeOffsets
-        // For now, assume wireLong parts are straight segments.
         _paintWireStraight(canvas, size, paint, wireColor);
         break;
       case ComponentType.battery:
@@ -75,15 +72,25 @@ class CircuitComponentPainter extends CustomPainter {
         _paintResistor(canvas, size, paint, componentColor, center);
         break;
       case ComponentType.timer:
-        _paintTimer(canvas, size, paint, componentColor, center, radius);
+        _paintTimer(canvas, size, paint, fillPaint, componentColor, center, radius);
         break;
       case ComponentType.blocked:
-        _paintBlocked(canvas, size, paint, componentColor, center, radius);
+        _paintBlocked(canvas, size, paint, fillPaint, componentColor, center, radius);
+        break;
+      case ComponentType.custom:
+        // Draw a placeholder for unknown or custom components
+        _paintBlocked(canvas, size, paint, fillPaint, Colors.grey, center, radius);
+        break;
+      case ComponentType.crossWire:
+        _paintCrossWire(canvas, size, paint, wireColor);
+        break;
+      case ComponentType.buzzer:
+        _paintBuzzer(canvas, size, paint, fillPaint, componentColor, center, radius);
         break;
     }
     canvas.restore();
   }
-  
+
   void _paintWireStraight(Canvas canvas, Size size, Paint paint, Color color) {
     paint.color = color;
     paint.strokeWidth = 3.0;
@@ -93,60 +100,109 @@ class CircuitComponentPainter extends CustomPainter {
       paint,
     );
   }
-  
+
   void _paintWireCorner(Canvas canvas, Size size, Paint paint, Color color) {
     paint.color = color;
     paint.strokeWidth = 3.0;
-    
+
     final center = Offset(size.width / 2, size.height / 2);
-    
+
     // Draw L-shaped corner
     canvas.drawLine(center, Offset(size.width, center.dy), paint);
     canvas.drawLine(center, Offset(center.dx, size.height), paint);
   }
-  
+
   void _paintWireTJunction(Canvas canvas, Size size, Paint paint, Color color) {
     paint.color = color;
     paint.strokeWidth = 3.0;
-    
+
     final center = Offset(size.width / 2, size.height / 2);
-    
+
     // Draw T-junction
     canvas.drawLine(Offset(center.dx, 0), Offset(center.dx, size.height), paint);
     canvas.drawLine(center, Offset(size.width, center.dy), paint);
   }
-  
-  void _paintBattery(Canvas canvas, Size size, Paint paint, Paint fillPaint, 
-                    Color color, Offset center, double radius) {
+
+  void _paintCrossWire(Canvas canvas, Size size, Paint paint, Color color) {
+    paint.color = color;
+    paint.strokeWidth = 3.0;
+
+    // Horizontal line
+    canvas.drawLine(
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
+      paint,
+    );
+
+    // Vertical line with a gap
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height / 2 - 5),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width / 2, size.height / 2 + 5),
+      Offset(size.width / 2, size.height),
+      paint,
+    );
+  }
+
+  void _paintBuzzer(Canvas canvas, Size size, Paint paint, Paint fillPaint,
+      Color color, Offset center, double radius) {
     paint.color = color;
     fillPaint.color = color;
-    
+
+    // Draw buzzer body
+    final buzzerRect =
+        Rect.fromCenter(center: center, width: size.width * 0.6, height: size.height * 0.6);
+    canvas.drawRRect(RRect.fromRectAndRadius(buzzerRect, const Radius.circular(4)), fillPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(buzzerRect, const Radius.circular(4)), paint);
+
+    // Draw sound waves when powered
+    if (isPowered) {
+      paint.strokeWidth = 1.0;
+      for (int i = 1; i < 4; i++) {
+        canvas.drawCircle(center, radius + i * 3, paint..style = PaintingStyle.stroke);
+      }
+    }
+  }
+
+  void _paintBattery(Canvas canvas, Size size, Paint paint, Paint fillPaint,
+      Color color, Offset center, double radius) {
+    paint.color = color;
+    fillPaint.color = color;
+
     // Draw battery body
-    final batteryRect = Rect.fromCenter(center: center, width: size.width * 0.8, height: size.height * 0.4);
+    final batteryRect =
+        Rect.fromCenter(center: center, width: size.width * 0.8, height: size.height * 0.4);
     canvas.drawRRect(RRect.fromRectAndRadius(batteryRect, const Radius.circular(4)), fillPaint);
     canvas.drawRRect(RRect.fromRectAndRadius(batteryRect, const Radius.circular(4)), paint);
 
     // Draw terminals
     final terminalHeight = size.height * 0.2;
     final terminalWidth = size.width * 0.1;
-    
+
     // Positive terminal
     canvas.drawRect(
-      Rect.fromLTWH(batteryRect.right, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
+      Rect.fromLTWH(
+          batteryRect.right, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
       fillPaint,
     );
     canvas.drawRect(
-      Rect.fromLTWH(batteryRect.right, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
+      Rect.fromLTWH(
+          batteryRect.right, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
       paint,
     );
-    
+
     // Negative terminal
     canvas.drawRect(
-      Rect.fromLTWH(batteryRect.left - terminalWidth, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
+      Rect.fromLTWH(
+          batteryRect.left - terminalWidth, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
       fillPaint,
     );
     canvas.drawRect(
-      Rect.fromLTWH(batteryRect.left - terminalWidth, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
+      Rect.fromLTWH(
+          batteryRect.left - terminalWidth, center.dy - terminalHeight / 2, terminalWidth, terminalHeight),
       paint,
     );
 
@@ -154,35 +210,43 @@ class CircuitComponentPainter extends CustomPainter {
     final textPainterPlus = TextPainter(
       text: TextSpan(
         text: '+',
-        style: TextStyle(color: isDark ? DarkModeColors.onPrimary : LightModeColors.onPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            color: isDark ? DarkModeColors.darkOnPrimary : LightModeColors.lightOnPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
     );
     textPainterPlus.layout();
-    textPainterPlus.paint(canvas, Offset(batteryRect.right + terminalWidth / 2 - textPainterPlus.width / 2, center.dy - textPainterPlus.height / 2));
-    
+    textPainterPlus.paint(canvas,
+        Offset(batteryRect.right + terminalWidth / 2 - textPainterPlus.width / 2, center.dy - textPainterPlus.height / 2));
+
     final textPainterMinus = TextPainter(
       text: TextSpan(
         text: '−',
-        style: TextStyle(color: isDark ? DarkModeColors.onPrimary : LightModeColors.onPrimary, fontSize: 12, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            color: isDark ? DarkModeColors.darkOnPrimary : LightModeColors.lightOnPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.bold),
       ),
       textDirection: TextDirection.ltr,
     );
     textPainterMinus.layout();
-    textPainterMinus.paint(canvas, Offset(batteryRect.left - terminalWidth / 2 - textPainterMinus.width / 2, center.dy - textPainterMinus.height / 2));
+    textPainterMinus.paint(canvas,
+        Offset(batteryRect.left - terminalWidth / 2 - textPainterMinus.width / 2, center.dy - textPainterMinus.height / 2));
   }
-  
+
   void _paintBulb(Canvas canvas, Size size, Paint paint, Paint fillPaint,
-                 Color color, Offset center, double radius) {
+      Color color, Offset center, double radius) {
     // Draw bulb circle
     paint.color = color;
     canvas.drawCircle(center, radius, paint);
-    
+
     if (isPowered) {
       // Fill with light color when powered
-      fillPaint.color = color.withOpacity(0.3);
+      fillPaint.color = color.withAlpha(77);
       canvas.drawCircle(center, radius, fillPaint);
-      
+
       // Add light rays
       paint.strokeWidth = 1.0;
       for (int i = 0; i < 8; i++) {
@@ -198,7 +262,7 @@ class CircuitComponentPainter extends CustomPainter {
         canvas.drawLine(start, end, paint);
       }
     }
-    
+
     // Draw filament
     paint.strokeWidth = 1.0;
     canvas.drawLine(
@@ -212,60 +276,61 @@ class CircuitComponentPainter extends CustomPainter {
       paint,
     );
   }
-  
+
   void _paintSwitch(Canvas canvas, Size size, Paint paint, Color color,
-                   Offset center, double radius) {
+      Offset center, double radius) {
     paint.color = color;
     paint.strokeWidth = 2.0;
-    
+
     // Draw switch contacts
     canvas.drawCircle(Offset(center.dx - radius, center.dy), 3, paint);
     canvas.drawCircle(Offset(center.dx + radius, center.dy), 3, paint);
-    
+
     // Draw switch arm
-    final armEnd = isSwitchClosed 
+    final armEnd = isSwitchClosed
         ? Offset(center.dx + radius, center.dy)
         : Offset(center.dx + radius * 0.5, center.dy - radius * 0.8);
-    
+
     canvas.drawLine(
       Offset(center.dx - radius, center.dy),
       armEnd,
       paint,
     );
-    
+
     // Draw switch indicator
     if (!isSwitchClosed) {
       paint.strokeWidth = 1.0;
       canvas.drawCircle(Offset(center.dx, center.dy - radius), 2, paint);
     }
   }
-  
+
   void _paintResistor(Canvas canvas, Size size, Paint paint, Color color, Offset center) {
     paint.color = color;
     paint.strokeWidth = 2.0;
-    
+
     // Draw resistor zigzag pattern
     final path = Path();
     final width = size.width * 0.6;
     final height = size.height * 0.3;
     const segments = 6;
     final segmentWidth = width / segments;
-    
+
     path.moveTo(center.dx - width / 2, center.dy);
-    
+
     for (int i = 0; i < segments; i++) {
       final x = center.dx - width / 2 + i * segmentWidth + segmentWidth / 2;
       final y = center.dy + (i % 2 == 0 ? -height / 2 : height / 2);
       path.lineTo(x, y);
       path.lineTo(x + segmentWidth / 2, center.dy);
     }
-    
+
     canvas.drawPath(path, paint);
   }
 
-  void _paintTimer(Canvas canvas, Size size, Paint paint, Color color, Offset center, double radius) {
+  void _paintTimer(Canvas canvas, Size size, Paint paint, Paint fillPaint, Color color,
+      Offset center, double radius) {
     paint.color = color;
-    fillPaint.color = color.withOpacity(0.2);
+    fillPaint.color = color.withAlpha(51);
 
     // Draw clock face
     canvas.drawCircle(center, radius, fillPaint);
@@ -280,9 +345,10 @@ class CircuitComponentPainter extends CustomPainter {
     canvas.drawCircle(center, 2, paint..style = PaintingStyle.fill);
   }
 
-  void _paintBlocked(Canvas canvas, Size size, Paint paint, Color color, Offset center, double radius) {
+  void _paintBlocked(Canvas canvas, Size size, Paint paint, Paint fillPaint, Color color,
+      Offset center, double radius) {
     paint.color = color;
-    fillPaint.color = color.withOpacity(0.2);
+    fillPaint.color = color.withAlpha(51);
 
     // Draw a cross or 'X' to indicate blocked
     paint.strokeWidth = 4.0;
@@ -296,10 +362,10 @@ class CircuitComponentPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CircuitComponentPainter oldDelegate) {
     return component.id != oldDelegate.component.id ||
-           isPowered != oldDelegate.isPowered ||
-           isSwitchClosed != oldDelegate.isSwitchClosed ||
-           component.rotation != oldDelegate.component.rotation ||
-           isDark != oldDelegate.isDark ||
-           partOffset != oldDelegate.partOffset;
+        isPowered != oldDelegate.isPowered ||
+        isSwitchClosed != oldDelegate.isSwitchClosed ||
+        component.rotation != oldDelegate.component.rotation ||
+        isDark != oldDelegate.isDark ||
+        partOffset != oldDelegate.partOffset;
   }
 }

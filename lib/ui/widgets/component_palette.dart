@@ -1,3 +1,4 @@
+import 'package:circuit_stem/common/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:circuit_stem/models/component.dart';
 import 'package:circuit_stem/ui/widgets/circuit_component_display.dart';
@@ -16,6 +17,7 @@ class ComponentPalette extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Logger.log('ComponentPalette: Building with ${availableComponents.length} available components: $availableComponents');
     final componentCounts = <ComponentType, int>{};
     for (final component in availableComponents) {
       componentCounts[component.type] = (componentCounts[component.type] ?? 0) + 1;
@@ -28,7 +30,7 @@ class ComponentPalette extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(26),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -136,7 +138,7 @@ class ComponentPaletteItem extends StatelessWidget {
         border: Border.all(
           color: isSelected 
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              : Theme.of(context).colorScheme.outline.withAlpha(77),
           width: isSelected ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(12),

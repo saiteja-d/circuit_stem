@@ -1,28 +1,15 @@
-import 'position.dart'; // Position class with r,c
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'position.dart';
 
-class Hint {
-  final String type;
-  final List<Position>? path;
+part 'hint.freezed.dart';
+part 'hint.g.dart';
 
-  Hint({
-    required this.type,
-    this.path,
-  });
+@freezed
+class Hint with _$Hint {
+  const factory Hint({
+    required String type,
+    List<Position>? path,
+  }) = _Hint;
 
-  factory Hint.fromJson(Map<String, dynamic> json) {
-    return Hint(
-      type: json['type'] as String,
-      path: (json['path'] as List<dynamic>?)
-          ?.map((e) => Position.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      if (path != null)
-        'path': path!.map((p) => p.toJson()).toList(),
-    };
-  }
+  factory Hint.fromJson(Map<String, dynamic> json) => _$HintFromJson(json);
 }

@@ -27,19 +27,25 @@ This document describes the core pure-Dart logic used by the game engine. Keep t
 | bulb                | W, E                        |
 | wire_straight       | N, S                        |
 | wire_corner         | N, E                        |
-| wire_t               | N, E, W                     |
+| wire_t              | N, E, W                     |
 | switch              | N, S (acts like straight)   |
+| crossWire           | N, E, S, W                  |
+| buzzer              | W, E                        |
 
 ### Rotation rules
 - Rotating 90° clockwise moves N→E, E→S, S→W, W→N. Rotation steps are integer multiples of 90.
 
 ## Short detection (algorithm)
-1. Build adjacency graph `G` of terminals (all terminal nodes & edges).
-2. Identify `posNodes` (battery positive terminals) and `negNodes` (battery negative).
-3. Build `G_pruned` = `G` with all terminals belonging to loads (bulbs/resistors) removed.
-4. If any `posNode` can reach any `negNode` in `G_pruned`, a short exists.
+The detection algorithm is integrated directly into the main `evaluate` function for efficiency, avoiding multiple graph traversals. It uses a Breadth-First Search (BFS) that originates from the battery's positive terminals.
 
-Rationale: removing loads emulates a path that bypasses resistance; if pos→neg still connects, current will short.
+1. **Build Adjacency Graph `G`**: A single graph of all component terminals is constructed.
+2. **Initialize BFS**: The search queue is initialized with the battery's positive terminals. Each state in the queue tracks two pieces of information: the current `terminalId` and a boolean flag `seenLoad`.
+3. **Traverse Graph**: The BFS explores the graph. When it traverses from one terminal to another, it checks the component type.
+    - If the component is a "load" (e.g., a bulb), the `seenLoad` flag for that path is set to `true`.
+    - The `seenLoad` flag is carried forward along each path in the search.
+4. **Detect Short**: A short circuit is detected if the BFS reaches a negative battery terminal and the `seenLoad` flag for that specific path is still `false`.
+
+**Rationale**: This approach is more efficient than building a pruned graph. It allows the engine to check for shorts and calculate power flow in a single pass, and it enables the reconstruction of the exact short-circuit path for debugging purposes.
 
 ## Evaluation steps (simplified)
 1. `graph = buildGraph(grid)`

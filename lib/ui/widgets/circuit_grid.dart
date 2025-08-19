@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:circuit_stem/models/component.dart';
 import 'package:circuit_stem/models/level_definition.dart';
 import 'package:circuit_stem/ui/widgets/circuit_component_display.dart';
@@ -11,7 +12,7 @@ class CircuitGrid extends StatefulWidget {
   final Function(ComponentModel component, int x, int y) onComponentPlaced;
   final Function(ComponentModel component) onComponentTapped;
   final ComponentModel? selectedComponent; // Component selected from palette
-  
+
   const CircuitGrid({
     Key? key,
     required this.level,
@@ -29,7 +30,7 @@ class _CircuitGridState extends State<CircuitGrid> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? DarkModeColors.circuitBoard : LightModeColors.circuitBoard,
@@ -59,31 +60,32 @@ class _CircuitGridState extends State<CircuitGrid> {
                       size: cellSize,
                       onTap: () => _onGridCellTapped(x, y),
                       hasComponent: _hasComponentAt(x, y),
-                      onComponentDropped: (component) => widget.onComponentPlaced(component, x, y),
+                      onComponentDropped: (component) =>
+                          widget.onComponentPlaced(component, x, y),
                       isDark: isDark,
                     ),
                   ),
                 ),
-              ).expand((row) => row).toList(), // Flatten the list of rows
+              ),
               // Components layer
               ...widget.components.map((component) => Positioned(
-                left: component.c * cellSize,
-                top: component.r * cellSize,
-                child: GestureDetector(
-                  onTap: () => widget.onComponentTapped(component),
-                  child: CircuitComponentDisplay(
-                    component: component,
-                    size: cellSize,
-                  ),
-                ),
-              )),
+                    left: component.c * cellSize,
+                    top: component.r * cellSize,
+                    child: GestureDetector(
+                      onTap: () => widget.onComponentTapped(component),
+                      child: CircuitComponentDisplay(
+                        component: component,
+                        size: cellSize,
+                      ),
+                    ),
+                  )),
             ],
           ),
         ),
       ),
     );
   }
-  
+
   void _onGridCellTapped(int x, int y) {
     // If a component is selected from the palette, attempt to place it
     if (widget.selectedComponent != null && !_hasComponentAt(x, y)) {
@@ -98,7 +100,7 @@ class _CircuitGridState extends State<CircuitGrid> {
       }
     }
   }
-  
+
   bool _hasComponentAt(int x, int y) {
     return widget.components.any((c) => c.c == x && c.r == y);
   }
@@ -112,7 +114,7 @@ class _GridCell extends StatelessWidget {
   final bool hasComponent;
   final Function(ComponentModel component) onComponentDropped;
   final bool isDark;
-  
+
   const _GridCell({
     Key? key,
     required this.x,
@@ -134,24 +136,24 @@ class _GridCell extends StatelessWidget {
       },
       builder: (context, candidateData, rejectedData) {
         final isHighlighted = candidateData.isNotEmpty && !hasComponent;
-        
+
         return GestureDetector(
           onTap: onTap,
           child: Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: isHighlighted 
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+              color: isHighlighted
+                  ? Theme.of(context).colorScheme.primary.withAlpha(51)
                   : Colors.transparent,
               border: Border.all(
-                color: hasComponent 
-                    ? Colors.transparent 
+                color: hasComponent
+                    ? Colors.transparent
                     : isHighlighted
                         ? Theme.of(context).colorScheme.primary
                         : isDark
-                            ? DarkModeColors.gridLines.withOpacity(0.3)
-                            : LightModeColors.gridLines.withOpacity(0.5),
+                            ? DarkModeColors.gridLines.withAlpha(77)
+                            : LightModeColors.gridLines.withAlpha(128),
                 width: isHighlighted ? 2.0 : 0.5,
               ),
               borderRadius: isHighlighted ? BorderRadius.circular(4) : null,
@@ -168,7 +170,7 @@ class _GridPainter extends CustomPainter {
   final int gridHeight;
   final double cellSize;
   final bool isDark;
-  
+
   _GridPainter({
     required this.gridWidth,
     required this.gridHeight,
@@ -179,9 +181,9 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark 
-          ? DarkModeColors.gridLines.withOpacity(0.2)
-          : LightModeColors.gridLines.withOpacity(0.3)
+      ..color = isDark
+          ? DarkModeColors.gridLines.withAlpha(51)
+          : LightModeColors.gridLines.withAlpha(77)
       ..strokeWidth = 0.5;
 
     // Draw vertical lines
@@ -192,7 +194,7 @@ class _GridPainter extends CustomPainter {
         paint,
       );
     }
-    
+
     // Draw horizontal lines
     for (int i = 0; i <= gridHeight; i++) {
       canvas.drawLine(
@@ -205,14 +207,4 @@ class _GridPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GridPainter oldDelegate) => false;
-}
-
-extension<T> on Iterable<T> {
-  T? get firstWhereOrNull {
-    final iterator = this.iterator;
-    if (iterator.moveNext()) {
-      return iterator.current;
-    }
-    return null;
-  }
 }

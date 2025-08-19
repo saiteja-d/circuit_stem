@@ -1,49 +1,72 @@
-
 # Architecture & UI Design
 
 **Project:** Circuit STEM
+**Last Updated:** 2025-08-14 EST
 
 ---
 
-This document provides visual diagrams of the system architecture, data flow, and UI layout to complement the code-level details in the TRD.
+This document provides a detailed overview of the system architecture, data flow, and UI layout to complement the code-level details in the TRD.
 
-## 1. System Architecture Diagram
+## 1. Architectural Principles
+
+This project follows a modern, reactive architecture based on a few core principles:
+
+*   **State Management (Riverpod & StateNotifier):** All complex view state is managed by `StateNotifier` classes, which are provided to the UI using `StateNotifierProvider` from the `flutter_riverpod` package. This pattern is preferred for its compile-time safety, testability, and for enforcing a unidirectional data flow with immutable state objects.
+
+*   **Immutability (`freezed`):** All state and data model classes are immutable. We use the `freezed` package to generate boilerplate-free, immutable data classes. This prevents entire classes of bugs caused by accidental state mutation and makes state changes predictable and easy to debug.
+
+*   **Dependency Injection (Riverpod):** All services and providers are exposed to the application via Riverpod. This decouples our UI from our business logic, improves testability, and allows services to be easily mocked or replaced.
+
+## 2. Detailed Architecture
+
+### 2.1. System Architecture Diagram
 
 This diagram shows the high-level relationship between the primary layers of the application.
 
 ```
-+--------------------+        +---------------------+        +-------------------+
-|  Flutter UI Layer  | <----> |   GameEngine        | <----> |   LogicEngine     |
-|  (GameCanvas, HUD) |        |  (Stateful Notifier)|        |   (Pure Dart)     |
-|  - Renders State   |        |  - Manages Grid     |        | - BFS Evaluation  |
-|  - Handles Input   |        |  - Processes Actions|        | - Short Detection |
-+--------------------+        +---------------------+        +-------------------+
-         ^                                      ^
-         |                                      |
-         | listens to                           | receives data from
-         |                                      |
-+--------------------+        +---------------------+ 
-| UI Controllers     |        |   Services          |
-| (Debug, etc.)      |        |   (LevelManager)    |
-+--------------------+        +---------------------+ 
++--------------------+ watches +---------------------------------+
+|  Flutter UI Layer  | ------> | Riverpod StateNotifierProvider  | --provides--+ GameEngineNotifier              |
+|  (GameCanvas, HUD) |         | (in lib/core/providers.dart)    |             | (StateNotifier<GameEngineState>) |
+|  - Rebuilds on     |         +---------------------------------+             | - Manages Grid State            |
+|    new State       |                                                       | - Processes Actions             |
++--------------------+                                                       +---------------------------------+
+         ^                                                                                    |
+         |                                                                                    v
+         | receives input                                                                     | calls
+         |                                                                                    |
++--------------------+                                                       +---------------------------------+
+| User Input         |                                                       | LogicEngine (Pure Dart)         |
+| (Tap, Drag)        |                                                       | - Evaluates Circuit             |
++--------------------+                                                       +---------------------------------+
 ```
 
-## 2. Detailed Integration Diagram
+### 2.2. Data Flow
 
-This diagram illustrates how the core components interact with each other.
+The application follows a unidirectional data flow, which makes the state changes predictable and easy to debug.
 
-```
-[User] -> [GameCanvas (UI)]
-   -> calls GameEngine.handleTap() or .endDrag()
-      -> GameEngine updates Grid model
-         -> GameEngine calls LogicEngine.evaluate(grid)
-            -> returns EvaluationResult
-         <- GameEngine creates RenderState from result
-         <- GameEngine calls onEvaluate() callback for DebugOverlayController
-      <- GameEngine calls notifyListeners()
-   <- GameCanvas (via Consumer) rebuilds
-      -> CanvasPainter receives new RenderState and redraws
-```
+1.  **User Input:** The user interacts with the UI (e.g., tapping a switch, dragging a component).
+2.  **UI Layer:** The UI layer (e.g., `GameCanvas`) captures the user input and calls the appropriate method on the `GameEngineNotifier`.
+3.  **StateNotifier:** The `GameEngineNotifier` receives the action and creates a new, updated `GameEngineState` object. To do this, it may call the `LogicEngine` to evaluate the circuit and get the new state of the components.
+4.  **State Update:** The `GameEngineNotifier` updates its state by assigning the new `GameEngineState` object to its `state` property.
+5.  **Riverpod:** Riverpod detects the new state and notifies all listening widgets.
+6.  **UI Update:** The UI widgets that are listening to the `GameEngineNotifier` (e.g., `GameCanvas`) receive the new state and rebuild themselves to reflect the changes.
+
+### 2.3. State Management
+
+The application's state is managed using a combination of `StateNotifier` and `freezed`.
+
+*   **`GameEngineState`:** This is the main state object for the game screen. It is an immutable class generated by `freezed` and contains all the information needed to render the game screen, including the grid, the components, and the render state.
+*   **`GameEngineNotifier`:** This is a `StateNotifier` that manages the `GameEngineState`. It exposes methods to modify the state in a controlled way (e.g., `handleTap`, `endDrag`).
+*   **UI State:** For simple UI state (e.g., the state of a button), we use local state management with `StatefulWidget` or hooks.
+
+### 2.4. Service Responsibilities
+
+The application is divided into several services, each with a specific responsibility.
+
+*   **`LogicEngine`:** This is a pure Dart service that is responsible for evaluating the circuit. It takes a `Grid` object as input and returns an `EvaluationResult` object, which contains information about the powered components, short circuits, and open endpoints.
+*   **`AssetManager`:** This service acts as a centralized cache for all game assets. It holds pointers to standard images (`.png`) and pre-rendered `ui.Image` objects created from SVGs. It is no longer responsible for loading and processing SVG files directly. Instead, another service is expected to perform the SVG-to-Image conversion and provide the results to the `AssetManager` via the `setSvgImages()` method. This decouples the complex rendering logic from the asset caching.
+*   **`AudioService`:** This service is responsible for playing audio files. It provides a simple API to play sounds by their asset path.
+*   **`LevelManager`:** This service is responsible for loading the level definitions from the JSON files in the `assets/levels` directory. It also keeps track of the player's progress.
 
 ## 3. UI Layout & Interaction
 
@@ -73,9 +96,20 @@ The application features three primary screens, each designed for intuitive inte
 *   **Touch Targets:** The logical size of each cell is designed to be large enough (e.g., `64x64` logical pixels) to be easily tappable on mobile devices.
 *   **Drag & Drop:** Users can drag movable components. A semi-transparent preview of the component follows the user's finger. When the gesture ends, the component snaps to the nearest valid grid cell.
 *   **Tapping:** Tapping on an interactive component like a switch toggles its state instantly.
+*   **Component Rotation**: Draggable components can now be rotated by the player. When a draggable component is selected (by tapping it), a rotate button appears next to it. Tapping this button rotates the component by 90 degrees clockwise. This feature is introduced in Level 2.
 
 ### Visual States
 
 *   **Bulb:** Has distinct visual states for `off` and `on`. The `on` state includes a subtle pulsing glow driven by the `AnimationScheduler`.
 *   **Wires:** Have distinct visual states for `powered` and `unpowered`. The `powered` state includes an animated "flow" effect, also driven by the `AnimationScheduler`.
 *   **Switch:** Has two distinct visuals for its `open` and `closed` states.
+
+## 4. Architectural Evolution: The Component-Behavior Model
+
+To enhance extensibility and align with modern game development best practices, the project is undergoing a significant architectural refactoring. The original architecture is being evolved into a **Component-Behavior model**, inspired by Entity-Component-System (ECS) patterns.
+
+This new architecture decouples data from behavior, allowing new component types and game rules to be added as "plug-ins" without modifying the core engine.
+
+For a complete breakdown of the new architecture, the motivation behind it, and the detailed, phased implementation plan, please see the full refactoring document:
+
+- **[Architectural Refactor Plan: The Component-Behavior Model](./REFACTOR_PLAN.md)**

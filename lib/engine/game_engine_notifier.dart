@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:state_notifier/state_notifier.dart';
-import 'package:collection/collection.dart'; // For firstWhereOrNull and firstOrNull
+import 'package:collection/collection.dart';
 import '../models/level_definition.dart';
 import '../models/grid.dart';
 import '../models/component.dart';
@@ -9,13 +9,17 @@ import 'render_state.dart';
 import '../services/audio_service.dart';
 import 'animation_scheduler.dart';
 import '../common/logger.dart';
+import '../common/constants.dart';
 import '../models/goal.dart';
 import 'game_engine_state.dart';
+import '../common/assets.dart';
 
+/// GameEngineNotifier: Immutable state management for the game engine
 class GameEngineNotifier extends StateNotifier<GameEngineState> {
   final LogicEngine _logicEngine;
   final AudioService _audioService;
-  final AnimationScheduler _animationScheduler;
+  @visibleForTesting
+  final AnimationScheduler animationScheduler;
   final void Function(EvaluationResult)? onEvaluate;
   final VoidCallback? onWin;
 
@@ -28,76 +32,85 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
     AnimationScheduler? animationScheduler,
   }) : _logicEngine = logicEngine ?? LogicEngine(),
        _audioService = audioService ?? AudioService(),
-       _animationScheduler = animationScheduler ?? AnimationScheduler(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
        super(GameEngineState.initial(initialLevel)) {
-    if (initialLevel != null) {
-      _setupLevel(initialLevel);
-    }
-    _animationScheduler.addCallback((dt) {
+    _initializeEngine(initialLevel);
+  }
+
+  GameEngineNotifier.forNoLevel({
+    this.onEvaluate,
+    this.onWin,
+    LogicEngine? logicEngine,
+    AudioService? audioService,
+    AnimationScheduler? animationScheduler,
+  }) : _logicEngine = logicEngine ?? LogicEngine(),
+       _audioService = audioService ?? AudioService(),
+       animationScheduler = animationScheduler ?? AnimationScheduler(),
+       super(GameEngineState.initial(null));
+
+  void _initializeEngine(LevelDefinition? initialLevel) {
+    animationScheduler.addCallback((dt) {
       if (!state.isPaused) {
         _evaluateAndUpdateRenderState();
       }
     });
-    _animationScheduler.start();
+    if (initialLevel != null) {
+      loadLevel(initialLevel);
+    }
   }
 
-  // Constructor for when no level is initially selected (e.g., app startup)
-  GameEngineNotifier.forNoLevel() : 
-    _logicEngine = LogicEngine(),
-    _audioService = AudioService(),
-    _animationScheduler = AnimationScheduler(),
-    onEvaluate = null,
-    onWin = null,
-    super(GameEngineState.initial(null));
+  void loadLevel(LevelDefinition level) {
+    Logger.log('GameEngine: Loading new level ${level.id}');
+    Logger.log('GameEngine: Initial components from LevelDefinition: ${level.initialComponents}');
+    animationScheduler.reset();
 
-  Future<void> _setupLevel(LevelDefinition level) async {
-    Logger.log('GameEngine: Setting up level...');
-    
-    // Reset state
-    _animationScheduler.reset();
-    state = state.copyWith(
-      isWin: false,
-      isShortCircuit: false,
-      draggedComponentId: null,
-      dragPosition: null,
+    final initialComponentsMap = <String, ComponentModel>{};
+    for (final comp in level.initialComponents) {
+      initialComponentsMap[comp.id] = comp;
+    }
+
+    state = GameEngineState(
       currentLevel: level,
+      grid: Grid(rows: level.rows, cols: level.cols, componentsById: initialComponentsMap),
+      isPaused: false,
+      isWin: false,
+      paletteComponents: level.paletteComponents,
     );
 
-    // Setup grid with components
-    final grid = Grid(rows: state.currentLevel!.rows, cols: state.currentLevel!.cols);
-    for (final comp in state.currentLevel!.components) {
-      final placed = grid.addComponent(comp);
-      if (!placed) {
-        Logger.log('Warning: failed to place component ${comp.id} at ${comp.r},${comp.c}');
-      }
-    }
-    
-    state = state.copyWith(grid: grid);
     _evaluateAndUpdateRenderState();
     Logger.log('GameEngine: Level setup complete.');
   }
 
-  void update(double dt) {
-    if (state.isPaused) return;
-    _evaluateAndUpdateRenderState();
-  }
-
   void _evaluateAndUpdateRenderState() {
-    if (state.currentLevel == null) return; // Cannot evaluate without a level
+    if (state.currentLevel == null) return;
 
     final evalResult = _logicEngine.evaluate(state.grid);
     final newRenderState = RenderState.fromEvaluation(
       grid: state.grid,
       eval: evalResult,
-      bulbIntensity: _animationScheduler.bulbIntensity,
-      wireOffset: _animationScheduler.wireOffset,
+      bulbIntensity: animationScheduler.bulbIntensity,
+      wireOffset: animationScheduler.wireOffset,
       draggedComponentId: state.draggedComponentId,
       dragPosition: state.dragPosition,
     );
 
+    final currentPoweredBuzzers = state.grid.componentsById.values
+        .where((c) =>
+            c.type == ComponentType.buzzer &&
+            evalResult.poweredComponentIds.contains(c.id))
+        .map((c) => c.id)
+        .toSet();
+
+    final newlyPoweredBuzzers = currentPoweredBuzzers.difference(state.poweredBuzzerIds);
+
+    for (final _ in newlyPoweredBuzzers) {
+      _audioService.play(AppAssets.audioToggle);
+    }
+
     state = state.copyWith(
       renderState: newRenderState,
       isShortCircuit: evalResult.isShortCircuit,
+      poweredBuzzerIds: currentPoweredBuzzers,
     );
 
     onEvaluate?.call(evalResult);
@@ -117,8 +130,9 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
 
     if (allGoalsMet) {
       state = state.copyWith(isWin: true);
-      _audioService.playSuccess();
+      _audioService.play(AppAssets.audioSuccess);
       onWin?.call();
+      Logger.log('GameEngine: Win condition met!');
     }
   }
 
@@ -137,69 +151,138 @@ class GameEngineNotifier extends StateNotifier<GameEngineState> {
   void setPaused(bool paused) {
     if (state.isPaused == paused) return;
     state = state.copyWith(isPaused: paused);
-    
     if (paused) {
-      _animationScheduler.pause();
+      animationScheduler.pause();
     } else {
-      _animationScheduler.resume();
+      animationScheduler.resume();
     }
   }
 
-  void startDragging(String componentId, Offset position) {
-    state = state.copyWith(
-      draggedComponentId: componentId,
-      dragPosition: position,
-    );
+  void togglePause() => setPaused(!state.isPaused);
+
+  void startDrag(String componentId, Offset position) {
+    final component = state.grid.componentsById[componentId];
+    Logger.log('GameEngineNotifier: startDrag for component $componentId of type ${component?.type}');
+    state = state.copyWith(draggedComponentId: componentId, dragPosition: position);
   }
 
-  void updateDragPosition(Offset position) {
-    if (state.draggedComponentId == null) return;
+  void updateDrag(String componentId, Offset position) {
+    if (state.draggedComponentId != componentId) return;
     state = state.copyWith(dragPosition: position);
-  }
-
-  void endDragging() {
-    state = state.copyWith(
-      draggedComponentId: null,
-      dragPosition: null,
-    );
     _evaluateAndUpdateRenderState();
   }
 
-  void toggleComponent(String componentId) {
+  void endDrag(String componentId) {
+    Logger.log('GameEngineNotifier: endDrag for component $componentId');
+    if (state.draggedComponentId != componentId || state.dragPosition == null) {
+      state = state.copyWith(draggedComponentId: null, dragPosition: null);
+      return;
+    }
+
+    final newCol = (state.dragPosition!.dx / cellSize).floor();
+    final newRow = (state.dragPosition!.dy / cellSize).floor();
+    Logger.log('GameEngineNotifier: new position ($newRow, $newCol)');
+
+    final componentToMove = state.grid.componentsById[componentId];
+    if (componentToMove != null) {
+      // Create a temporary grid without the component being moved to check for collisions
+      final tempComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+      tempComponents.remove(componentId);
+      final tempGrid = state.grid.copyWith(componentsById: tempComponents);
+
+      if (tempGrid.canPlaceComponent(componentToMove, newRow, newCol)) {
+        Logger.log('GameEngineNotifier: new position is valid');
+        final newComponent = componentToMove.copyWith(r: newRow, c: newCol);
+        final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+        newComponents[componentId] = newComponent;
+        state = state.copyWith(
+          grid: state.grid.copyWith(componentsById: newComponents),
+          draggedComponentId: null,
+          dragPosition: null,
+        );
+      } else {
+        Logger.log('GameEngineNotifier: new position is invalid');
+        _audioService.play(AppAssets.audioWarning);
+        state = state.copyWith(draggedComponentId: null, dragPosition: null);
+      }
+    } else {
+      state = state.copyWith(draggedComponentId: null, dragPosition: null);
+    }
+
+    _evaluateAndUpdateRenderState();
+  }
+
+  void toggleSwitch(String componentId) {
     final component = state.grid.componentsById[componentId];
     if (component == null || component.type != ComponentType.sw) return;
 
     final currentState = component.state['closed'] as bool? ?? false;
-    component.state['closed'] = !currentState;
-    
-    _audioService.playToggle();
+    final newComponentState = Map<String, dynamic>.from(component.state);
+    newComponentState['closed'] = !currentState;
+
+    final updatedComponent = component.copyWith(state: newComponentState);
+    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+    newComponents[componentId] = updatedComponent;
+
+    state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
+    _audioService.play(AppAssets.audioToggle);
     _evaluateAndUpdateRenderState();
   }
 
-  ComponentModel? findComponentByPosition(int r, int c) {
-    return state.grid.componentsAt(r, c).firstOrNull;
-  }
-
   void handleTap(int r, int c) {
-    final component = findComponentByPosition(r, c);
-    if (component != null && component.type == ComponentType.sw) {
-      toggleComponent(component.id);
+    final component = state.grid.componentsAt(r, c).firstOrNull;
+    if (component != null) {
+      if (component.type == ComponentType.sw) {
+        toggleSwitch(component.id);
+      } else {
+        selectComponent(component);
+      }
     }
   }
 
-  void resetLevel() {
+  void addComponent(ComponentModel component, int r, int c) {
+    Logger.log('GameEngineNotifier: addComponent ${component.id} of type ${component.type} at ($r, $c)');
+    if (state.grid.canPlaceComponent(component, r, c)) {
+      final newComponent = component.copyWith(r: r, c: c);
+      final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+      newComponents[newComponent.id] = newComponent;
+      state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
+    } else {
+      _audioService.play(AppAssets.audioWarning);
+    }
+    _evaluateAndUpdateRenderState();
+  }
+
+  void rotateComponent(String componentId) {
+    final component = state.grid.componentsById[componentId];
+    if (component == null || !component.isDraggable) return;
+
+    final newRotation = (component.rotation + 90) % 360;
+    final updatedComponent = component.copyWith(rotation: newRotation);
+    final newComponents = Map<String, ComponentModel>.from(state.grid.componentsById);
+    newComponents[componentId] = updatedComponent;
+
+    state = state.copyWith(grid: state.grid.copyWith(componentsById: newComponents));
+    _evaluateAndUpdateRenderState();
+  }
+
+  void selectComponent(ComponentModel component) {
+    if (state.selectedComponentId == component.id) {
+      state = state.copyWith(selectedComponentId: null);
+    } else {
+      state = state.copyWith(selectedComponentId: component.id);
+    }
+  }
+
+  void reset() {
     if (state.currentLevel != null) {
-      _setupLevel(state.currentLevel!);
+      loadLevel(state.currentLevel!);
     }
-  }
-
-  void togglePause() {
-    setPaused(!state.isPaused);
   }
 
   @override
   void dispose() {
-    _animationScheduler.dispose();
+    animationScheduler.dispose();
     super.dispose();
   }
 }

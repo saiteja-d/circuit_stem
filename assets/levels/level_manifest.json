@@ -1,15 +1,15 @@
 
 {
   "levels": [
-    { "id": "level_01", "title": "First Spark" },
-    { "id": "level_02", "title": "The Corner" },
-    { "id": "level_03", "title": "T-Junction" },
-    { "id": "level_04", "title": "Simple Switch" },
-    { "id": "level_05", "title": "Double Trouble" },
-    { "id": "level_06", "title": "Logic Gate" },
-    { "id": "level_07", "title": "Roundabout" },
-    { "id": "level_08", "title": "Long Distance" },
-    { "id": "level_09", "title": "Crossroads" },
-    { "id": "level_10", "title": "The Final Circuit" }
+    { "id": "level_01", "title": "First Spark", "description": "A simple circuit to get you started.", "levelNumber": 1 },
+    { "id": "level_02", "title": "The Corner", "description": "Introducing a corner piece.", "levelNumber": 2 },
+    { "id": "level_03", "title": "T-Junction", "description": "Power can flow in multiple directions.", "levelNumber": 3 },
+    { "id": "level_04", "title": "Simple Switch", "description": "Control the flow of electricity.", "levelNumber": 4 },
+    { "id": "level_05", "title": "Double Trouble", "description": "Two bulbs, twice the fun.", "levelNumber": 5 },
+    { "id": "level_06", "title": "Logic Gate", "description": "A slightly more complex circuit.", "levelNumber": 6 },
+    { "id": "level_07", "title": "Roundabout", "description": "Going in circles.", "levelNumber": 7 },
+    { "id": "level_08", "title": "Long Distance", "description": "A longer path to the bulb.", "levelNumber": 8 },
+    { "id": "level_09", "title": "Crossroads", "description": "A tricky intersection.", "levelNumber": 9 },
+    { "id": "level_10", "title": "The Final Circuit", "description": "The final challenge!", "levelNumber": 10 }
   ]
 }
