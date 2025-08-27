@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:circuit_stem/ui/screens/main_menu.dart';
-import 'package:circuit_stem/ui/screens/level_select.dart';
-import 'package:circuit_stem/ui/game_screen.dart'; // Corrected import path
+import 'package:circuit_stem/presentation/screens/main_menu.dart';
+import 'package:circuit_stem/presentation/screens/level_select.dart';
+import 'package:circuit_stem/presentation/screens/game_screen.dart';
 
 class AppRoutes {
   static const String mainMenu = '/';
@@ -19,10 +19,18 @@ class AppRoutes {
         );
 
       case gameScreen:
-        return MaterialPageRoute(builder: (_) => const GameScreen());
+        if (settings.arguments is! int) {
+          return MaterialPageRoute(
+              builder: (_) => _errorPage(
+                  'The game screen requires a levelIndex (int) argument.'));
+        }
+        final levelIndex = settings.arguments as int;
+        return MaterialPageRoute(
+            builder: (_) => GameScreen(levelIndex: levelIndex));
 
       default:
-        return MaterialPageRoute(builder: (_) => _errorPage('Unknown route: ${settings.name}'));
+        return MaterialPageRoute(
+            builder: (_) => _errorPage('Unknown route: ${settings.name}'));
     }
   }
 

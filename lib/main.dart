@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
-import 'core/providers.dart';
+import 'application/providers.dart';
 import 'common/logger.dart';
 import 'common/assets.dart';
 import 'dart:async';
-import 'services/svg_processor.dart';
-import 'services/svg_processor_base.dart';
+import 'infrastructure/rendering/svg_processor.dart';
+import 'infrastructure/rendering/svg_processor_base.dart';
+import 'common/debug_utils.dart'; // Import the new debug utility
+import 'application/services/component_registry.dart';
 
 void main() async {
   Logger.log('main() called');
@@ -20,20 +22,29 @@ void main() async {
   // Instantiate the SvgProcessor
   final SvgProcessorBase svgProcessor = SvgProcessor();
 
+  // Register all component and goal behaviors.
+  ComponentRegistry.registerAllGameEntities();
+  Logger.log('main.dart: All game entities registered.');
+
+  // Run the MoveBehavior attachment check
+  checkMoveBehaviorAttachment(); // Call the new utility
+
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: Initializer(svgProcessor: svgProcessor), // Pass processor to Initializer
+      child: Initializer(
+          svgProcessor: svgProcessor), // Pass processor to Initializer
     ),
   );
+  Logger.log('runApp() called');
   Logger.log('runApp() called');
 }
 
 class Initializer extends ConsumerStatefulWidget {
   final SvgProcessorBase svgProcessor;
-  const Initializer({Key? key, required this.svgProcessor}) : super(key: key);
+  const Initializer({super.key, required this.svgProcessor});
 
   @override
   InitializerState createState() => InitializerState();
@@ -46,10 +57,18 @@ class InitializerState extends ConsumerState<Initializer> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initializeAssets());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(sharedPreferencesProvider);
+      Logger.log('Prefs: $prefs');
+      _initializeAssets();
+    });
   }
 
   Future<void> _initializeAssets() async {
+    // Initialize LevelManager
+    setState(() => _status = 'Loading levels...');
+    await ref.read(levelManagerProvider.notifier).init();
+
     final assetManager = ref.read(assetManagerProvider.notifier);
     await assetManager.loadAllAssets(); // Load non-svg assets
 
@@ -58,14 +77,16 @@ class InitializerState extends ConsumerState<Initializer> {
     try {
       setState(() => _status = 'Processing SVGs...');
       final images = await widget.svgProcessor.processSvgs(svgPaths);
-      
+
       assetManager.setSvgImages(images);
-      Logger.log('SVG processing complete. ${images.length} images set in AssetManager.');
+      Logger.log(
+          'SVG processing complete. ${images.length} images set in AssetManager.');
 
       setState(() => _ready = true);
     } catch (e) {
       Logger.log('Error during SVG processing: $e');
-      setState(() => _ready = true); // allow app to continue even if svg step failed
+      setState(
+          () => _ready = true); // allow app to continue even if svg step failed
     }
   }
 
@@ -92,4 +113,3 @@ class InitializerState extends ConsumerState<Initializer> {
     return const App();
   }
 }
-

@@ -1,26 +1,39 @@
 import 'dart:ui' as ui;
-
-import 'package:circuit_stem/services/asset_manager.dart';
-import 'package:circuit_stem/services/asset_manager_state.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:circuit_stem/infrastructure/rendering/asset_manager.dart';
+import 'package:circuit_stem/infrastructure/rendering/asset_manager_state.dart';
 
-class MockAssetManager extends StateNotifier<AssetState> implements AssetManagerNotifier {
+class MockAssetManager extends StateNotifier<AssetState>
+    implements AssetManagerNotifier {
   final Map<String, String> _files = {};
+  ui.Image? _testImage;
 
-  MockAssetManager(AssetState state) : super(state);
+  MockAssetManager() : super(const AssetState()) {
+    _testImage = _createMinimalTestImage();
+  }
+
+  // Helper to create a minimal 1x1 test image to avoid nulls
+  ui.Image _createMinimalTestImage() {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(
+        const Rect.fromLTWH(0, 0, 1, 1), Paint()..color = Colors.blue);
+    final picture = recorder.endRecording();
+    // Use toImageSync for test environments
+    return picture.toImageSync(1, 1);
+  }
+
+  @override
+  bool get isDark => state.isDark;
+
+  @override
+  void updateTheme(bool isDark) {
+    state = state.copyWith(isDark: isDark);
+  }
 
   void primeFile(String path, String content) {
     _files[path] = content;
-  }
-
-  @override
-  Future<void> loadAllAssets() async {
-    // No-op for mock.
-  }
-
-  @override
-  void setSvgImages(Map<String, ui.Image> images) {
-    state = state.copyWith(svgImageCache: images);
   }
 
   @override
@@ -32,29 +45,19 @@ class MockAssetManager extends StateNotifier<AssetState> implements AssetManager
   }
 
   @override
-  ui.Image? getImage(String path) => state.imageCache[path];
-
-  @override
-  ui.Image? getSvgAsImage(String path) => state.svgImageCache[path];
-
-  @override
-  bool hasAsset(String path) {
-    return state.imageCache.containsKey(path) ||
-        state.svgImageCache.containsKey(path) ||
-        _files.containsKey(path);
+  Future<void> loadAllAssets() {
+    // In tests, we assume assets are primed manually.
+    return Future.value();
   }
 
   @override
-  ui.Image? getBestImageForCanvas(String path) {
-    return state.svgImageCache[path] ?? state.imageCache[path];
+  ui.Image? getSvgAsImage(String path) {
+    // Return the minimal test image instead of null
+    return _testImage;
   }
 
   @override
-  Map<String, int> getStats() {
-    return {
-      'regular_images': state.imageCache.length,
-      'svg_images': state.svgImageCache.length,
-      'total_assets': state.imageCache.length + state.svgImageCache.length + _files.length,
-    };
+  void setSvgImages(Map<String, ui.Image> images) {
+    state = state.copyWith(svgImages: images);
   }
 }
